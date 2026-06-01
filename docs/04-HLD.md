@@ -12,8 +12,13 @@ The Leave Management System follows a **3-tier architecture** pattern:
 
 ```mermaid
 graph TB
+    subgraph Security["☁️ Cloudflare Edge"]
+        WAF[WAF + DDoS Protection]
+        SSL[SSL/TLS Termination]
+    end
+    
     subgraph Client["🌐 Client Tier (Browser)"]
-        UI[HTML/CSS/JavaScript]
+        React[React.js SPA]
         JWT[JWT Token Storage]
     end
     
@@ -25,19 +30,21 @@ graph TB
     end
     
     subgraph Data["🗄️ Data Tier"]
-        SQLite[SQLite Database]
+        PG[PostgreSQL Database]
     end
     
-    UI -->|HTTP Requests| Express
+    React -->|HTTPS| WAF
+    WAF -->|Clean Traffic| Express
     Express --> Auth
     Auth --> Routes
     Routes --> BL
-    BL --> SQLite
-    SQLite -->|Data| BL
+    BL --> PG
+    PG -->|Data| BL
     BL -->|JSON Response| Express
-    Express -->|HTTP Response| UI
+    Express -->|HTTP Response| React
     JWT -.->|Authorization Header| Auth
     
+    style Security fill:#F59E0B,color:#000
     style Client fill:#1e1b4b,color:#fff
     style Server fill:#0f3460,color:#fff
     style Data fill:#065f46,color:#fff
@@ -49,12 +56,12 @@ graph TB
 
 | Layer | Technology | Version | Justification |
 |-------|-----------|---------|---------------|
-| **Frontend** | HTML5 + CSS3 + JavaScript (ES6+) | Latest | No build tools needed, fast development, universal browser support |
-| **Backend** | Node.js + Express.js | Node 18+, Express 4.x | Lightweight, fast I/O, huge ecosystem, easy REST APIs |
-| **Database** | SQLite via `better-sqlite3` | 3.x | Zero-config, file-based, ACID compliant, perfect for single-server deployment |
+| **Frontend** | React.js + CSS3 | React 18+, Vite 5+ | Component-based architecture, virtual DOM, fast build with Vite |
+| **Backend** | Node.js + Express.js (REST API) | Node 18+, Express 4.x | Lightweight, fast I/O, huge ecosystem, easy REST APIs |
+| **Database** | PostgreSQL via `pg` (node-postgres) | PG 15+, pg 8.x | ACID compliant, production-grade, robust query optimizer, advanced constraints |
 | **Authentication** | JWT (`jsonwebtoken`) | 9.x | Stateless authentication, no session store needed |
 | **Password Hashing** | bcryptjs | 2.x | Industry-standard password hashing |
-| **Server** | Express static middleware | — | Serves frontend files directly, no separate web server needed |
+| **Security** | Cloudflare Firewall (WAF) | — | DDoS protection, WAF rules, SSL/TLS termination, rate limiting |
 
 ---
 
@@ -197,21 +204,26 @@ graph LR
 
 ```mermaid
 graph TD
-    Browser[🌐 Browser] -->|HTTP/HTTPS| Server[⚙️ Node.js Server :3000]
-    Server -->|Serves| Static[📁 Static Files - public/]
-    Server -->|Queries| DB[(🗄️ SQLite - server/db/leave_mgmt.db)]
+    Browser[🌐 Browser] -->|HTTPS| CF[☁️ Cloudflare Edge]
+    CF -->|WAF + DDoS Filter| Server[⚙️ Node.js Server :3000]
+    Server -->|Serves| React[⚛️ React Build - Static Files]
+    Server -->|Queries| DB[(🗄️ PostgreSQL :5432)]
     
     style Browser fill:#1e1b4b,color:#fff
+    style CF fill:#F59E0B,color:#000
     style Server fill:#0f3460,color:#fff
-    style Static fill:#1a1a2e,color:#fff
+    style React fill:#1a1a2e,color:#fff
     style DB fill:#065f46,color:#fff
 ```
 
-**Deployment is simple:**
-1. Install Node.js
-2. Run `npm install` in `server/`
-3. Run `npm start` → server starts on port 3000
-4. Open `http://localhost:3000` in browser
+**Deployment Steps:**
+1. Install Node.js (v18+) and PostgreSQL (v15+)
+2. Create the database: `createdb leave_management`
+3. Configure `.env` with database credentials
+4. Run `npm install` in both `client/` and `server/`
+5. Build React app: `cd client && npm run build`
+6. Run `npm start` in `server/` → serves API + React build on port 3000
+7. Point Cloudflare DNS to server IP with proxy enabled (orange cloud)
 
 ---
 
@@ -219,9 +231,15 @@ graph TD
 
 | Concern | Mitigation |
 |---------|-----------|
+| **DDoS Protection** | Cloudflare Firewall — automatic DDoS mitigation at edge |
+| **WAF (Web Application Firewall)** | Cloudflare managed rulesets — blocks SQLi, XSS, RCE |
+| **SSL/TLS** | Cloudflare Full (Strict) mode — end-to-end encryption |
+| **Rate Limiting** | Cloudflare rate rules — 100 req/min on login endpoint |
 | **Password Storage** | bcrypt hashing with salt rounds |
-| **Authentication** | JWT tokens with expiration |
+| **Authentication** | JWT tokens with 24h expiration |
 | **Authorization** | Role-based middleware on every endpoint |
-| **SQL Injection** | Parameterized queries (prepared statements) |
-| **XSS** | Input sanitization, Content-Security-Policy |
-| **CORS** | Restricted to same-origin (frontend served by same server) |
+| **SQL Injection** | Parameterized queries (pg prepared statements) |
+| **XSS** | React auto-escapes output, Content-Security-Policy headers |
+| **CORS** | Configured for React dev server origin, same-origin in production |
+
+> 📄 See full technology details: [Technology Requirements Document (TRD)](09-TRD.md)

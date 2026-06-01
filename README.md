@@ -4,10 +4,11 @@
 
 ### A Modern, Role-Based Employee Leave Management Platform
 
+[![React](https://img.shields.io/badge/React-18+-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
-[![Express](https://img.shields.io/badge/Express-4.x-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
-[![SQLite](https://img.shields.io/badge/SQLite-3-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![JWT](https://img.shields.io/badge/JWT-Auth-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
+[![Cloudflare](https://img.shields.io/badge/Cloudflare-WAF-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://www.cloudflare.com/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 ---
@@ -94,22 +95,25 @@ The UI is built with a **modern dark theme** featuring:
 
 ```mermaid
 graph LR
-    A["🌐 Browser<br/>HTML + CSS + JS"] -->|REST API| B["⚙️ Express.js<br/>Node.js Server"]
-    B -->|SQL| C["🗄️ SQLite<br/>Database"]
+    A["🌐 React.js SPA"] -->|REST API| B["⚙️ Express.js<br/>Node.js Server"]
+    B -->|SQL| C["🗄️ PostgreSQL<br/>Database"]
     B -->|JWT| D["🔐 Auth<br/>Middleware"]
+    E["☁️ Cloudflare<br/>WAF + DDoS"] -->|Proxies| B
 
-    style A fill:#4F46E5,color:#fff,stroke:none
+    style A fill:#61DAFB,color:#000,stroke:none
     style B fill:#059669,color:#fff,stroke:none
-    style C fill:#D97706,color:#fff,stroke:none
+    style C fill:#4169E1,color:#fff,stroke:none
     style D fill:#DC2626,color:#fff,stroke:none
+    style E fill:#F38020,color:#fff,stroke:none
 ```
 
 | Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Frontend** | HTML5 + CSS3 + Vanilla JS | Zero-dependency, fast, responsive UI |
+|-------|-----------|--------|
+| **Frontend** | React.js 18+ (Vite) | Component-based SPA with React Router |
 | **Backend** | Node.js + Express.js | RESTful API server |
-| **Database** | SQLite (better-sqlite3) | Zero-config, file-based, ACID compliant |
+| **Database** | PostgreSQL 15+ | Production-grade relational database |
 | **Auth** | JWT + bcryptjs | Stateless authentication & secure passwords |
+| **Security** | Cloudflare Firewall (WAF) | DDoS protection, WAF rules, SSL/TLS, rate limiting |
 
 ---
 
@@ -118,6 +122,7 @@ graph LR
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) v18 or higher
+- [PostgreSQL](https://www.postgresql.org/) v15 or higher
 - npm (comes with Node.js)
 
 ### Installation
@@ -127,24 +132,38 @@ graph LR
 git clone https://github.com/your-username/Bookflow-management.git
 cd Bookflow-management
 
-# 2. Install dependencies
+# 2. Set up PostgreSQL database
+createdb leave_management
+
+# 3. Install backend dependencies
 cd server
 npm install
 
-# 3. Seed the database with demo data
+# 4. Configure environment variables
+# Copy .env.example to .env and update DB credentials
+cp .env.example .env
+
+# 5. Seed the database with demo data
 npm run seed
 
-# 4. Start the server
-npm start
+# 6. Install frontend dependencies
+cd ../client
+npm install
+
+# 7. Start both servers (development)
+npm run dev          # React dev server on :5173
+cd ../server
+npm start            # API server on :3000
 ```
 
 ### 🌐 Open in Browser
 
 ```
-http://localhost:3000
+Frontend:  http://localhost:5173  (React dev server)
+API:       http://localhost:3000  (Express API)
 ```
 
-That's it! No database setup, no environment variables, no build step. 🎉
+> In production, React builds are served by Express on a single port.
 
 ---
 
@@ -176,15 +195,17 @@ Bookflow-management/
 │   ├── 05-LLD.md                     #    Low Level Design & DB Schema
 │   ├── 06-API-Documentation.md       #    REST API Reference
 │   ├── 07-Wireframes.md             #    UI Wireframes
-│   └── 08-Test-Plan.md              #    Test Cases & Bug Templates
+│   ├── 08-Test-Plan.md              #    Test Cases & Bug Templates
+│   └── 09-TRD.md                    #    Technology Requirements Document
 │
-├── 📁 server/                        # ⚙️ Backend application
+├── 📁 server/                        # ⚙️ Backend (Node.js + Express)
 │   ├── index.js                      #    Express server entry point
 │   ├── package.json                  #    Dependencies & scripts
+│   ├── .env                          #    Environment variables (DB, JWT)
 │   ├── 📁 db/
-│   │   ├── schema.sql                #    Database DDL
+│   │   ├── schema.sql                #    PostgreSQL DDL
 │   │   ├── seed.js                   #    Demo data seeder
-│   │   └── database.js               #    DB connection & helpers
+│   │   └── database.js               #    PostgreSQL connection pool
 │   ├── 📁 middleware/
 │   │   └── auth.js                   #    JWT auth & RBAC middleware
 │   └── 📁 routes/
@@ -193,18 +214,29 @@ Bookflow-management/
 │       ├── dashboard.js              #    Statistics & Analytics
 │       └── employees.js             #    Admin Employee Management
 │
-├── 📁 public/                        # 🌐 Frontend application
-│   ├── index.html                    #    Login page
-│   ├── dashboard.html                #    Main application shell
-│   ├── 📁 css/
-│   │   └── styles.css                #    Design system & components
-│   └── 📁 js/
-│       ├── app.js                    #    SPA router & shared logic
-│       ├── auth.js                   #    Authentication handling
-│       ├── leave.js                  #    Leave application & history
-│       ├── manager.js                #    Manager approval panel
-│       ├── admin.js                  #    Admin employee management
-│       └── dashboard.js             #    Charts & statistics
+├── 📁 client/                        # ⚛️ Frontend (React.js + Vite)
+│   ├── package.json                  #    React dependencies
+│   ├── vite.config.js                #    Vite configuration
+│   ├── index.html                    #    HTML entry point
+│   └── 📁 src/
+│       ├── App.jsx                   #    Root component + Router
+│       ├── main.jsx                  #    Vite entry
+│       ├── index.css                 #    Design system & global styles
+│       ├── 📁 context/
+│       │   └── AuthContext.jsx       #    Auth state management
+│       ├── 📁 services/
+│       │   └── api.js                #    Axios + JWT interceptor
+│       ├── 📁 components/
+│       │   ├── Layout/               #    Sidebar, Header
+│       │   ├── UI/                   #    Card, Button, Badge, Modal
+│       │   └── ProtectedRoute.jsx    #    Role-based route guard
+│       └── 📁 pages/
+│           ├── Login.jsx             #    Login page
+│           ├── Dashboard.jsx         #    Role-based dashboard
+│           ├── ApplyLeave.jsx        #    Leave application form
+│           ├── LeaveHistory.jsx      #    Leave history table
+│           ├── PendingRequests.jsx   #    Manager approval panel
+│           └── Employees.jsx         #    Admin employee CRUD
 │
 ├── .gitignore
 ├── LICENSE
@@ -228,9 +260,10 @@ All project documentation lives in the [`docs/`](docs/) folder, organized by rol
 | # | Document | Description |
 |:-:|----------|-------------|
 | 4 | [HLD](docs/04-HLD.md) | Architecture diagrams, module breakdown, tech stack |
-| 5 | [LLD](docs/05-LLD.md) | ER diagram, database schema, detailed module design |
+| 5 | [LLD](docs/05-LLD.md) | ER diagram, PostgreSQL schema, detailed module design |
 | 6 | [API Docs](docs/06-API-Documentation.md) | Full REST API reference with examples |
 | 7 | [Wireframes](docs/07-Wireframes.md) | ASCII wireframes for all pages |
+| 9 | [TRD](docs/09-TRD.md) | Technology Requirements — React, PostgreSQL, Cloudflare |
 
 ### 🧪 Tester Deliverables
 | # | Document | Description |
@@ -270,12 +303,16 @@ DELETE /api/employees/:id       →  Deactivate employee (Admin)
 
 | Concern | Implementation |
 |---------|---------------|
+| ☁️ DDoS Protection | Cloudflare Firewall — automatic mitigation at edge |
+| 🛡️ WAF | Cloudflare managed rulesets — blocks SQLi, XSS, RCE |
+| 🔒 SSL/TLS | Cloudflare Full (Strict) — end-to-end encryption |
+| ⏱️ Rate Limiting | Cloudflare rules — 100 req/min on login endpoint |
 | 🔒 Passwords | bcrypt hashed with salt rounds |
 | 🎫 Sessions | JWT tokens with 24h expiration |
 | 🚪 Authorization | Role-based middleware on every endpoint |
-| 💉 SQL Injection | Parameterized queries (prepared statements) |
-| 🛡️ XSS | Input sanitization |
-| 🌐 CORS | Same-origin (frontend served by Express) |
+| 💉 SQL Injection | Parameterized queries (pg prepared statements) |
+| 🛡️ XSS | React auto-escapes output, CSP headers |
+| 🌐 CORS | Configured for React origin, same-origin in prod |
 
 ---
 
