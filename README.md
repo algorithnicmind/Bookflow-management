@@ -4,16 +4,16 @@
 
 ### A Modern, Role-Based Employee Leave Management Platform
 
-[![React](https://img.shields.io/badge/React-18+-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
-[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-14%2F15+-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![JWT](https://img.shields.io/badge/JWT-Auth-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
-[![Cloudflare](https://img.shields.io/badge/Cloudflare-WAF-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://www.cloudflare.com/)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Cloudflare WAF](https://img.shields.io/badge/Cloudflare-WAF-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://www.cloudflare.com/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 ---
 
-**Digitize your leave workflow** — from application to approval — with real-time tracking, role-based dashboards, and beautiful analytics.
+**Digitize your leave workflows** — from instant submissions to manager reviews — with secure role-based portals, automated validation constraints, beautiful dark mode analytics, and edge-level shielding.
 
 [🚀 Quick Start](#-quick-start) · [📖 Documentation](#-documentation) · [✨ Features](#-features) · [🏗️ Architecture](#️-architecture)
 
@@ -78,16 +78,16 @@
 
 The UI is built with a **modern dark theme** featuring:
 
-| Element | Style |
-|---------|-------|
-| 🌑 **Background** | Deep navy gradient (`#0f0f23` → `#1a1a3e`) |
-| 🪟 **Cards** | Glassmorphism with backdrop blur |
-| 💜 **Primary** | Electric Indigo `#4F46E5` |
-| 💚 **Success** | Emerald `#10B981` |
-| 🟡 **Warning** | Amber `#F59E0B` |
-| 🔴 **Danger** | Rose `#F43F5E` |
-| 🔤 **Typography** | [Inter](https://fonts.google.com/specimen/Inter) — clean & modern |
-| ✨ **Animations** | Smooth micro-interactions & hover effects |
+| Element | Style | Description |
+|---------|-------|-------------|
+| 🌑 **Background** | Deep navy gradient (`#0b0c16` → `#111326`) | Premium, non-generic dark scheme |
+| 🪟 **Cards** | Glassmorphism with backdrop blur | Translucent cards with thin borders and shadow elevations |
+| 💜 **Primary** | Electric Indigo `#4F46E5` | Striking accents for core call-to-actions |
+| 💚 **Success** | Emerald `#10B981` | Approved indicators and credit counts |
+| 🟡 **Warning** | Amber `#F59E0B` | Pending status indicators |
+| 🔴 **Danger** | Rose `#F43F5E` | Rejected states or deactivations |
+| 🔤 **Typography** | [Inter](https://fonts.google.com/specimen/Inter) | Clean, geometric font for supreme scan-readability |
+| ✨ **Animations** | Smooth micro-interactions | Dynamic card hovers, pulsing buttons, and layout transitions |
 
 ---
 
@@ -95,25 +95,25 @@ The UI is built with a **modern dark theme** featuring:
 
 ```mermaid
 graph LR
-    A["🌐 React.js SPA"] -->|REST API| B["⚙️ Express.js<br/>Node.js Server"]
-    B -->|SQL| C["🗄️ PostgreSQL<br/>Database"]
-    B -->|JWT| D["🔐 Auth<br/>Middleware"]
-    E["☁️ Cloudflare<br/>WAF + DDoS"] -->|Proxies| B
+    A["🌐 Next.js App Router Client"] -->|HTTPS / JSON API| B["☁️ Cloudflare Edge<br/>WAF + Proxy Shield"]
+    B -->|Proxied clean traffic| C["⚙️ FastAPI REST Server<br/>(Python)"]
+    C -->|Async Database Query| D["🗄️ PostgreSQL Database"]
+    C -->|Token Auth check| E["🔐 JWT Authentication"]
 
-    style A fill:#61DAFB,color:#000,stroke:none
-    style B fill:#059669,color:#fff,stroke:none
-    style C fill:#4169E1,color:#fff,stroke:none
-    style D fill:#DC2626,color:#fff,stroke:none
-    style E fill:#F38020,color:#fff,stroke:none
+    style A fill:#111827,color:#fff,stroke:none
+    style B fill:#F38020,color:#fff,stroke:none
+    style C fill:#0f3460,color:#fff,stroke:none
+    style D fill:#4169E1,color:#fff,stroke:none
+    style E fill:#DC2626,color:#fff,stroke:none
 ```
 
 | Layer | Technology | Purpose |
-|-------|-----------|--------|
-| **Frontend** | React.js 18+ (Vite) | Component-based SPA with React Router |
-| **Backend** | Node.js + Express.js | RESTful API server |
-| **Database** | PostgreSQL 15+ | Production-grade relational database |
-| **Auth** | JWT + bcryptjs | Stateless authentication & secure passwords |
-| **Security** | Cloudflare Firewall (WAF) | DDoS protection, WAF rules, SSL/TLS, rate limiting |
+|-------|-----------|---------|
+| **Frontend** | Next.js 14/15 (App Router) | High-fidelity hybrid SPA utilizing native Fetch APIs |
+| **Backend** | Python + FastAPI | High-performance, asynchronous RESTful API server |
+| **Database** | PostgreSQL 15+ | Relational storage guaranteeing transactional ACID safety |
+| **Auth** | JWT (PyJWT) + bcrypt | Stateless authentication tokens & dynamically salted hashes |
+| **Security** | Cloudflare WAF & Edge Firewall | Edge-level DDoS protection, proxy protection, and rate limiting |
 
 ---
 
@@ -122,8 +122,10 @@ graph LR
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) v18 or higher
+- [Python](https://www.python.org/) v3.10 or higher
 - [PostgreSQL](https://www.postgresql.org/) v15 or higher
-- npm (comes with Node.js)
+- npm (comes packaged with Node.js)
+- pip (comes packaged with Python)
 
 ### Installation
 
@@ -132,53 +134,64 @@ graph LR
 git clone https://github.com/your-username/Bookflow-management.git
 cd Bookflow-management
 
-# 2. Set up PostgreSQL database
+# 2. Set up the PostgreSQL database
 createdb leave_management
 
-# 3. Install backend dependencies
+# 3. Setup and start the Python Backend
 cd server
-npm install
+python -m venv venv
 
-# 4. Configure environment variables
-# Copy .env.example to .env and update DB credentials
+# Activate Virtual Environment:
+# On Windows (PowerShell):
+.\venv\Scripts\Activate.ps1
+# On macOS / Linux:
+source venv/bin/activate
+
+# Install dependencies:
+pip install -r requirements.txt
+
+# Configure environment:
+# Copy .env.example to .env and configure DATABASE_URL + JWT_SECRET
 cp .env.example .env
 
-# 5. Seed the database with demo data
-npm run seed
+# Seed initial database structure and demo data:
+python db/seed.py
 
-# 6. Install frontend dependencies
-cd ../client
+# Launch FastAPI ASGI dev server:
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+# 4. Setup and start Next.js Frontend
+# Open a new terminal in the project root directory
+cd client
 npm install
 
-# 7. Start both servers (development)
-npm run dev          # React dev server on :5173
-cd ../server
-npm start            # API server on :3000
+# Configure environment:
+# Copy .env.local.example to .env.local and configure NEXT_PUBLIC_API_URL
+cp .env.local.example .env.local
+
+# Launch Next.js dev server:
+npm run dev
 ```
 
-### 🌐 Open in Browser
+### 🌐 Dev Ports
 
 ```
-Frontend:  http://localhost:5173  (React dev server)
-API:       http://localhost:3000  (Express API)
+Next.js Frontend:   http://localhost:3000
+FastAPI Swagger UI: http://localhost:8000/docs
+FastAPI Backend:    http://localhost:8000/api
 ```
-
-> In production, React builds are served by Express on a single port.
 
 ---
 
 ## 🔑 Demo Credentials
 
-| Role | Email | Password |
-|:----:|-------|:--------:|
-| 🛡️ **Admin** | `admin@company.com` | `password123` |
-| 👔 **Manager** | `alice@company.com` | `password123` |
-| 👔 **Manager** | `bob@company.com` | `password123` |
-| 👤 **Employee** | `john@company.com` | `password123` |
-| 👤 **Employee** | `jane@company.com` | `password123` |
-| 👤 **Employee** | `charlie@company.com` | `password123` |
-| 👤 **Employee** | `diana@company.com` | `password123` |
-| 👤 **Employee** | `eve@company.com` | `password123` |
+| Role | Email | Password | Description |
+|:----:|-------|:--------:|-------------|
+| 🛡️ **Admin** | `admin@company.com` | `password123` | Full access to organizational management |
+| 👔 **Manager** | `alice@company.com` | `password123` | Direct report approvals & team statistics |
+| 👔 **Manager** | `bob@company.com` | `password123` | Direct report approvals & team statistics |
+| 👤 **Employee** | `john@company.com` | `password123` | Apply leave, view personal balances & status |
+| 👤 **Employee** | `jane@company.com` | `password123` | Apply leave, view personal balances & status |
 
 ---
 
@@ -187,56 +200,40 @@ API:       http://localhost:3000  (Express API)
 ```
 Bookflow-management/
 │
-├── 📁 docs/                          # 📖 Project documentation
+├── 📁 docs/                          # 📖 Engineering Design Documentation
 │   ├── 01-PRD.md                     #    Product Requirements Document
-│   ├── 02-User-Stories.md            #    User Stories & Acceptance Criteria
-│   ├── 03-User-Flows.md             #    Flow Diagrams (Mermaid)
-│   ├── 04-HLD.md                     #    High Level Design & Architecture
-│   ├── 05-LLD.md                     #    Low Level Design & DB Schema
-│   ├── 06-API-Documentation.md       #    REST API Reference
-│   ├── 07-Wireframes.md             #    UI Wireframes
-│   ├── 08-Test-Plan.md              #    Test Cases & Bug Templates
-│   └── 09-TRD.md                    #    Technology Requirements Document
+│   ├── 02-User-Stories.md            #    User Stories & Acceptances
+│   ├── 03-User-Flows.md             #    Mermaid User Journeys
+│   ├── 04-HLD.md                     #    High Level System Architecture
+│   ├── 05-LLD.md                     #    Low Level Database & Module Design
+│   ├── 06-API-Documentation.md       #    Complete REST API Schema Specification
+│   ├── 07-Wireframes.md             #    Page Design Blueprints (ASCII UI)
+│   ├── 08-Test-Plan.md              #    Automated & Manual QA Scenario Cases
+│   └── 09-TRD.md                    #    Technology Stack Requirements & WAF rules
 │
-├── 📁 server/                        # ⚙️ Backend (Node.js + Express)
-│   ├── index.js                      #    Express server entry point
-│   ├── package.json                  #    Dependencies & scripts
-│   ├── .env                          #    Environment variables (DB, JWT)
-│   ├── 📁 db/
-│   │   ├── schema.sql                #    PostgreSQL DDL
-│   │   ├── seed.js                   #    Demo data seeder
-│   │   └── database.js               #    PostgreSQL connection pool
-│   ├── 📁 middleware/
-│   │   └── auth.js                   #    JWT auth & RBAC middleware
-│   └── 📁 routes/
-│       ├── auth.js                   #    Login & Registration
-│       ├── leaves.js                 #    Leave CRUD & Approvals
-│       ├── dashboard.js              #    Statistics & Analytics
-│       └── employees.js             #    Admin Employee Management
+├── 📁 server/                        # 🐍 Python REST API (FastAPI Backend)
+│   ├── main.py                      #    FastAPI app coordinator entrypoint
+│   ├── requirements.txt             #    Pip package requirements
+│   ├── .env                         #    Environment secrets (Database, JWT)
+│   ├── 📁 app/
+│   │   ├── config.py                #    FastAPI Settings
+│   │   ├── database.py              #    PostgreSQL Session Engine setup
+│   │   ├── models.py                #    SQLAlchemy Relational Models
+│   │   ├── schemas.py               #    Pydantic Input/Output Schemas
+│   │   └── 📁 routes/               #    Router files (auth, leaves, dashboard, employees)
+│   └── 📁 db/
+│       ├── schema.sql               #    Raw DDL definitions for PostgreSQL
+│       └── seed.py                  #    Demo database seeder script
 │
-├── 📁 client/                        # ⚛️ Frontend (React.js + Vite)
-│   ├── package.json                  #    React dependencies
-│   ├── vite.config.js                #    Vite configuration
-│   ├── index.html                    #    HTML entry point
+├── 📁 client/                        # 🌐 Next.js App Router Frontend
+│   ├── package.json                 #    Node packages config
+│   ├── next.config.js               #    Next.js settings config
 │   └── 📁 src/
-│       ├── App.jsx                   #    Root component + Router
-│       ├── main.jsx                  #    Vite entry
-│       ├── index.css                 #    Design system & global styles
-│       ├── 📁 context/
-│       │   └── AuthContext.jsx       #    Auth state management
-│       ├── 📁 services/
-│       │   └── api.js                #    Axios + JWT interceptor
-│       ├── 📁 components/
-│       │   ├── Layout/               #    Sidebar, Header
-│       │   ├── UI/                   #    Card, Button, Badge, Modal
-│       │   └── ProtectedRoute.jsx    #    Role-based route guard
-│       └── 📁 pages/
-│           ├── Login.jsx             #    Login page
-│           ├── Dashboard.jsx         #    Role-based dashboard
-│           ├── ApplyLeave.jsx        #    Leave application form
-│           ├── LeaveHistory.jsx      #    Leave history table
-│           ├── PendingRequests.jsx   #    Manager approval panel
-│           └── Employees.jsx         #    Admin employee CRUD
+│       ├── 📁 app/                  #    App Router folders (Pages & Layouts)
+│       ├── 📁 context/              #    AuthContext Session Provider
+│       ├── 📁 components/           #    Layouts & UI Widgets (Card, Button, Modals)
+│       ├── 📁 services/             #    Native Fetch API client integrations
+│       └── app.css                  #    Global Design system CSS
 │
 ├── .gitignore
 ├── LICENSE
@@ -245,88 +242,15 @@ Bookflow-management/
 
 ---
 
-## 📖 Documentation
-
-All project documentation lives in the [`docs/`](docs/) folder, organized by role:
-
-### 📋 Product Manager Deliverables
-| # | Document | Description |
-|:-:|----------|-------------|
-| 1 | [PRD](docs/01-PRD.md) | Problem statement, scope, user roles & permissions matrix |
-| 2 | [User Stories](docs/02-User-Stories.md) | 17 user stories with acceptance criteria & priority |
-| 3 | [User Flows](docs/03-User-Flows.md) | Mermaid flowcharts & sequence diagrams |
-
-### 🔧 Developer Deliverables
-| # | Document | Description |
-|:-:|----------|-------------|
-| 4 | [HLD](docs/04-HLD.md) | Architecture diagrams, module breakdown, tech stack |
-| 5 | [LLD](docs/05-LLD.md) | ER diagram, PostgreSQL schema, detailed module design |
-| 6 | [API Docs](docs/06-API-Documentation.md) | Full REST API reference with examples |
-| 7 | [Wireframes](docs/07-Wireframes.md) | ASCII wireframes for all pages |
-| 9 | [TRD](docs/09-TRD.md) | Technology Requirements — React, PostgreSQL, Cloudflare |
-
-### 🧪 Tester Deliverables
-| # | Document | Description |
-|:-:|----------|-------------|
-| 8 | [Test Plan](docs/08-Test-Plan.md) | 45 test scenarios, detailed test cases, bug report templates |
-
----
-
-## 🔌 API Overview
-
-```
-POST   /api/auth/login          →  Authenticate & get JWT
-POST   /api/auth/register       →  Create employee (Admin)
-                                    
-POST   /api/leaves              →  Apply for leave
-GET    /api/leaves              →  View leave history
-GET    /api/leaves/balance      →  Check leave balance
-PUT    /api/leaves/:id/cancel   →  Cancel pending leave
-                                    
-GET    /api/leaves/pending      →  Pending requests (Manager)
-PUT    /api/leaves/:id/approve  →  Approve leave (Manager)
-PUT    /api/leaves/:id/reject   →  Reject leave (Manager)
-                                    
-GET    /api/dashboard/stats     →  Dashboard statistics
-                                    
-GET    /api/employees           →  List employees (Admin)
-POST   /api/employees           →  Add employee (Admin)
-PUT    /api/employees/:id       →  Update employee (Admin)
-DELETE /api/employees/:id       →  Deactivate employee (Admin)
-```
-
-> 📄 Full API documentation with request/response examples: [API Docs](docs/06-API-Documentation.md)
-
----
-
 ## 🛡️ Security
 
-| Concern | Implementation |
-|---------|---------------|
-| ☁️ DDoS Protection | Cloudflare Firewall — automatic mitigation at edge |
-| 🛡️ WAF | Cloudflare managed rulesets — blocks SQLi, XSS, RCE |
-| 🔒 SSL/TLS | Cloudflare Full (Strict) — end-to-end encryption |
-| ⏱️ Rate Limiting | Cloudflare rules — 100 req/min on login endpoint |
-| 🔒 Passwords | bcrypt hashed with salt rounds |
-| 🎫 Sessions | JWT tokens with 24h expiration |
-| 🚪 Authorization | Role-based middleware on every endpoint |
-| 💉 SQL Injection | Parameterized queries (pg prepared statements) |
-| 🛡️ XSS | React auto-escapes output, CSP headers |
-| 🌐 CORS | Configured for React origin, same-origin in prod |
-
----
-
-## 🗓️ Development Roadmap
-
-- [x] 📋 Requirements & Documentation (PRD, User Stories, Flows)
-- [x] 🏗️ System Design (HLD, LLD, ER Diagram)
-- [x] 📝 API Design & Documentation
-- [x] 🎨 UI Wireframes
-- [x] 🧪 Test Plan & Cases
-- [ ] ⚙️ Backend Development
-- [ ] 🌐 Frontend Development
-- [ ] 🧪 Testing & Bug Fixes
-- [ ] 🚀 Deployment
+| Target Area | Design Implementation |
+|-------------|-----------------------|
+| **Volumetric Edge Defense**| Cloudflare proxies traffic automatically resolving DNS and blocking massive spikes. |
+| **Intrusion Shield** | Cloudflare Web Application Firewall (WAF) inspects query tags against SQLi, CSS, and injection models. |
+| **API Abuse Prevention** | Rate limits enforced natively at edge level (30 requests/minute limit on authentication endpoints). |
+| **Access Hierarchy** | Strict token check middleware evaluating and confirming User IDs and roles for every request. |
+| **Query Protection** | Parameterized query execution using PostgreSQL drivers, neutralizing SQL Injection. |
 
 ---
 
@@ -348,7 +272,7 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 <div align="center">
 
-**Built with ❤️ for learning real-world software development**
+**Built with ❤️ for learning real-world enterprise software development**
 
 *Leave Management System — Internship Project 2026*
 

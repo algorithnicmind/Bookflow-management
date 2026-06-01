@@ -8,39 +8,41 @@
 
 ## 1. Technology Stack Overview
 
+The Leave Management System utilizes a modern, highly performant, and secure stack featuring a **Next.js App Router** frontend, a **FastAPI (Python)** REST API backend, and a robust **PostgreSQL** database, all secured and accelerated by **Cloudflare's Enterprise-Grade Edge Network**.
+
 ```mermaid
 graph TB
-    subgraph Frontend["🌐 Frontend"]
-        React["React.js (v18+)"]
-        Vite["Vite (Build Tool)"]
-        CSS["CSS3 (Vanilla)"]
-        Axios["Axios (HTTP Client)"]
-        Router["React Router v6"]
+    subgraph Frontend["🌐 Frontend (Next.js)"]
+        Next["Next.js (v14/15+)"]
+        AppRouter["App Router (Hybrid Pages)"]
+        CSS["CSS3 (Vanilla Modern CSS)"]
+        Fetch["Fetch API (Native HTTP)"]
+        Context["React Context API (Auth State)"]
     end
     
-    subgraph Backend["⚙️ Backend"]
-        Node["Node.js (v18+)"]
-        Express["Express.js (v4.x)"]
-        JWT["JSON Web Tokens"]
-        Bcrypt["bcryptjs"]
+    subgraph Backend["⚙️ Backend (Python REST API)"]
+        FastAPI["FastAPI (v0.110+)"]
+        Pydantic["Pydantic v2 (Validation)"]
+        PyJWT["PyJWT (Token Authentication)"]
+        Passlib["passlib[bcrypt] (Password Hashing)"]
     end
     
     subgraph Database["🗄️ Database"]
         PG["PostgreSQL (v15+)"]
-        PGLib["pg (node-postgres)"]
+        AsyncPG["asyncpg / psycopg3"]
     end
     
     subgraph Security["🔒 Security & Infrastructure"]
-        CF["Cloudflare Firewall"]
+        CF["Cloudflare Proxy"]
         WAF["Cloudflare WAF Rules"]
         DDoS["DDoS Protection"]
-        SSL["SSL/TLS (Cloudflare)"]
+        SSL["SSL/TLS (Cloudflare edge to client)"]
     end
     
-    React -->|REST API| Express
-    Express -->|SQL Queries| PG
-    Express -->|Token Auth| JWT
-    CF -->|Proxies Traffic| Express
+    Next -->|HTTPS / JSON API| CF
+    CF -->|Proxied Clean Traffic| FastAPI
+    FastAPI -->|Token Auth / JWT Validation| PyJWT
+    FastAPI -->|Async Queries| PG
     
     style Frontend fill:#1e1b4b,color:#fff
     style Backend fill:#0f3460,color:#fff
@@ -56,208 +58,251 @@ graph TB
 
 | Technology | Version | Purpose | Why Chosen |
 |-----------|:-------:|---------|------------|
-| **React.js** | 18+ | UI Library | Component-based architecture, virtual DOM for performance, vast ecosystem, industry standard |
-| **Vite** | 5+ | Build Tool | Lightning-fast HMR, optimized production builds, native ES modules |
-| **React Router** | v6 | Client-Side Routing | Declarative routing, nested routes, URL-based navigation |
-| **Axios** | 1.x | HTTP Client | Promise-based, interceptors for JWT, automatic JSON parsing |
-| **CSS3 (Vanilla)** | — | Styling | Full control, no utility-class bloat, custom design system |
-| **React Context API** | — | State Management | Built-in, lightweight, sufficient for auth & app state |
+| **Next.js** | 14/15+ | React Framework | Modern React standard, hybrid Server/Client rendering, native routing, optimized builds, out-of-the-box SEO |
+| **App Router** | — | Routing & Layouts | Declarative folder-based routing, server components for static pages, layout inheritance |
+| **Fetch API** | Native | HTTP Client | Native browser support, robust caching, no extra dependencies, seamless integration with Next.js caching |
+| **CSS3 (Vanilla)** | — | UI Styling | Premium aesthetics (dark mode, glassmorphism), no CSS framework overhead, absolute styling control |
+| **React Context** | — | State Management | Lightweight, built-in, perfect for global session (JWT) storage and current user context |
 
 ### 2.2 Backend Technologies
 
 | Technology | Version | Purpose | Why Chosen |
 |-----------|:-------:|---------|------------|
-| **Node.js** | 18+ | Runtime Environment | Non-blocking I/O, JavaScript ecosystem, excellent for REST APIs |
-| **Express.js** | 4.x | Web Framework | Minimal, flexible, middleware architecture, huge community |
-| **pg (node-postgres)** | 8.x | PostgreSQL Client | Native PostgreSQL driver, connection pooling, parameterized queries |
-| **jsonwebtoken** | 9.x | Authentication | Stateless auth, industry standard, easy to implement |
-| **bcryptjs** | 2.x | Password Hashing | Secure password storage, configurable salt rounds |
-| **cors** | 2.x | Cross-Origin Requests | Required for React (separate dev server) to talk to Express |
-| **dotenv** | 16.x | Environment Config | Secure configuration management |
+| **FastAPI** | 0.110+ | REST API Framework | Outstanding performance (on par with Node/Express & Go), automated Swagger UI generation, native async/await |
+| **Python** | 3.10+ | Runtime Environment | High readability, mature ecosystem, powerful data manipulation, excellent for building scalable services |
+| **Pydantic v2** | 2.x | Data Validation | Strongly-typed request/response validation, automatic error message parsing, fast performance |
+| **PyJWT** | 2.x | Token Management | Lightweight, secure implementation of JSON Web Tokens for stateless authentication |
+| **passlib[bcrypt]**| 1.7+ | Password Hashing | Secure one-way hashing with salt parameters, industry standard |
+| **asyncpg / psycopg3** | — | PostgreSQL Driver | High-speed asynchronous client driver for database connection and query execution |
+| **Uvicorn** | 0.28+ | ASGI Web Server | Lightning-fast ASGI server for running FastAPI applications in production |
 
 ### 2.3 Database
 
 | Technology | Version | Purpose | Why Chosen |
 |-----------|:-------:|---------|------------|
-| **PostgreSQL** | 15+ | Relational Database | ACID compliance, robust query optimizer, production-grade reliability, advanced data types, excellent JSON support |
+| **PostgreSQL** | 15+ | Relational Database | ACID compliance, production-grade reliability, foreign keys, constraints validation, transaction support |
 
 **PostgreSQL Advantages for this project:**
-- ✅ **ACID transactions** — ensures data integrity for leave balance updates
-- ✅ **Foreign key constraints** — enforces referential integrity between employees, leaves, approvals
-- ✅ **CHECK constraints** — validates status enums, role values at the database level
-- ✅ **Connection pooling** — handles concurrent requests efficiently
-- ✅ **Index support** — B-tree, partial indexes for optimized queries
-- ✅ **Production-ready** — scales from development to enterprise deployment
+- ✅ **ACID Transactions** — Crucial to ensure that leave balance updates are atomic (e.g., deducting a balance must succeed if and only if the leave request is approved successfully).
+- ✅ **Referential Integrity** — Foreign keys guarantee consistent data associations between `employees`, `leave_requests`, `leave_balances`, and `leave_approvals`.
+- ✅ **Check Constraints** — Multi-layered data protection enforcing allowed database values (e.g., `role` in ('employee', 'manager', 'admin'), `status` in ('pending', 'approved', 'rejected', 'cancelled')) at the SQL schema level.
+- ✅ **Connection Pooling** — Asynchronous pool utilization to handle simultaneous application requests with minimal overhead.
 
 ### 2.4 Authentication & Security
 
 | Technology | Version | Purpose | Why Chosen |
 |-----------|:-------:|---------|------------|
-| **JWT (JSON Web Tokens)** | — | Authentication | Stateless, scalable, no server-side session store needed |
-| **bcryptjs** | 2.x | Password Hashing | Industry-standard, resistant to brute-force & rainbow table attacks |
-| **Cloudflare Firewall** | — | Web Application Firewall | DDoS protection, WAF rules, bot mitigation, SSL/TLS termination |
+| **JWT (JSON Web Tokens)** | — | Authentication | Stateless authentication. The client stores the token in memory or secure HTTPOnly cookies and includes it in the `Authorization: Bearer <token>` header, reducing database lookups for session validation. |
+| **bcrypt** | — | Cryptographic Hashing | Dynamic salting makes pre-computed dictionary and rainbow table attacks computationally unfeasible. |
+| **Cloudflare WAF** | — | Network Shielding | Acts as a proxy, hiding the server's origin IP address and inspecting traffic for malicious payloads before it hits our Python backend. |
 
 ---
 
-## 3. Cloudflare Firewall Configuration
+## 3. Cloudflare Firewall & WAF Configuration
 
-### 3.1 Why Cloudflare?
+### 3.1 Reverse Proxy Pipeline
 
-Cloudflare acts as a **reverse proxy** between the internet and our application server, providing multiple security layers:
+Cloudflare shields the system at the edge, intercepting all requests, filtering malicious actors, resolving DNS securely, and enforcing SSL.
 
 ```mermaid
 graph LR
-    User["👤 User Browser"] -->|HTTPS| CF["☁️ Cloudflare Edge"]
-    CF -->|WAF Rules| WAF["🛡️ Firewall"]
-    WAF -->|Clean Traffic| Origin["⚙️ Origin Server"]
-    
-    CF -.->|Blocked| Block["🚫 Malicious Traffic"]
+    User["👤 Client (Next.js App)"] -->|HTTPS / Port 443| CF["☁️ Cloudflare Edge"]
+    CF -->|WAF inspection & SSL check| WAF["🛡️ Firewall & Rules"]
+    WAF -->|Pass Clean Traffic| FastAPI["⚙️ FastAPI Backend (Port 8000)"]
+    WAF -.->|Block / Challenge| Drop["🚫 Blocked Payload"]
     
     style User fill:#4F46E5,color:#fff
     style CF fill:#F59E0B,color:#000
     style WAF fill:#F43F5E,color:#fff
-    style Origin fill:#10B981,color:#fff
-    style Block fill:#7f1d1d,color:#fff
+    style FastAPI fill:#10B981,color:#fff
+    style Drop fill:#7f1d1d,color:#fff
 ```
 
-### 3.2 Firewall Features Used
+### 3.2 Security Rules & Actions
 
-| Feature | Configuration | Purpose |
-|---------|:------------:|---------|
-| **DDoS Protection** | Auto (Free Tier) | Mitigates volumetric & application-layer attacks |
-| **WAF (Web Application Firewall)** | Managed Rulesets | Blocks SQLi, XSS, RCE, and common OWASP threats |
-| **Rate Limiting** | 100 req/min per IP on `/api/auth/login` | Prevents brute-force login attempts |
-| **Bot Management** | Challenge suspicious bots | Filters automated attacks |
-| **SSL/TLS** | Full (Strict) mode | End-to-end encryption between user → Cloudflare → server |
-| **IP Access Rules** | Allow/Block specific IPs | Geo-blocking, admin IP whitelisting |
-| **Security Headers** | HSTS, X-Frame-Options, CSP | Hardens HTTP response headers |
-
-### 3.3 Firewall Rules
-
-| Rule Name | Expression | Action |
-|-----------|-----------|--------|
-| Block SQL Injection | `http.request.uri.query contains "UNION" or "SELECT"` | Block |
-| Rate Limit Login | `http.request.uri.path eq "/api/auth/login"` | Rate Limit (100/min) |
-| Block Known Bad Bots | `cf.client.bot` | Challenge |
-| Geo-Block (Optional) | `ip.geoip.country ne "IN"` | Challenge |
-| Protect Admin APIs | `http.request.uri.path contains "/api/employees"` | Managed Challenge |
+| Rule Name | Target / Expression | Action | Rationale |
+|-----------|---------------------|:------:|-----------|
+| **Brute Force Protection** | `http.request.uri.path eq "/api/auth/login"` | **Rate Limit** | Limits login attempts to 30 requests per minute per IP to prevent dictionary attacks. |
+| **SQL Injection Shield** | `http.request.uri.query contains "UNION" or "SELECT" or "DROP"` | **Block** | Filters obvious SQL Injection patterns at the edge before database evaluation. |
+| **Cross-Site Scripting (XSS)**| `http.request.uri.query contains "<script>" or "javascript:"` | **Block** | Blocks injection of client-executable scripts. |
+| **Block Bad Bots** | `cf.client.bot` or `cf.threat_score gt 40` | **Managed Challenge**| Presents an interactive Turnstile captcha to suspicious or automated traffic. |
+| **Admin API Protection** | `http.request.uri.path contains "/api/employees"` | **Interactive Challenge** | Protects crucial admin APIs from scanner automation and brute forcing. |
+| **HTTPS Enforcement** | `ssl` is not `on` | **Redirect** | Forcefully upgrades all unencrypted HTTP traffic to secure HTTPS. |
 
 ---
 
-## 4. Architecture Layers
+## 4. Architecture Layers & Data Flow
 
-### 4.1 Request Lifecycle
+### 4.1 End-to-End Request Lifecycle
 
 ```mermaid
 sequenceDiagram
-    participant U as 👤 User
-    participant CF as ☁️ Cloudflare
-    participant R as ⚛️ React App
-    participant API as ⚙️ Express API
-    participant JWT as 🔐 JWT Middleware
+    participant U as 👤 User Client
+    participant CF as ☁️ Cloudflare Edge
+    participant FE as 🌐 Next.js App
+    participant BE as ⚙️ FastAPI Backend
+    participant JWT as 🔐 Auth Dep (PyJWT)
     participant DB as 🗄️ PostgreSQL
-
-    U->>CF: HTTPS Request
-    CF->>CF: WAF Check, DDoS Filter
-    CF->>R: Serve React SPA (Static)
-    R->>CF: API Request (with JWT)
-    CF->>API: Forward Clean Request
-    API->>JWT: Validate Token
-    JWT->>API: User Context
-    API->>DB: Parameterized Query
-    DB-->>API: Result Set
-    API-->>CF: JSON Response
-    CF-->>R: Response
-    R-->>U: Rendered UI
+    
+    U->>FE: Access Login Page
+    FE-->>U: Return SSR/Static Login UI
+    U->>FE: Enter Credentials
+    FE->>CF: POST /api/auth/login
+    CF->>CF: Run WAF Rules & Threat Score Checks
+    CF->>BE: Forward Safe Payload
+    BE->>DB: Fetch user by email
+    DB-->>BE: User Record & Password Hash
+    BE->>BE: Verify hashed password
+    BE->>JWT: Generate JWT Token (payload: user_id, email, role)
+    BE-->>CF: Response (200 OK + JWT Token in JSON)
+    CF-->>FE: JWT Token + User Metadata
+    FE-->>U: Transition state to Dashboard, store JWT in AuthContext
+    
+    U->>FE: Click "Apply Leave" (Casual)
+    FE->>CF: POST /api/leaves (Headers: Auth Bearer JWT)
+    CF->>BE: Forward Request
+    BE->>JWT: Extract & Validate JWT
+    JWT-->>BE: Decoded Payload (id: 1, role: employee)
+    BE->>DB: Check Leave Balance & Validate overlaps
+    DB-->>BE: Balance status (Available: 10 days)
+    BE->>DB: INSERT INTO leave_requests (Pending)
+    DB-->>BE: Inserted leave details
+    BE-->>CF: JSON Success Response (201 Created)
+    CF-->>FE: Render Success Message
+    FE-->>U: Update Dashboard Stats & Leave Table
 ```
 
-### 4.2 Deployment Architecture
+### 4.2 Application Directory Structure
 
-```mermaid
-graph TB
-    subgraph CloudflareEdge["☁️ Cloudflare Edge Network"]
-        DNS["DNS Resolution"]
-        WAF2["WAF + DDoS Protection"]
-        CDN["CDN (Static Assets)"]
-        SSL2["SSL Termination"]
-    end
-    
-    subgraph AppServer["⚙️ Application Server"]
-        ReactBuild["React Build (Static Files)"]
-        ExpressApp["Express.js API Server"]
-    end
-    
-    subgraph DBServer["🗄️ Database Server"]
-        PostgreSQL["PostgreSQL 15+"]
-    end
-    
-    DNS --> WAF2
-    WAF2 --> CDN
-    CDN --> ReactBuild
-    WAF2 --> ExpressApp
-    ExpressApp --> PostgreSQL
-    
-    style CloudflareEdge fill:#F59E0B,color:#000
-    style AppServer fill:#4F46E5,color:#fff
-    style DBServer fill:#065f46,color:#fff
+To fulfill this modular architecture, the repository is organized into distinct, clean directories:
+
+```
+Bookflow-management/
+│
+├── 📁 docs/                         # Technology-agnostic & architecture documents
+│   ├── 01-PRD.md
+│   ├── 02-User-Stories.md
+│   ├── 03-User-Flows.md
+│   ├── 04-HLD.md
+│   ├── 05-LLD.md
+│   ├── 06-API-Documentation.md
+│   ├── 07-Wireframes.md
+│   ├── 08-Test-Plan.md
+│   └── 09-TRD.md                    # Technology Requirements (This File)
+│
+├── 📁 server/                       # 🐍 Python REST API (FastAPI Backend)
+│   ├── main.py                      #    FastAPI application entrypoint
+│   ├── requirements.txt             #    Python dependencies
+│   ├── .env                         #    Backend secret variables
+│   ├── 📁 app/
+│   │   ├── __init__.py
+│   │   ├── config.py                #    Environment configuration
+│   │   ├── database.py              #    SQLAlchemy/Database connection setup
+│   │   ├── models.py                #    SQLAlchemy DB Models
+│   │   ├── schemas.py               #    Pydantic Request/Response validation schemas
+│   │   ├── 📁 middleware/
+│   │   │   └── security.py          #    CORS setup and secure headers
+│   │   └── 📁 routes/
+│   │       ├── auth.py              #    Login, password utility, token generator
+│   │       ├── leaves.py            #    Apply, view, cancel, approve, reject leaves
+│   │       ├── dashboard.py         #    Role-based statistics query routers
+│   │       └── employees.py         #    Admin employee CRUD router
+│   └── 📁 db/
+│       ├── schema.sql               #    Raw DDL definitions for PostgreSQL
+│       └── seed.py                  #    Asynchronous demo database seeder
+│
+└── 📁 client/                       # 🌐 Next.js Frontend (React SPA)
+    ├── package.json                 #    Node dependencies
+    ├── next.config.js               #    Next.js configuration
+    ├── 📁 public/                   #    Static assets (logos, images)
+    └── 📁 src/
+        ├── 📁 app/                  #    App Router folders (Pages & Layouts)
+        │   ├── layout.js            #    Global HTML Layout (Fonts, Head, Viewports)
+        │   ├── page.js              #    Landing / Routing router
+        │   ├── login/
+        │   │   └── page.js          #    Login Component
+        │   ├── dashboard/
+        │   │   └── page.js          #    Role-based statistics dashboard page
+        │   ├── apply-leave/
+        │   │   └── page.js          #    Leave submission form
+        │   ├── leave-history/
+        │   │   └── page.js          #    Leaves summary table
+        │   ├── pending-requests/
+        │   │   └── page.js          #    Manager approval view
+        │   └── employees/
+        │       └── page.js          #    Admin employee management
+        ├── 📁 context/
+        │   └── AuthContext.js       #    Authentication React Provider
+        ├── 📁 components/           #    Reusable visual widgets
+        │   ├── Layout/
+        │   │   ├── Sidebar.js       #    Navigation Sidebar widget
+        │   │   └── Header.js        #    Header with user info
+        │   └── UI/
+        │       ├── Card.js          #    Glassmorphic container
+        │       ├── Button.js        #    Stylized interactable buttons
+        │       ├── Badge.js         #    Colored status indicator badges
+        │       ├── Modal.js         #    Interactive popup form modal
+        │       └── StatCard.js      #    Visual progress / stat indicator
+        ├── 📁 services/
+        │   └── api.js               #    Core fetch wrapper with bearer JWT handler
+        └── app.css                  #    Global design token styling sheet
 ```
 
 ---
 
-## 5. Development Tools & Environment
+## 5. Development & Production Environment Variables
 
-| Tool | Purpose |
-|------|---------|
-| **VS Code** | Code editor |
-| **pgAdmin / DBeaver** | PostgreSQL GUI management |
-| **Postman** | API testing |
-| **Git + GitHub** | Version control & repository hosting |
-| **npm** | Package management |
-| **ESLint** | Code quality & linting |
-| **Cloudflare Dashboard** | Firewall management & analytics |
-
----
-
-## 6. Environment Variables
+### 5.1 Backend Environment Configuration (`server/.env`)
 
 ```env
-# Server
-PORT=3000
-NODE_ENV=development
+# Server Deployment Configuration
+PORT=8000
+HOST=0.0.0.0
+ENVIRONMENT=development
 
-# Database (PostgreSQL)
+# PostgreSQL Database Connection
+DB_USER=postgres
+DB_PASSWORD=your_secure_password
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=leave_management
-DB_USER=postgres
-DB_PASSWORD=your_password
 
-# Authentication
-JWT_SECRET=your-super-secret-jwt-key
-JWT_EXPIRES_IN=24h
+# Asynchronous Database URL
+DATABASE_URL=postgresql+asyncpg://postgres:your_secure_password@localhost:5432/leave_management
 
-# Cloudflare (for API if needed)
-CF_ZONE_ID=your_zone_id
-CF_API_TOKEN=your_api_token
+# Authentication (JWT)
+JWT_SECRET=your-super-cryptographically-secure-key-phrase
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=1440
+```
+
+### 5.2 Frontend Environment Configuration (`client/.env.local`)
+
+```env
+# Target Backend Endpoint Configuration
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
 ```
 
 ---
 
-## 7. System Requirements
+## 6. System Requirements
 
-### Development Environment
-| Requirement | Minimum |
-|-------------|---------|
-| **Node.js** | v18.0 or higher |
-| **npm** | v9.0 or higher |
-| **PostgreSQL** | v15.0 or higher |
-| **RAM** | 4 GB |
-| **Disk Space** | 500 MB |
+### 6.1 Developer Workstation Requirements
 
-### Production Environment
-| Requirement | Recommended |
-|-------------|------------|
-| **Server** | 2 vCPU, 4GB RAM |
-| **PostgreSQL** | Dedicated instance or managed service (e.g., Supabase, Railway, RDS) |
-| **Cloudflare** | Free or Pro plan |
-| **Domain** | Custom domain pointed to Cloudflare |
+| Parameter | Minimum | Recommended |
+|-----------|---------|-------------|
+| **Python** | v3.10.x | v3.11.x |
+| **Node.js**| v18.0.0 | v20.x.x |
+| **Database**| PostgreSQL v15 | PostgreSQL v16 |
+| **Memory (RAM)**| 8 GB | 16 GB |
+| **Available Disk**| 1 GB | 5 GB |
+| **Tools** | VS Code, git, pgAdmin / DBeaver, Postman | VS Code, git, Docker (optional for PG) |
+
+### 6.2 Production Server Requirements (Target)
+
+| Service | Architecture | Scale (Standard) |
+|---------|--------------|-------------------|
+| **Frontend Web App** | Next.js Server / Vercel Edge / Node | 1 vCPU, 1GB RAM (Dynamic Node instance) or Serverless Edge |
+| **REST API Server** | FastAPI Backend on Uvicorn | 2 vCPU, 2GB RAM (Scalable Linux VPS / Gunicorn worker instances) |
+| **Database Instance** | Dedicated Managed PostgreSQL | vCPU, 2GB RAM, SSD-backed storage with Connection Pooling enabled |
+| **Security Shield** | Cloudflare Edge Network | Pro tier or Free tier DNS proxy + WAF Rules enabled |
