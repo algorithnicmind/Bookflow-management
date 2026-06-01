@@ -8,12 +8,12 @@
 
 ## 1. System Architecture
 
-The Leave Management System is designed as a **3-tier system** engineered for maximum scalability, clean separation of concerns, and robust edge security.
+The Leave Management System is designed as a **3-tier system** engineered for maximum scalability, clean separation of concerns, and robust host-level security.
 
 ```mermaid
 graph TB
-    subgraph Security["☁️ Cloudflare Edge Shield"]
-        WAF[WAF + DDoS Edge Protection]
+    subgraph Security["🛡️ Nginx Proxy Gateway"]
+        Filter[Rate Limiting & Gateway Filtering]
         SSL[SSL/TLS Encryption Termination]
     end
     
@@ -33,8 +33,8 @@ graph TB
         PG[PostgreSQL Relational DB]
     end
     
-    Next -->|HTTPS API Requests| WAF
-    WAF -->|Proxied Clean Traffic| FastAPI
+    Next -->|HTTPS API Requests| Filter
+    Filter -->|Clean Traffic| FastAPI
     FastAPI --> Auth
     Auth --> Routes
     Routes --> BL
@@ -62,7 +62,7 @@ graph TB
 | **Database Driver**| asyncpg / psycopg3 | — | Asynchronous communication wrapper with PostgreSQL for optimized concurrent throughput. |
 | **Authentication** | JWT Bearer Authentication | PyJWT 2.x | Stateless secure session validation, lightweight payload structure. |
 | **Password Hashing**| passlib (bcrypt engine) | Passlib 1.7+ | Dynamic cryptographic salting, resilient against catalog search or brute-forcing. |
-| **Network & Edge** | Cloudflare Edge DNS Proxy | Free/Pro Tier | DDOS mitigation, IP protection, Web Application Firewall injection prevention, Edge rate limits. |
+| **Network & Gateway**| Nginx Reverse Proxy | v1.24+ | Rate limiting, SSL/TLS termination, port-hiding gateway, and security header injection. |
 
 ---
 
@@ -205,8 +205,8 @@ graph LR
 
 ```mermaid
 graph TD
-    Browser[🌐 User Client] -->|HTTPS Requests| CF[☁️ Cloudflare Edge WAF]
-    CF -->|Resolve / Route| Router{"📡 Edge Router"}
+    Browser[🌐 User Client] -->|HTTPS Requests| Nginx[🛡️ Nginx Gateway]
+    Nginx -->|Resolve / Route| Router{"📡 Edge Router"}
     
     Router -->|Serve Frontend| NextApp["🌐 Next.js Server (Port 3000)"]
     Router -->|Serve Backend API| FastAPI["🐍 FastAPI REST API (Port 8000)"]
@@ -214,7 +214,7 @@ graph TD
     FastAPI -->|PostgreSQL Protocol| DB[(🗄️ Managed PostgreSQL :5432)]
     
     style Browser fill:#1e1b4b,color:#fff
-    style CF fill:#F59E0B,color:#000
+    style Nginx fill:#F59E0B,color:#000
     style Router fill:#7C3AED,color:#fff
     style NextApp fill:#111827,color:#fff
     style FastAPI fill:#0f3460,color:#fff
@@ -236,7 +236,7 @@ graph TD
    - Install JavaScript dependencies: `cd client && npm install`.
    - Run compilation build: `npm run build`.
    - Run the production Next.js runner: `npm run start -- -p 3000`.
-5. **Security Integration**: Configure Cloudflare proxy DNS routes pointing towards the server frontend & backend IP blocks, and activate Full (Strict) SSL/TLS encryption along with WAF rules.
+5. **Security Integration**: Configure Nginx server blocks to proxy traffic to port 8000 and setup SSL/TLS encryption via Let's Encrypt.
 
 ---
 
@@ -244,14 +244,14 @@ graph TD
 
 | Vulnerability Target | Design Countermeasure / Mitigation Strategy |
 |----------------------|---------------------------------------------|
-| **DDoS Attacks** | Protected by Cloudflare WAF, automatic threat score blocks, and volumetric edge filters. |
-| **API Automated Abuse** | Rate limits set up at the edge (30 req/min on auth routes) to prevent bot scanning. |
-| **Data Leakage (Transit)** | Full SSL/TLS (Strict Encryption Mode) between Browser ↔ Cloudflare ↔ Host Server. |
+| **DDoS Attacks** | Rate limiting at Nginx layer, connection pooling, and standard OS firewall (UFW/iptables) rules. |
+| **API Automated Abuse** | Rate limits set up at Nginx proxy gateway (30 req/min on auth routes) to prevent bot scanning. |
+| **Data Leakage (Transit)** | Full SSL/TLS (Strict Encryption Mode) via Nginx Let's Encrypt certificates. |
 | **Access Escalation** | Custom FastAPI dependencies checking roles and IDs on *every single request* before executing query models. |
 | **SQL Injection (SQLi)** | Parameterized and prepared queries utilizing asyncpg/psycopg database models. Direct raw string interpolation is strictly prohibited. |
-| **XSS Attacks** | Next.js auto-escapes rendered templates natively. High-grade Content-Security-Policy (CSP) headers configured at the routing layer. |
-| **CSRF Attacks** | Protected by using authorization Bearer tokens in headers instead of relying entirely on standard session headers without verification. |
+| **XSS Attacks** | Next.js auto-escapes rendered templates natively. High-grade Content-Security-Policy (CSP) headers configured at Nginx and application routing layer. |
+| **CSRF Attacks** | Protected by using authorization Bearer tokens in headers instead of relying entirely on standard session cookies without verification. |
 
 ---
 
-> 📄 For further technology definitions, see: [Technology Requirements Document (TRD)](09-TRD.md)
+> 📄 For further technology definitions, see: [Technology Requirements Document (TRD)](02-TRD.md)

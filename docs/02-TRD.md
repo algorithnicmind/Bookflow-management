@@ -8,7 +8,7 @@
 
 ## 1. Technology Stack Overview
 
-The Leave Management System utilizes a modern, highly performant, and secure stack featuring a **Next.js App Router** frontend, a **FastAPI (Python)** REST API backend, and a robust **PostgreSQL** database, all secured and accelerated by **Cloudflare's Enterprise-Grade Edge Network**.
+The Leave Management System utilizes a modern, highly performant, and secure stack featuring a **Next.js App Router** frontend, a **FastAPI (Python)** REST API backend, and a robust **PostgreSQL** database, configured for clean host-level execution and security.
 
 ```mermaid
 graph TB
@@ -32,15 +32,15 @@ graph TB
         AsyncPG["asyncpg / psycopg3"]
     end
     
-    subgraph Security["🔒 Security & Infrastructure"]
-        CF["Cloudflare Proxy"]
-        WAF["Cloudflare WAF Rules"]
-        DDoS["DDoS Protection"]
-        SSL["SSL/TLS (Cloudflare edge to client)"]
+    subgraph Security["🔒 Host Security & Gateway"]
+        Nginx["Nginx Reverse Proxy"]
+        UFW["OS Firewall (UFW)"]
+        SSL["SSL/TLS (Let's Encrypt)"]
+        Limiter["FastAPI Rate Limiting"]
     end
     
-    Next -->|HTTPS / JSON API| CF
-    CF -->|Proxied Clean Traffic| FastAPI
+    Next -->|HTTPS / JSON API| Nginx
+    Nginx -->|Clean Traffic| FastAPI
     FastAPI -->|Token Auth / JWT Validation| PyJWT
     FastAPI -->|Async Queries| PG
     
@@ -94,40 +94,39 @@ graph TB
 |-----------|:-------:|---------|------------|
 | **JWT (JSON Web Tokens)** | — | Authentication | Stateless authentication. The client stores the token in memory or secure HTTPOnly cookies and includes it in the `Authorization: Bearer <token>` header, reducing database lookups for session validation. |
 | **bcrypt** | — | Cryptographic Hashing | Dynamic salting makes pre-computed dictionary and rainbow table attacks computationally unfeasible. |
-| **Cloudflare WAF** | — | Network Shielding | Acts as a proxy, hiding the server's origin IP address and inspecting traffic for malicious payloads before it hits our Python backend. |
+| **Nginx Reverse Proxy** | — | Gateway Shielding | Acts as a gateway proxy, hiding the backend application ports, managing secure SSL termination, and handling large volumetric connections. |
 
 ---
 
-## 3. Cloudflare Firewall & WAF Configuration
+## 3. Host-Level Security & Gateway Configuration
 
 ### 3.1 Reverse Proxy Pipeline
 
-Cloudflare shields the system at the edge, intercepting all requests, filtering malicious actors, resolving DNS securely, and enforcing SSL.
+Nginx acts as a **reverse proxy** and API gateway in front of our FastAPI application, shielding the Python web server ports, handling SSL termination, and enforcing basic rate limits.
 
 ```mermaid
 graph LR
-    User["👤 Client (Next.js App)"] -->|HTTPS / Port 443| CF["☁️ Cloudflare Edge"]
-    CF -->|WAF inspection & SSL check| WAF["🛡️ Firewall & Rules"]
-    WAF -->|Pass Clean Traffic| FastAPI["⚙️ FastAPI Backend (Port 8000)"]
-    WAF -.->|Block / Challenge| Drop["🚫 Blocked Payload"]
+    User["👤 Client (Next.js App)"] -->|HTTPS / Port 443| Nginx["🛡️ Nginx Proxy Gateway"]
+    Nginx -->|Rate Limiter & SSL check| Filter["⚙️ Gateway Filters"]
+    Filter -->|Pass Clean Traffic| FastAPI["⚙️ FastAPI Backend (Port 8000)"]
+    Filter -.->|Block Overflows| Drop["🚫 429 Rate Limited"]
     
     style User fill:#4F46E5,color:#fff
-    style CF fill:#F59E0B,color:#000
-    style WAF fill:#F43F5E,color:#fff
-    style FastAPI fill:#10B981,color:#fff
+    style Nginx fill:#10B981,color:#fff
+    style Filter fill:#F43F5E,color:#fff
+    style FastAPI fill:#0f3460,color:#fff
     style Drop fill:#7f1d1d,color:#fff
 ```
 
-### 3.2 Security Rules & Actions
+### 3.2 Gateway Security Configurations
 
-| Rule Name | Target / Expression | Action | Rationale |
-|-----------|---------------------|:------:|-----------|
-| **Brute Force Protection** | `http.request.uri.path eq "/api/auth/login"` | **Rate Limit** | Limits login attempts to 30 requests per minute per IP to prevent dictionary attacks. |
-| **SQL Injection Shield** | `http.request.uri.query contains "UNION" or "SELECT" or "DROP"` | **Block** | Filters obvious SQL Injection patterns at the edge before database evaluation. |
-| **Cross-Site Scripting (XSS)**| `http.request.uri.query contains "<script>" or "javascript:"` | **Block** | Blocks injection of client-executable scripts. |
-| **Block Bad Bots** | `cf.client.bot` or `cf.threat_score gt 40` | **Managed Challenge**| Presents an interactive Turnstile captcha to suspicious or automated traffic. |
-| **Admin API Protection** | `http.request.uri.path contains "/api/employees"` | **Interactive Challenge** | Protects crucial admin APIs from scanner automation and brute forcing. |
-| **HTTPS Enforcement** | `ssl` is not `on` | **Redirect** | Forcefully upgrades all unencrypted HTTP traffic to secure HTTPS. |
+| Mechanism | Configuration Location | Action / Rule | Rationale |
+|-----------|------------------------|---------------|-----------|
+| **Rate Limiting** | Nginx `nginx.conf` | `limit_req_zone` limit of 30 req/m on `/api/auth/login` | Prevents credential brute-forcing at the gateway layer. |
+| **SSL/TLS Termination**| Nginx Site Configuration | TLS v1.2 & TLS v1.3 with Let's Encrypt | Enforces modern cryptographic cipher suites and secure connections. |
+| **OS Firewall** | Host OS (UFW) | Allow only port 80/443, block direct port 8000/5432 | Shields internal backend services from direct public access. |
+| **CORS Guard** | FastAPI `CORSMiddleware` | Allowed origins configured to verified app domains | Restricts cross-origin requests at the runtime layer. |
+| **Request Size Limits**| Nginx `client_max_body_size` | Restrict payloads to 2MB | Blocks denial-of-service attempts exploiting large request bodies. |
 
 ---
 
@@ -138,8 +137,8 @@ graph LR
 ```mermaid
 sequenceDiagram
     participant U as 👤 User Client
-    participant CF as ☁️ Cloudflare Edge
     participant FE as 🌐 Next.js App
+    participant GW as 🛡️ Nginx Gateway
     participant BE as ⚙️ FastAPI Backend
     participant JWT as 🔐 Auth Dep (PyJWT)
     participant DB as 🗄️ PostgreSQL
@@ -147,28 +146,28 @@ sequenceDiagram
     U->>FE: Access Login Page
     FE-->>U: Return SSR/Static Login UI
     U->>FE: Enter Credentials
-    FE->>CF: POST /api/auth/login
-    CF->>CF: Run WAF Rules & Threat Score Checks
-    CF->>BE: Forward Safe Payload
+    FE->>GW: POST /api/auth/login
+    GW->>GW: Evaluate connection rate limits
+    GW->>BE: Forward Safe Proxy Payload (Port 8000)
     BE->>DB: Fetch user by email
     DB-->>BE: User Record & Password Hash
     BE->>BE: Verify hashed password
     BE->>JWT: Generate JWT Token (payload: user_id, email, role)
-    BE-->>CF: Response (200 OK + JWT Token in JSON)
-    CF-->>FE: JWT Token + User Metadata
+    BE-->>GW: Response (200 OK + JWT Token in JSON)
+    GW-->>FE: JWT Token + User Metadata
     FE-->>U: Transition state to Dashboard, store JWT in AuthContext
     
     U->>FE: Click "Apply Leave" (Casual)
-    FE->>CF: POST /api/leaves (Headers: Auth Bearer JWT)
-    CF->>BE: Forward Request
+    FE->>GW: POST /api/leaves (Headers: Auth Bearer JWT)
+    GW->>BE: Forward Request
     BE->>JWT: Extract & Validate JWT
     JWT-->>BE: Decoded Payload (id: 1, role: employee)
     BE->>DB: Check Leave Balance & Validate overlaps
     DB-->>BE: Balance status (Available: 10 days)
     BE->>DB: INSERT INTO leave_requests (Pending)
     DB-->>BE: Inserted leave details
-    BE-->>CF: JSON Success Response (201 Created)
-    CF-->>FE: Render Success Message
+    BE-->>GW: JSON Success Response (201 Created)
+    GW-->>FE: Render Success Message
     FE-->>U: Update Dashboard Stats & Leave Table
 ```
 
@@ -181,14 +180,14 @@ Bookflow-management/
 │
 ├── 📁 docs/                         # Technology-agnostic & architecture documents
 │   ├── 01-PRD.md
-│   ├── 02-User-Stories.md
-│   ├── 03-User-Flows.md
-│   ├── 04-HLD.md
-│   ├── 05-LLD.md
-│   ├── 06-API-Documentation.md
-│   ├── 07-Wireframes.md
-│   ├── 08-Test-Plan.md
-│   └── 09-TRD.md                    # Technology Requirements (This File)
+│   ├── 02-TRD.md                    # Technology Requirements (This File)
+│   ├── 03-User-Stories.md
+│   ├── 04-User-Flows.md
+│   ├── 05-HLD.md
+│   ├── 06-LLD.md
+│   ├── 07-API-Documentation.md
+│   ├── 08-Wireframes.md
+│   └── 09-Test-Plan.md
 │
 ├── 📁 server/                       # 🐍 Python REST API (FastAPI Backend)
 │   ├── main.py                      #    FastAPI application entrypoint
@@ -302,7 +301,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8000/api
 
 | Service | Architecture | Scale (Standard) |
 |---------|--------------|-------------------|
-| **Frontend Web App** | Next.js Server / Vercel Edge / Node | 1 vCPU, 1GB RAM (Dynamic Node instance) or Serverless Edge |
+| **Frontend Web App** | Next.js Server / Serverless Host Node | 1 vCPU, 1GB RAM (Dynamic Node instance) or Serverless Edge |
 | **REST API Server** | FastAPI Backend on Uvicorn | 2 vCPU, 2GB RAM (Scalable Linux VPS / Gunicorn worker instances) |
 | **Database Instance** | Dedicated Managed PostgreSQL | vCPU, 2GB RAM, SSD-backed storage with Connection Pooling enabled |
-| **Security Shield** | Cloudflare Edge Network | Pro tier or Free tier DNS proxy + WAF Rules enabled |
+| **Security Gateway** | Gateway Host with Nginx | 1 vCPU, 1GB RAM (Gateway with rate limits and SSL termination) |
