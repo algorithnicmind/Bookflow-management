@@ -8,12 +8,12 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![Cloudflare WAF](https://img.shields.io/badge/Cloudflare-WAF-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://www.cloudflare.com/)
+[![Nginx](https://img.shields.io/badge/Nginx-Reverse%20Proxy-009639?style=for-the-badge&logo=nginx&logoColor=white)](https://nginx.org/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 ---
 
-**Digitize your leave workflows** — from instant submissions to manager reviews — with secure role-based portals, automated validation constraints, beautiful dark mode analytics, and edge-level shielding.
+**Digitize your leave workflows** — from instant submissions to manager reviews — with secure role-based portals, automated validation constraints, beautiful dark mode analytics, and gateway shielding.
 
 [🚀 Quick Start](#-quick-start) · [📖 Documentation](#-documentation) · [✨ Features](#-features) · [🏗️ Architecture](#️-architecture)
 
@@ -95,13 +95,13 @@ The UI is built with a **modern dark theme** featuring:
 
 ```mermaid
 graph LR
-    A["🌐 Next.js App Router Client"] -->|HTTPS / JSON API| B["☁️ Cloudflare Edge<br/>WAF + Proxy Shield"]
+    A["🌐 Next.js App Router Client"] -->|HTTPS / JSON API| B["🛡️ Nginx Proxy Gateway<br/>Rate Limits + SSL"]
     B -->|Proxied clean traffic| C["⚙️ FastAPI REST Server<br/>(Python)"]
     C -->|Async Database Query| D["🗄️ PostgreSQL Database"]
     C -->|Token Auth check| E["🔐 JWT Authentication"]
 
     style A fill:#111827,color:#fff,stroke:none
-    style B fill:#F38020,color:#fff,stroke:none
+    style B fill:#009639,color:#fff,stroke:none
     style C fill:#0f3460,color:#fff,stroke:none
     style D fill:#4169E1,color:#fff,stroke:none
     style E fill:#DC2626,color:#fff,stroke:none
@@ -113,7 +113,7 @@ graph LR
 | **Backend** | Python + FastAPI | High-performance, asynchronous RESTful API server |
 | **Database** | PostgreSQL 15+ | Relational storage guaranteeing transactional ACID safety |
 | **Auth** | JWT (PyJWT) + bcrypt | Stateless authentication tokens & dynamically salted hashes |
-| **Security** | Cloudflare WAF & Edge Firewall | Edge-level DDoS protection, proxy protection, and rate limiting |
+| **Security** | Nginx Reverse Proxy | SSL/TLS termination, local rate limiting, and port shielding |
 
 ---
 
@@ -202,14 +202,14 @@ Bookflow-management/
 │
 ├── 📁 docs/                          # 📖 Engineering Design Documentation
 │   ├── 01-PRD.md                     #    Product Requirements Document
-│   ├── 02-User-Stories.md            #    User Stories & Acceptances
-│   ├── 03-User-Flows.md             #    Mermaid User Journeys
-│   ├── 04-HLD.md                     #    High Level System Architecture
-│   ├── 05-LLD.md                     #    Low Level Database & Module Design
-│   ├── 06-API-Documentation.md       #    Complete REST API Schema Specification
-│   ├── 07-Wireframes.md             #    Page Design Blueprints (ASCII UI)
-│   ├── 08-Test-Plan.md              #    Automated & Manual QA Scenario Cases
-│   └── 09-TRD.md                    #    Technology Stack Requirements & WAF rules
+│   ├── 02-TRD.md                     #    Technology Stack Requirements & WAF rules
+│   ├── 03-User-Stories.md            #    User Stories & Acceptances
+│   ├── 04-User-Flows.md             #    Mermaid User Journeys
+│   ├── 05-HLD.md                     #    High Level System Architecture
+│   ├── 06-LLD.md                     #    Low Level Database & Module Design
+│   ├── 07-API-Documentation.md       #    Complete REST API Schema Specification
+│   ├── 08-Wireframes.md             #    Page Design Blueprints (ASCII UI)
+│   └── 09-Test-Plan.md              #    Automated & Manual QA Scenario Cases
 │
 ├── 📁 server/                        # 🐍 Python REST API (FastAPI Backend)
 │   ├── main.py                      #    FastAPI app coordinator entrypoint
@@ -223,7 +223,7 @@ Bookflow-management/
 │   │   └── 📁 routes/               #    Router files (auth, leaves, dashboard, employees)
 │   └── 📁 db/
 │       ├── schema.sql               #    Raw DDL definitions for PostgreSQL
-│       └── seed.py                  #    Demo database seeder script
+│       └── seed.py                  #    Asynchronous demo database seeder
 │
 ├── 📁 client/                        # 🌐 Next.js App Router Frontend
 │   ├── package.json                 #    Node packages config
@@ -246,9 +246,9 @@ Bookflow-management/
 
 | Target Area | Design Implementation |
 |-------------|-----------------------|
-| **Volumetric Edge Defense**| Cloudflare proxies traffic automatically resolving DNS and blocking massive spikes. |
-| **Intrusion Shield** | Cloudflare Web Application Firewall (WAF) inspects query tags against SQLi, CSS, and injection models. |
-| **API Abuse Prevention** | Rate limits enforced natively at edge level (30 requests/minute limit on authentication endpoints). |
+| **Volumetric Defense**| Gateway Rate Limiting at Nginx proxy layer to block connection spikes and scans. |
+| **Intrusion Shield** | Port shielding via host OS firewall (UFW) blocking direct connection to database and API ports. |
+| **API Abuse Prevention** | Rate limits enforced at gateway level (30 requests/minute limit on authentication endpoints). |
 | **Access Hierarchy** | Strict token check middleware evaluating and confirming User IDs and roles for every request. |
 | **Query Protection** | Parameterized query execution using PostgreSQL drivers, neutralizing SQL Injection. |
 
