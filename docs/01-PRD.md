@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## Leave Management System
 
-**Version:** 1.0  
+**Version:** 2.0  
 **Date:** June 2026  
 **Author:** Project Team  
 
@@ -30,7 +30,7 @@ A **web-based Leave Management System** that digitizes the entire leave lifecycl
 | Feature | Description |
 |---------|------------|
 | **User Authentication** | Secure login with email/password, JWT-based sessions |
-| **Role-Based Access** | Three roles: Employee, Manager, Admin — each with distinct permissions |
+| **Role-Based Access** | Six roles: Super Admin, Admin, HR, Finance, Manager, Employee — each with distinct permissions |
 | **Leave Application** | Employees can apply for leave with type, date range, and reason |
 | **Leave History** | Employees can view all their past and current leave requests |
 | **Leave Approval** | Managers can approve or reject leave requests from their direct reports |
@@ -79,31 +79,59 @@ Oversees a team of employees. Responsible for approving or rejecting leave reque
 - View team leave calendar/overview
 
 #### 🛡️ Admin
-System administrator responsible for managing users and system configuration.
+System administrator responsible for managing users, roles, and system configuration.
 
 **Permissions:**
 - All Manager permissions
+- Create roles (HR, Finance, Manager, Employee)
 - Add new employees to the system
 - Edit employee details (role, department, manager assignment)
 - Remove employees from the system
-- View system-wide dashboard and statistics
+- View system-wide dashboard and statistics (Total employees, Total leave requests, Approved leaves, Rejected leaves)
 - Reset employee leave balances
+
+#### 👑 Super Admin
+The highest-level authority in the system. Responsible for creating Admin accounts and overseeing the entire organization.
+
+**Permissions:**
+- All Admin permissions
+- Create Admin accounts
+- Manage system settings
+- View organization-wide reports
+
+#### 💼 HR
+Human Resources personnel. Has standard employee access for leave management.
+
+**Permissions:**
+- All Employee permissions
+- (Future: HR-specific features can be added in v2)
+
+#### 💰 Finance
+Finance department personnel. Has standard employee access for leave management.
+
+**Permissions:**
+- All Employee permissions
+- (Future: Finance-specific features can be added in v2)
 
 ### 3.2 Permissions Matrix
 
-| Action | Employee | Manager | Admin |
-|--------|:--------:|:-------:|:-----:|
-| Login | ✅ | ✅ | ✅ |
-| View Own Dashboard | ✅ | ✅ | ✅ |
-| Apply for Leave | ✅ | ✅ | ✅ |
-| View Own Leave History | ✅ | ✅ | ✅ |
-| Cancel Own Pending Leave | ✅ | ✅ | ✅ |
-| View Team Pending Requests | ❌ | ✅ | ✅ |
-| Approve/Reject Leave | ❌ | ✅ | ✅ |
-| View Team Calendar | ❌ | ✅ | ✅ |
-| Add/Edit/Remove Employees | ❌ | ❌ | ✅ |
-| View System-Wide Stats | ❌ | ❌ | ✅ |
-| Reset Leave Balances | ❌ | ❌ | ✅ |
+| Action | Employee | HR | Finance | Manager | Admin | Super Admin |
+|--------|:--------:|:--:|:-------:|:-------:|:-----:|:-----------:|
+| Login | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| View Own Dashboard | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Apply for Leave | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| View Own Leave History | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Cancel Own Pending Leave | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| View Team Pending Requests | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
+| Approve/Reject Leave | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
+| View Team Calendar | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
+| Create Roles | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Add/Edit/Remove Employees | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| View System-Wide Stats | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Reset Leave Balances | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Create Admin Accounts | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Manage System Settings | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| View Organization Reports | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
 
 ---
 
