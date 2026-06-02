@@ -19,11 +19,13 @@ flowchart TD
     E -->|Employee| G[📊 Employee Dashboard]
     E -->|Manager| H[📊 Manager Dashboard]
     E -->|Admin| I[📊 Admin Dashboard]
+    E -->|Super Admin| SA[📊 Super Admin Dashboard]
     
     style A fill:#1e1b4b,color:#fff
     style G fill:#065f46,color:#fff
     style H fill:#065f46,color:#fff
     style I fill:#065f46,color:#fff
+    style SA fill:#065f46,color:#fff
     style F fill:#7f1d1d,color:#fff
 ```
 
