@@ -72,7 +72,7 @@ Stores user accounts for employees, managers, and admins.
 | `name` | VARCHAR(100) | NOT NULL | Full name |
 | `email` | VARCHAR(255) | NOT NULL, UNIQUE | Login email address |
 | `password_hash` | VARCHAR(255) | NOT NULL | bcrypt hashed password |
-| `role` | VARCHAR(20) | NOT NULL, CHECK(role IN ('employee','manager','admin')) | System authorization role |
+| `role` | VARCHAR(20) | NOT NULL, CHECK(role IN ('super_admin','admin','hr','finance','manager','employee')) | System authorization role |
 | `manager_id` | INTEGER | REFERENCES employees(id), NULLABLE | Reporting manager ID |
 | `department` | VARCHAR(100) | NOT NULL, DEFAULT 'General' | Department group |
 | `is_active` | BOOLEAN | NOT NULL, DEFAULT TRUE | Status toggle |
@@ -158,7 +158,7 @@ CREATE TABLE IF NOT EXISTS employees (
     name VARCHAR(100) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role VARCHAR(20) NOT NULL CHECK (role IN ('employee', 'manager', 'admin')),
+    role VARCHAR(20) NOT NULL CHECK (role IN ('super_admin', 'admin', 'hr', 'finance', 'manager', 'employee')),
     manager_id INTEGER REFERENCES employees(id) ON DELETE SET NULL,
     department VARCHAR(100) NOT NULL DEFAULT 'General',
     is_active BOOLEAN NOT NULL DEFAULT TRUE,

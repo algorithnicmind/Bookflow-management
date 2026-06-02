@@ -77,6 +77,7 @@ graph TD
     LMS --> M3["✅ Approval Management Module"]
     LMS --> M4["📊 Dashboard Module"]
     LMS --> M5["👥 Admin Module"]
+    LMS --> M6["👑 Super Admin Module"]
     
     M1 --> M1A[Login / Logout]
     M1 --> M1B[JWT Dependency Validation]
@@ -106,6 +107,7 @@ graph TD
     style M3 fill:#059669,color:#fff
     style M4 fill:#D97706,color:#fff
     style M5 fill:#DC2626,color:#fff
+    style M6 fill:#9333EA,color:#fff
 ```
 
 ---
@@ -159,6 +161,15 @@ graph TD
 | Manager Linking | Connects employees to their reporting line managers. |
 | Quota Initialization | Configures yearly leave balances automatically for newly registered employees. |
 
+### 4.6 👑 Super Admin Module
+**Responsibility:** Create Admin accounts, manage system settings, and view organization-wide reports.
+
+| Sub-Component | Detailed Operations |
+|---------------|---------------------|
+| Admin Creator | Allows Super Admin to register new Admin-level user accounts. |
+| Settings Manager | Provides interface for configuring global system parameters. |
+| Organization Reporter | Aggregates and displays organization-wide leave and employee metrics. |
+
 ---
 
 ## 5. API Architecture Layout
@@ -190,6 +201,12 @@ graph LR
             A4[DELETE /api/employees/:id]
         end
         
+        subgraph SuperAdminOnly["👑 Super Admin API"]
+            SA1[POST /api/admins]
+            SA2[PUT /api/settings]
+            SA3[GET /api/reports/organization]
+        end
+        
         D1[GET /api/dashboard/stats]
     end
     
@@ -197,6 +214,7 @@ graph LR
     style Employee fill:#10B981,color:#fff
     style ManagerOnly fill:#F59E0B,color:#000
     style AdminOnly fill:#F43F5E,color:#fff
+    style SuperAdminOnly fill:#9333EA,color:#fff
 ```
 
 ---
