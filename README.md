@@ -57,6 +57,18 @@
 - ✅ System-wide analytics dashboard
 
 </td>
+</tr>
+<tr>
+<td width="50%">
+
+### 👑 Super Admin Portal
+- ✅ Create and manage Admin accounts
+- ✅ Configure system-wide settings
+- ✅ Organization-wide reports and analytics
+- ✅ Role and department oversight
+- ✅ Global leave policy management
+
+</td>
 <td width="50%">
 
 ### 📊 Analytics Dashboard
@@ -187,6 +199,7 @@ FastAPI Backend:    http://localhost:8000/api
 
 | Role | Email | Password | Description |
 |:----:|-------|:--------:|-------------|
+| 👑 **Super Admin** | `superadmin@company.com` | `password123` | System governance, Admin creation, Org reports |
 | 🛡️ **Admin** | `admin@company.com` | `password123` | Full access to organizational management |
 | 👔 **Manager** | `alice@company.com` | `password123` | Direct report approvals & team statistics |
 | 👔 **Manager** | `bob@company.com` | `password123` | Direct report approvals & team statistics |
