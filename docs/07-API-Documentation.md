@@ -479,3 +479,91 @@ Deactivate an employee (soft delete).
 |--------|-----------|----------|
 | 400 | Self-deletion | `{"error": "Cannot deactivate your own account"}` |
 | 404 | Not found | `{"error": "Employee not found"}` |
+
+---
+
+## 5. Super Admin Endpoints
+
+### POST `/api/admins`
+
+Create a new Admin account.
+
+**Access:** 👑 Super Admin
+
+**Request Body:**
+```json
+{
+  "name": "New Admin",
+  "email": "newadmin@company.com",
+  "password": "securePassword123"
+}
+```
+
+**Success Response (201):**
+```json
+{
+  "message": "Admin account created successfully",
+  "admin": {
+    "id": 6,
+    "name": "New Admin",
+    "email": "newadmin@company.com",
+    "role": "admin"
+  }
+}
+```
+
+**Error Responses:**
+| Status | Condition | Response |
+|--------|-----------|----------|
+| 403 | Not Super Admin | `{"error": "Only Super Admin can create admin accounts"}` |
+| 409 | Email exists | `{"error": "Email already registered"}` |
+
+---
+
+### PUT `/api/settings`
+
+Update system settings.
+
+**Access:** 👑 Super Admin
+
+**Request Body:**
+```json
+{
+  "max_casual_leave": 12,
+  "max_sick_leave": 10,
+  "max_earned_leave": 15
+}
+```
+
+**Success Response (200):**
+```json
+{
+  "message": "Settings updated successfully"
+}
+```
+
+---
+
+### GET `/api/reports/organization`
+
+View organization-wide reports and metrics.
+
+**Access:** 👑 Super Admin
+
+**Success Response (200):**
+```json
+{
+  "org_stats": {
+    "total_employees": 150,
+    "total_admins": 5,
+    "total_leave_requests": 320,
+    "approved_leaves": 290,
+    "rejected_leaves": 30,
+    "department_breakdown": [
+      { "department": "Engineering", "employees": 45, "leaves": 120 },
+      { "department": "Marketing", "employees": 20, "leaves": 35 }
+    ]
+  }
+}
+```
+
