@@ -249,6 +249,44 @@
 
 ---
 
+## 7. Super Admin Dashboard
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  ☰  LEAVE MANAGER                       👑 Super Admin  ⏏ Logout   │
+├────────────┬─────────────────────────────────────────────────────────┤
+│            │                                                         │
+│  📊 Dash   │  👑 Super Admin Dashboard                              │
+│            │                                                         │
+│  🛡️ Admins │  ┌──────────┐ ┌──────────┐ ┌──────────┐               │
+│            │  │ 🛡️ Total │ │ 👥 Total │ │ 📊 Leave │               │
+│  ⚙️ Config │  │  Admins  │ │  Users   │ │ Requests │               │
+│            │  │    5     │ │   150    │ │   320    │               │
+│  📈 Reports│  └──────────┘ └──────────┘ └──────────┘               │
+│            │                                                         │
+│  ──────    │  ┌─────────────────────────────────────────────────┐    │
+│            │  │ Create New Admin Account                        │    │
+│            │  ├─────────────────────────────────────────────────┤    │
+│            │  │  Name:     ┌────────────────────────────┐      │    │
+│            │  │            │                            │      │    │
+│            │  │  Email:    ┌────────────────────────────┐      │    │
+│            │  │            │                            │      │    │
+│            │  │  Password: ┌────────────────────────────┐      │    │
+│            │  │            │                            │      │    │
+│            │  │                                                 │    │
+│            │  │    [ ✅ Create Admin ]   [ Cancel ]             │    │
+│            │  └─────────────────────────────────────────────────┘    │
+└────────────┴─────────────────────────────────────────────────────────┘
+```
+
+**Design Notes:**
+- Accessible only by Super Admin role
+- Admin creation form with inline validation
+- Stats cards show organization-wide metrics
+- Sidebar includes Settings and Reports navigation
+
+---
+
 ## Design System Summary
 
 | Element | Style |
