@@ -15,6 +15,7 @@
 - Leave History & Balance
 - Manager Approval / Rejection Workflow
 - Admin Employee Management
+- Super Admin System Governance
 - Dashboard Statistics
 
 ### Test Types
@@ -36,6 +37,7 @@
 | TS-001 | Valid employee login | Redirected to Employee Dashboard |
 | TS-002 | Valid manager login | Redirected to Manager Dashboard |
 | TS-003 | Valid admin login | Redirected to Admin Dashboard |
+| TS-003b | Valid super admin login | Redirected to Super Admin Dashboard |
 | TS-004 | Wrong password | Error: "Invalid email or password" |
 | TS-005 | Non-existent email | Error: "Invalid email or password" |
 | TS-006 | Empty email field | Validation error shown |
@@ -148,6 +150,16 @@
 | TC-014 | Add Employee | Logged in as Admin | name, email, password, role, dept | 1. Click Add 2. Fill form 3. Submit | Employee created, default balances assigned | ⬜ |
 | TC-015 | Add Employee | Logged in as Admin | Duplicate email | 1. Try adding existing email | Error: "Email already registered" | ⬜ |
 | TC-016 | Deactivate | Logged in as Admin | Employee ID | 1. Click Delete 2. Confirm | Employee deactivated, cannot login | ⬜ |
+
+### Super Admin Test Cases
+
+| TC ID | Feature | Pre-condition | Input | Steps | Expected Result | Status |
+|:-----:|---------|--------------|-------|-------|----------------|:------:|
+| TC-017 | Super Admin Login | Super Admin account exists | email: super@company.com, password: password123 | 1. Open app 2. Enter credentials 3. Click Login | Redirected to Super Admin Dashboard | ⬜ |
+| TC-018 | Create Admin | Logged in as Super Admin | name, email, password | 1. Go to Create Admin 2. Fill form 3. Submit | Admin account created successfully | ⬜ |
+| TC-019 | Create Admin (dup email) | Logged in as Super Admin | Existing email | 1. Try adding existing email | Error: "Email already registered" | ⬜ |
+| TC-020 | View Org Reports | Logged in as Super Admin | N/A | 1. Navigate to Reports | Organization-wide metrics displayed | ⬜ |
+| TC-021 | Manage Settings | Logged in as Super Admin | System settings | 1. Go to Settings 2. Modify values 3. Save | Settings updated successfully | ⬜ |
 
 ---
 
@@ -269,6 +281,7 @@ Status remains "Pending" in the employee's leave history view
 | Leave History | X | X | X | X% |
 | Manager Approval | X | X | X | X% |
 | Admin Management | X | X | X | X% |
+| Super Admin | X | X | X | X% |
 | Dashboard | X | X | X | X% |
 | Security / Access | X | X | X | X% |
 
