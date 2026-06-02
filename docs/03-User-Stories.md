@@ -219,7 +219,64 @@
 
 ---
 
+## 6. Super Admin — System Governance
+
+### US-018: Create Admin Account 🔴
+**As a** Super Admin,  
+**I want to** create new Admin accounts,  
+**So that** they can manage employees, roles, and the system.
+
+**Acceptance Criteria:**
+- [ ] Form fields: Name, Email, Password
+- [ ] New account is created with "admin" role
+- [ ] Only Super Admin can access this feature
+- [ ] On success → Admin appears in the user list
+
+### US-019: Manage System Settings 🟡
+**As a** Super Admin,  
+**I want to** manage system-level settings,  
+**So that** organizational policies are enforced across the system.
+
+**Acceptance Criteria:**
+- [ ] Settings page accessible only to Super Admin
+- [ ] Changes take effect immediately
+
+### US-020: View Organization Reports 🔴
+**As a** Super Admin,  
+**I want to** view organization-wide reports,  
+**So that** I can oversee the entire company's leave metrics and employee distribution.
+
+**Acceptance Criteria:**
+- [ ] Shows total employees across all departments
+- [ ] Shows total leave requests, approved, rejected counts
+- [ ] Shows department-wise and role-wise breakdowns
+
+---
+
 ## User Story Map
+
+```
+                              ┌─────────────────────────────────────┐
+                              │        LEAVE MANAGEMENT SYSTEM       │
+                              └─────────────────────────────────────┘
+                                                │
+    ┌───────────────────┬─────────────────────┼─────────────────────┬──────────────────┐
+    │                   │                     │                     │                  │
+┌───▼─────┐       ┌─────▼─────┐         ┌─────▼─────┐        ┌─────▼──────┐    ┌──────▼──────┐
+│EMPLOYEE │       │  MANAGER  │         │   ADMIN   │        │SUPER ADMIN │    │  HR/FINANCE │
+└───┬─────┘       └─────┬─────┘         └─────┬─────┘        └─────┬──────┘    └──────┬──────┘
+    │                   │                     │                     │                  │
+┌───▼──────────┐  ┌─────▼────────┐     ┌─────▼─────────┐   ┌──────▼────────┐  ┌──────▼──────┐
+│ US-001 Login │  │ US-001 Login │     │ US-001 Login  │   │ US-001 Login  │  │ US-001 Login│
+│ US-003 Apply │  │ US-007 View  │     │ US-011 View   │   │ US-018 Create │  │ US-003 Apply│
+│ US-004 Hist. │  │ US-008 Appr. │     │ US-012 Add    │   │   Admin Acct  │  │ US-004 Hist.│
+│ US-005 Bal.  │  │ US-009 Reject│     │ US-013 Edit   │   │ US-019 System │  │ US-005 Bal. │
+│ US-006 Cancel│  │ US-010 Team  │     │ US-014 Remove │   │   Settings    │  │ US-015 Dash │
+│ US-015 Dash  │  │ US-016 Dash  │     │ US-017 Dash   │   │ US-020 Org    │  └─────────────┘
+└──────────────┘  └──────────────┘     └───────────────┘   │   Reports    │
+                                                            └──────────────┘
+```
+
 
 ```
                     ┌─────────────────────────────────────┐
