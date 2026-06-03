@@ -1,7 +1,7 @@
 # API Documentation
 ## Leave Management System
 
-**Base URL:** `http://localhost:3000/api`  
+**Base URL:** `http://localhost:8000/api`  
 **Version:** 1.0  
 **Date:** June 2026  
 

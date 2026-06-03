@@ -143,8 +143,8 @@ graph LR
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/Bookflow-management.git
-cd Bookflow-management
+git clone https://github.com/your-username/Leaveflow-management.git
+cd Leaveflow-management
 
 # 2. Set up the PostgreSQL database
 createdb leave_management
@@ -211,7 +211,7 @@ FastAPI Backend:    http://localhost:8000/api
 ## 📂 Project Structure
 
 ```
-Bookflow-management/
+Leaveflow-management/
 │
 ├── 📁 docs/                          # 📖 Engineering Design Documentation
 │   ├── 01-PRD.md                     #    Product Requirements Document
