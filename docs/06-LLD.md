@@ -12,7 +12,7 @@
 
 ## 1. Backend Module Detailed Design (Python & FastAPI)
 
-### 4.1 Dependency Injection & JWT Validation (`server/app/dependencies.py`)
+### 1.1 Dependency Injection & JWT Validation (`server/app/dependencies.py`)
 
 Using FastAPI dependencies, authentication and authorization are handled in a clean, reusable pipeline:
 
@@ -42,7 +42,7 @@ class RoleChecker:
         return current_user
 ```
 
-### 4.2 Leave Business Logic (`server/app/routes/leaves.py`)
+### 1.2 Leave Business Logic (`server/app/routes/leaves.py`)
 
 ```python
 # Async business logic structure for leave management APIs
@@ -109,9 +109,9 @@ async def review_leave_request(leave_id: int, action: str, comments: str, manage
 
 ---
 
-## 5. Frontend Module Design (Next.js App Router)
+## 2. Frontend Module Design (Next.js App Router)
 
-### 5.1 Next.js Project Structure
+### 2.1 Next.js Project Structure
 
 The frontend application uses the **Next.js App Router** framework layout structure:
 
@@ -157,7 +157,7 @@ client/
     └── app.css                      # Master CSS styles & visual variables
 ```
 
-### 5.2 Next.js Routing & Session Guarding
+### 2.2 Next.js Routing & Session Guarding
 
 Routing security is implemented dynamically via state checking and a layout-level Guard wrapping protected routers:
 
@@ -188,7 +188,7 @@ export default function ProtectedRoute({ children, allowedRoles }) {
 }
 ```
 
-### 5.3 Fetch API Service Wrapper (`src/services/api.js`)
+### 2.3 Fetch API Service Wrapper (`src/services/api.js`)
 
 Unlike standard libraries, a custom async wrapper utilizing the native Fetch API handles network transport and automatical JWT injection:
 
@@ -231,7 +231,7 @@ export async function request(endpoint, options = {}) {
 }
 ```
 
-### 5.4 Premium Design System Styles (`src/app.css`)
+### 2.4 Premium Design System Styles (`src/app.css`)
 
 All components share clean, variables-based styling tokens:
 
