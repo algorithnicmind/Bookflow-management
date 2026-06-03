@@ -176,7 +176,7 @@ sequenceDiagram
 To fulfill this modular architecture, the repository is organized into distinct, clean directories:
 
 ```
-Bookflow-management/
+Leaveflow-management/
 │
 ├── 📁 docs/                         # Technology-agnostic & architecture documents
 │   ├── 01-PRD.md
