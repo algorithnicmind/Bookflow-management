@@ -1,10 +1,10 @@
-import os
-import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
 
 from app.routes import auth, leaves, employees, dashboard
+import uvicorn
+import os
 
 app = FastAPI(
     title="Leave Management System API",
@@ -35,3 +35,7 @@ app.include_router(dashboard.router)
 @app.get("/")
 def root():
     return {"message": "Leave Management API is running"}
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
