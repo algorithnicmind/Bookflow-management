@@ -35,7 +35,14 @@ app.include_router(dashboard.router)
 @app.get("/")
 def root():
     return {"message": "Leave Management API is running"}
+<<<<<<< HEAD
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
+=======
+    
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
+>>>>>>> 58b2452c2783257aafa7d0b45adc1928d0ba8976
