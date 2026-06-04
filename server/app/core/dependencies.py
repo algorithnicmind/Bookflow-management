@@ -1,0 +1,43 @@
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from jose import JWTError, jwt
+from app.core.database import get_db
+from app.modules.employees.models import Employee
+from app.core.config import settings
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
+
+async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)) -> Employee:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+        
+    result = await db.execute(select(Employee).where(Employee.email == email))
+    user = result.scalar_one_or_none()
+    
+    if user is None:
+        raise credentials_exception
+    if not user.is_active:
+        raise HTTPException(status_code=403, detail="Account is deactivated")
+        
+    return user
+
+class RoleChecker:
+    def __init__(self, allowed_roles: list[str]):
+        self.allowed_roles = allowed_roles
+        
+    def __call__(self, current_user: Employee = Depends(get_current_user)):
+        if current_user.role not in self.allowed_roles:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Operation forbidden: Insufficient privileges")
+        return current_user
