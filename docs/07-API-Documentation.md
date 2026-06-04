@@ -177,6 +177,10 @@ Get leave history for the current user.
 | Param | Type | Default | Description |
 |-------|------|---------|-------------|
 | `status` | string | all | Filter: `pending`, `approved`, `rejected`, `cancelled` |
+| `start_date` | string | — | Filter by leave start date (YYYY-MM-DD) |
+| `end_date` | string | — | Filter by leave end date (YYYY-MM-DD) |
+| `skip` | integer| 0 | Pagination offset |
+| `limit` | integer| 100 | Maximum records to return (max 1000) |
 
 **Success Response (200):**
 ```json
@@ -256,6 +260,12 @@ Cancel a pending leave request.
 Get pending leave requests from direct reports.
 
 **Access:** 👔 Manager, 🛡️ Admin
+
+**Query Parameters:**
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `skip` | integer| 0 | Pagination offset |
+| `limit` | integer| 100 | Maximum records to return (max 1000) |
 
 **Success Response (200):**
 ```json
@@ -414,6 +424,8 @@ List all employees.
 | Param | Type | Default | Description |
 |-------|------|---------|-------------|
 | `search` | string | — | Search by name or email |
+| `skip` | integer| 0 | Pagination offset |
+| `limit` | integer| 100 | Maximum records to return (max 1000) |
 
 **Success Response (200):**
 ```json

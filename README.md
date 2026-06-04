@@ -123,7 +123,7 @@ graph LR
 |-------|-----------|---------|
 | **Frontend** | Next.js 14/15 (App Router) | High-fidelity hybrid SPA utilizing native Fetch APIs |
 | **Backend** | Python + FastAPI | High-performance, asynchronous RESTful API server |
-| **Database** | PostgreSQL 15+ | Relational storage guaranteeing transactional ACID safety |
+| **Database** | PostgreSQL 15+ | Relational storage guaranteeing transactional ACID safety. Uses pessimistic locking (`FOR UPDATE`) to prevent race conditions. |
 | **Auth** | JWT (PyJWT) + bcrypt | Stateless authentication tokens & dynamically salted hashes |
 | **Security** | Nginx Reverse Proxy | SSL/TLS termination, local rate limiting, and port shielding |
 
@@ -261,7 +261,8 @@ Leaveflow-management/
 |-------------|-----------------------|
 | **Volumetric Defense**| Gateway Rate Limiting at Nginx proxy layer to block connection spikes and scans. |
 | **Intrusion Shield** | Port shielding via host OS firewall (UFW) blocking direct connection to database and API ports. |
-| **API Abuse Prevention** | Rate limits enforced at gateway level (30 requests/minute limit on authentication endpoints). |
+| **API Abuse Prevention** | Rate limits enforced at gateway level via Nginx proxy to prevent bot scanning. |
+| **Race Conditions** | Pessimistic row locking (`SELECT FOR UPDATE`) prevents concurrent double-deductions. |
 | **Access Hierarchy** | Strict token check middleware evaluating and confirming User IDs and roles for every request. |
 | **Query Protection** | Parameterized query execution using PostgreSQL drivers, neutralizing SQL Injection. |
 

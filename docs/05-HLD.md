@@ -267,6 +267,7 @@ graph TD
 | **Data Leakage (Transit)** | Full SSL/TLS (Strict Encryption Mode) via Nginx Let's Encrypt certificates. |
 | **Access Escalation** | Custom FastAPI dependencies checking roles and IDs on *every single request* before executing query models. |
 | **SQL Injection (SQLi)** | Parameterized and prepared queries utilizing asyncpg/psycopg database models. Direct raw string interpolation is strictly prohibited. |
+| **Race Conditions** | Pessimistic row locking (`SELECT ... FOR UPDATE`) utilized on balance and request tables to guarantee integrity during concurrent approvals or applications. |
 | **XSS Attacks** | Next.js auto-escapes rendered templates natively. High-grade Content-Security-Policy (CSP) headers configured at Nginx and application routing layer. |
 | **CSRF Attacks** | Protected by using authorization Bearer tokens in headers instead of relying entirely on standard session cookies without verification. |
 
