@@ -8,11 +8,9 @@ from app.database import get_db
 from app.models import Employee, LeaveRequest, LeaveBalance
 from app.schemas import DashboardResponse, DashboardStats, LeaveResponse, LeaveBalanceResponse
 from app.dependencies import get_current_user
+from app.utils import get_business_days
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
-
-def get_business_days(start_date, end_date):
-    return (end_date - start_date).days + 1
 
 @router.get("/stats", response_model=DashboardResponse)
 async def get_dashboard_stats(
