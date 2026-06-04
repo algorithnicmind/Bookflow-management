@@ -17,7 +17,7 @@ class Employee(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     __table_args__ = (
-        CheckConstraint(role.in_(['super_admin', 'admin', 'hr', 'finance', 'manager', 'employee']), name="check_employee_role"),
+        CheckConstraint(role.in_(['super_admin', 'admin', 'manager', 'employee']), name="check_employee_role"),
     )
 
     manager = relationship("Employee", remote_side=[id], backref="direct_reports")

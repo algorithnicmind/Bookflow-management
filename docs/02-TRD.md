@@ -85,7 +85,7 @@ graph TB
 **PostgreSQL Advantages for this project:**
 - ✅ **ACID Transactions** — Crucial to ensure that leave balance updates are atomic (e.g., deducting a balance must succeed if and only if the leave request is approved successfully).
 - ✅ **Referential Integrity** — Foreign keys guarantee consistent data associations between `employees`, `leave_requests`, `leave_balances`, and `leave_approvals`.
-- ✅ **Check Constraints** — Multi-layered data protection enforcing allowed database values (e.g., `role` in ('super_admin', 'admin', 'hr', 'finance', 'manager', 'employee'), `status` in ('pending', 'approved', 'rejected', 'cancelled')) at the SQL schema level.
+- ✅ **Check Constraints** — Multi-layered data protection enforcing allowed database values (e.g., `role` in ('super_admin', 'admin', 'manager', 'employee'), `status` in ('pending', 'approved', 'rejected', 'cancelled')) at the SQL schema level.
 - ✅ **Connection Pooling** — Asynchronous pool utilization to handle simultaneous application requests with minimal overhead.
 
 ### 2.4 Authentication & Security

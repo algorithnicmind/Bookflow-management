@@ -26,42 +26,68 @@ async def seed_data():
         # Create Super Admin
         super_admin = Employee(
             name="Super Admin",
-            email="admin@demo.com",
+            email="superadmin@company.com",
             password_hash=pwd_context.hash("password123"),
             role="super_admin",
             department="Management"
         )
         session.add(super_admin)
+        
+        # Create Admin
+        admin = Employee(
+            name="Admin User",
+            email="admin@company.com",
+            password_hash=pwd_context.hash("password123"),
+            role="admin",
+            department="Management"
+        )
+        session.add(admin)
         await session.commit()
         
-        # Create a Manager
-        manager = Employee(
+        # Create Managers
+        manager_alice = Employee(
             name="Alice Manager",
-            email="alice@co.com",
+            email="alice@company.com",
             password_hash=pwd_context.hash("password123"),
             role="manager",
             department="Engineering"
         )
-        session.add(manager)
+        manager_bob = Employee(
+            name="Bob Manager",
+            email="bob@company.com",
+            password_hash=pwd_context.hash("password123"),
+            role="manager",
+            department="Design"
+        )
+        session.add_all([manager_alice, manager_bob])
         await session.commit()
         
-        # Create an Employee reporting to Manager
-        employee = Employee(
+        # Create Employees
+        employee_john = Employee(
             name="John Doe",
-            email="john@co.com",
+            email="john@company.com",
             password_hash=pwd_context.hash("password123"),
             role="employee",
             department="Engineering",
-            manager_id=manager.id
+            manager_id=manager_alice.id
         )
-        session.add(employee)
+        employee_jane = Employee(
+            name="Jane Doe",
+            email="jane@company.com",
+            password_hash=pwd_context.hash("password123"),
+            role="employee",
+            department="Design",
+            manager_id=manager_bob.id
+        )
+        session.add_all([employee_john, employee_jane])
         await session.commit()
         
-        # Initialize Leave Balances for 2026
-        for emp_id in [super_admin.id, manager.id, employee.id]:
+        # Initialize Leave Balances for 2026 for all users
+        all_users = [super_admin, admin, manager_alice, manager_bob, employee_john, employee_jane]
+        for user in all_users:
             for leave_type, days in [("casual", 12), ("sick", 10), ("earned", 15)]:
                 balance = LeaveBalance(
-                    employee_id=emp_id,
+                    employee_id=user.id,
                     leave_type=leave_type,
                     total_days=days,
                     year=2026
@@ -69,7 +95,7 @@ async def seed_data():
                 session.add(balance)
                 
         await session.commit()
-        print("Successfully seeded database with admin@demo.com, alice@co.com, john@co.com (password: password123)")
+        print("Successfully seeded database with all Demo Credentials from README!")
 
 if __name__ == "__main__":
     asyncio.run(seed_data())
