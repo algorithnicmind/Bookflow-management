@@ -18,6 +18,8 @@ router = APIRouter(prefix="/api/employees", tags=["employees"])
 @router.get("", response_model=dict)
 async def list_employees(
     search: Optional[str] = None,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
     db: AsyncSession = Depends(get_db),
     current_user: Employee = Depends(RoleChecker(["admin", "super_admin"]))
 ):
@@ -36,6 +38,7 @@ async def list_employees(
                 Employee.email.ilike(f"%{safe_search}%")
             )
         )
+    query = query.offset(skip).limit(limit)
     
     result = await db.execute(query)
     rows = result.all()

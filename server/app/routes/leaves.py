@@ -78,6 +78,10 @@ async def apply_leave(
 @router.get("")
 async def get_leave_history(
     status: Optional[str] = Query("all"),
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
     db: AsyncSession = Depends(get_db),
     current_user: Employee = Depends(get_current_user)
 ):
@@ -85,7 +89,12 @@ async def get_leave_history(
     if status and status.lower() != "all":
         query = query.where(LeaveRequest.status == status.lower())
     
-    query = query.order_by(LeaveRequest.created_at.desc())
+    if start_date:
+        query = query.where(LeaveRequest.start_date >= start_date.date())
+    if end_date:
+        query = query.where(LeaveRequest.start_date <= end_date.date())
+        
+    query = query.order_by(LeaveRequest.created_at.desc()).offset(skip).limit(limit)
     result = await db.execute(query)
     leaves = result.scalars().all()
     
@@ -157,6 +166,8 @@ async def cancel_leave(
 
 @router.get("/pending")
 async def get_pending_requests(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
     db: AsyncSession = Depends(get_db),
     current_user: Employee = Depends(RoleChecker(["manager", "admin", "super_admin"]))
 ):
@@ -164,7 +175,7 @@ async def get_pending_requests(
     query = select(LeaveRequest, Employee).join(Employee).where(
         LeaveRequest.status == "pending",
         Employee.manager_id == current_user.id
-    )
+    ).offset(skip).limit(limit)
     result = await db.execute(query)
     rows = result.all()
     

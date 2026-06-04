@@ -22,16 +22,28 @@ async def get_dashboard_stats(
     balances_res = []
     
     # 1. Employee-specific stats
-    l_res = await db.execute(select(LeaveRequest).where(LeaveRequest.employee_id == current_user.id).order_by(LeaveRequest.created_at.desc()))
-    user_leaves = l_res.scalars().all()
+    status_counts_res = await db.execute(
+        select(LeaveRequest.status, func.count(LeaveRequest.id))
+        .where(LeaveRequest.employee_id == current_user.id)
+        .group_by(LeaveRequest.status)
+    )
+    status_counts = status_counts_res.all()
     
-    stats.total_requests = len(user_leaves)
-    for leave in user_leaves:
-        if leave.status == "pending": stats.pending += 1
-        elif leave.status == "approved": stats.approved += 1
-        elif leave.status == "rejected": stats.rejected += 1
+    for status, count in status_counts:
+        stats.total_requests += count
+        if status == "pending": stats.pending = count
+        elif status == "approved": stats.approved = count
+        elif status == "rejected": stats.rejected = count
         
-    for leave in user_leaves[:5]: # recent 5 leaves
+    recent_leaves_res = await db.execute(
+        select(LeaveRequest)
+        .where(LeaveRequest.employee_id == current_user.id)
+        .order_by(LeaveRequest.created_at.desc())
+        .limit(5)
+    )
+    user_leaves = recent_leaves_res.scalars().all()
+        
+    for leave in user_leaves: # recent 5 leaves
         ld = LeaveResponse.model_validate(leave)
         ld.days = get_business_days(leave.start_date, leave.end_date)
         recent_leaves.append(ld)
