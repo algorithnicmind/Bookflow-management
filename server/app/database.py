@@ -10,7 +10,9 @@ connect_args = {"check_same_thread": False} if settings.DATABASE_URL.startswith(
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=settings.ENVIRONMENT == "development",
-    connect_args=connect_args
+    connect_args=connect_args,
+    pool_pre_ping=True,
+    pool_recycle=300
 )
 
 # Async session factory
