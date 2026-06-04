@@ -11,10 +11,7 @@ from app.config import settings
 from app.dependencies import get_current_user, RoleChecker
 from app.utils import pwd_context
 
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 
-limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -31,8 +28,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 
 @router.post("/login", response_model=Token)
-@limiter.limit("5/minute")
-async def login(request_obj: Request, request: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+async def login(request: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Employee).where(Employee.email == request.username))
     user = result.scalar_one_or_none()
     
@@ -67,8 +63,7 @@ async def login(request_obj: Request, request: OAuth2PasswordRequestForm = Depen
     }
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
-@limiter.limit("3/minute")
-async def register(request_obj: Request, request: AdminCreateRequest, db: AsyncSession = Depends(get_db), current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))):
+async def register(request: AdminCreateRequest, db: AsyncSession = Depends(get_db), current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))):
     result = await db.execute(select(Employee).where(Employee.email == request.email))
     if result.scalar_one_or_none():
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
