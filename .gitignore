@@ -7,6 +7,11 @@ server/db/*.db
 # Environment
 .env
 .env.local
+server/.env
+server/venv/
+__pycache__/
+*.pyc
+.pytest_cache/
 
 # OS
 .DS_Store
