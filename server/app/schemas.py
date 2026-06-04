@@ -1,37 +1,58 @@
-from pydantic import BaseModel, EmailStr, ConfigDict, Field
+from pydantic import BaseModel, EmailStr, ConfigDict, Field, field_validator
 from typing import Optional, List
 from datetime import date, datetime
+import re
 
 # --- Auth Schemas ---
-class LoginRequest(BaseModel):
-    email: EmailStr
-    password: str
-
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: dict
 
 class AdminCreateRequest(BaseModel):
-    name: str
+    name: str = Field(..., min_length=2, max_length=100)
     email: EmailStr
-    password: str
+    password: str = Field(..., min_length=8, max_length=128)
+
+    @field_validator("password")
+    @classmethod
+    def validate_password_strength(cls, v):
+        if not re.search(r"[A-Z]", v):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not re.search(r"[a-z]", v):
+            raise ValueError("Password must contain at least one lowercase letter")
+        if not re.search(r"\d", v):
+            raise ValueError("Password must contain at least one digit")
+        return v
 
 # --- Employee Schemas ---
+VALID_ROLES = ["super_admin", "admin", "manager", "employee"]
+
 class EmployeeBase(BaseModel):
-    name: str
+    name: str = Field(..., min_length=2, max_length=100)
     email: EmailStr
-    role: str
-    department: str
+    role: str = Field(..., pattern="^(super_admin|admin|manager|employee)$")
+    department: str = Field(..., min_length=1, max_length=100)
     manager_id: Optional[int] = None
 
 class EmployeeCreate(EmployeeBase):
-    password: str
+    password: str = Field(..., min_length=8, max_length=128)
+
+    @field_validator("password")
+    @classmethod
+    def validate_password_strength(cls, v):
+        if not re.search(r"[A-Z]", v):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not re.search(r"[a-z]", v):
+            raise ValueError("Password must contain at least one lowercase letter")
+        if not re.search(r"\d", v):
+            raise ValueError("Password must contain at least one digit")
+        return v
 
 class EmployeeUpdate(BaseModel):
-    name: Optional[str] = None
-    role: Optional[str] = None
-    department: Optional[str] = None
+    name: Optional[str] = Field(None, min_length=2, max_length=100)
+    role: Optional[str] = Field(None, pattern="^(super_admin|admin|manager|employee)$")
+    department: Optional[str] = Field(None, min_length=1, max_length=100)
     manager_id: Optional[int] = None
 
 class EmployeeResponse(EmployeeBase):
@@ -47,10 +68,10 @@ class LeaveApplication(BaseModel):
     leave_type: str = Field(..., pattern="^(casual|sick|earned|unpaid)$")
     start_date: date
     end_date: date
-    reason: str
+    reason: str = Field(..., min_length=3, max_length=500)
 
 class LeaveApprovalAction(BaseModel):
-    comments: str
+    comments: str = Field(..., max_length=500)
 
 class LeaveApprovalResponse(BaseModel):
     manager_name: str

@@ -28,10 +28,12 @@ async def list_employees(
     )
     
     if search:
+        # Escape SQL LIKE wildcard characters to prevent injection
+        safe_search = search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
         query = query.where(
             or_(
-                Employee.name.ilike(f"%{search}%"),
-                Employee.email.ilike(f"%{search}%")
+                Employee.name.ilike(f"%{safe_search}%"),
+                Employee.email.ilike(f"%{safe_search}%")
             )
         )
     
