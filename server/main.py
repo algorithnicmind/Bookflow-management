@@ -6,20 +6,29 @@ from app.routes import auth, leaves, employees, dashboard
 import uvicorn
 import os
 
+from app.config import settings
+from app.middleware.handlers import RequestLoggingMiddleware, global_exception_handler
+
 app = FastAPI(
     title="Leave Management System API",
     version="1.0",
     description="API for managing employee leaves, approvals, and balances."
 )
 
-# Configure CORS (from TRD)
+# Configure CORS dynamically for production
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, restrict to actual frontend domains
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Register Custom Middlewares
+app.add_middleware(RequestLoggingMiddleware)
+
+# Register Global Exception Handlers
+app.add_exception_handler(Exception, global_exception_handler)
 
 @app.on_event("startup")
 async def startup_event():
