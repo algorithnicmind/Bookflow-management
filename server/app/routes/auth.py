@@ -50,7 +50,8 @@ async def login(request: OAuth2PasswordRequestForm = Depends(), db: AsyncSession
     )
     
     return {
-        "token": access_token,
+        "access_token": access_token,
+        "token_type": "bearer",
         "user": {
             "id": user.id,
             "name": user.name,
