@@ -1,30 +1,29 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from passlib.context import CryptContext
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from jose import jwt
 from app.database import get_db
 from app.models import Employee, LeaveBalance
 from app.schemas import LoginRequest, Token, AdminCreateRequest
 from app.config import settings
 from app.dependencies import get_current_user, RoleChecker
+from app.utils import pwd_context
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
     return encoded_jwt
 
-from fastapi.security import OAuth2PasswordRequestForm
 
 @router.post("/login", response_model=Token)
 async def login(request: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
@@ -79,7 +78,7 @@ async def register(request: AdminCreateRequest, db: AsyncSession = Depends(get_d
     db.add(new_employee)
     await db.flush() # flush to get new_employee.id
     
-    current_year = datetime.now().year
+    current_year = datetime.now(timezone.utc).year
     for leave_type, days in [("casual", 12), ("sick", 10), ("earned", 15)]:
         balance = LeaveBalance(employee_id=new_employee.id, leave_type=leave_type, total_days=days, year=current_year)
         db.add(balance)

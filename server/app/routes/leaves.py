@@ -9,13 +9,9 @@ from app.database import get_db
 from app.models import Employee, LeaveBalance, LeaveRequest, LeaveApproval
 from app.schemas import LeaveApplication, LeaveApprovalAction, LeaveResponse
 from app.dependencies import get_current_user, RoleChecker
+from app.utils import get_business_days
 
 router = APIRouter(prefix="/api/leaves", tags=["leaves"])
-
-def get_business_days(start_date, end_date):
-    # Simplified: inclusive total days for MVP
-    # In production, this should exclude weekends and holidays
-    return (end_date - start_date).days + 1
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def apply_leave(
