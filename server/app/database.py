@@ -4,13 +4,9 @@ from sqlalchemy.orm import declarative_base
 from app.config import settings
 
 # Create async SQLAlchemy engine
-# Note: For SQLite we use check_same_thread=False
-connect_args = {"check_same_thread": False} if settings.DATABASE_URL.startswith("sqlite") else {}
-
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=settings.ENVIRONMENT == "development",
-    connect_args=connect_args,
     pool_pre_ping=True,
     pool_recycle=300
 )

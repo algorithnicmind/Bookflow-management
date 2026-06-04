@@ -13,8 +13,7 @@ from app.config import settings
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 async def seed_data():
-    connect_args = {"check_same_thread": False} if settings.DATABASE_URL.startswith("sqlite") else {}
-    engine = create_async_engine(settings.DATABASE_URL, echo=True, connect_args=connect_args)
+    engine = create_async_engine(settings.DATABASE_URL, echo=True)
     
     async_session = async_sessionmaker(engine, expire_on_commit=False)
     

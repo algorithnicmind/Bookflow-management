@@ -21,7 +21,7 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
-    # Initialize DB (Creates tables for SQLite automatically if they don't exist)
+    # Initialize DB (Creates tables automatically if they don't exist)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
