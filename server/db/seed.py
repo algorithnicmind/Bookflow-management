@@ -9,6 +9,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.models import Base, Employee, LeaveBalance
 from app.config import settings
+from datetime import datetime
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -81,7 +82,8 @@ async def seed_data():
         session.add_all([employee_john, employee_jane])
         await session.commit()
         
-        # Initialize Leave Balances for 2026 for all users
+        # Initialize Leave Balances dynamically for the current year
+        current_year = datetime.now().year
         all_users = [super_admin, admin, manager_alice, manager_bob, employee_john, employee_jane]
         for user in all_users:
             for leave_type, days in [("casual", 12), ("sick", 10), ("earned", 15)]:
@@ -89,12 +91,12 @@ async def seed_data():
                     employee_id=user.id,
                     leave_type=leave_type,
                     total_days=days,
-                    year=2026
+                    year=current_year
                 )
                 session.add(balance)
                 
         await session.commit()
-        print("Successfully seeded database with all Demo Credentials from README!")
+        print(f"Successfully seeded database with demo data for year {current_year}!")
 
 if __name__ == "__main__":
     asyncio.run(seed_data())
