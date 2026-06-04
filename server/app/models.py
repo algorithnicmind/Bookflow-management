@@ -69,7 +69,7 @@ class LeaveBalance(Base):
     __tablename__ = "leave_balances"
 
     id = Column(Integer, primary_key=True, index=True)
-    employee_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), nullable=False)
+    employee_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), nullable=False, index=True)
     leave_type = Column(String(20), nullable=False)
     total_days = Column(Integer, nullable=False)
     used_days = Column(Integer, nullable=False, default=0)
