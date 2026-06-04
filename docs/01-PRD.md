@@ -30,7 +30,7 @@ A **web-based Leave Management System** that digitizes the entire leave lifecycl
 | Feature | Description |
 |---------|------------|
 | **User Authentication** | Secure login with email/password, JWT-based sessions |
-| **Role-Based Access** | Six roles: Super Admin, Admin, HR, Finance, Manager, Employee — each with distinct permissions |
+| **Role-Based Access** | Four roles: Super Admin, Admin, Manager, Employee — each with distinct permissions |
 | **Leave Application** | Employees can apply for leave with type, date range, and reason |
 | **Leave History** | Employees can view all their past and current leave requests |
 | **Leave Approval** | Managers can approve or reject leave requests from their direct reports |
@@ -83,7 +83,7 @@ System administrator responsible for managing users, roles, and system configura
 
 **Permissions:**
 - All Manager permissions
-- Create roles (HR, Finance, Manager, Employee)
+- Create roles (Manager, Employee)
 - Add new employees to the system
 - Edit employee details (role, department, manager assignment)
 - Remove employees from the system
@@ -99,39 +99,26 @@ The highest-level authority in the system. Responsible for creating Admin accoun
 - Manage system settings
 - View organization-wide reports
 
-#### 💼 HR
-Human Resources personnel. Has standard employee access for leave management.
-
-**Permissions:**
-- All Employee permissions
-- (Future: HR-specific features can be added in v2)
-
-#### 💰 Finance
-Finance department personnel. Has standard employee access for leave management.
-
-**Permissions:**
-- All Employee permissions
-- (Future: Finance-specific features can be added in v2)
 
 ### 3.2 Permissions Matrix
 
-| Action | Employee | HR | Finance | Manager | Admin | Super Admin |
-|--------|:--------:|:--:|:-------:|:-------:|:-----:|:-----------:|
-| Login | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| View Own Dashboard | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Apply for Leave | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| View Own Leave History | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Cancel Own Pending Leave | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| View Team Pending Requests | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
-| Approve/Reject Leave | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
-| View Team Calendar | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
-| Create Roles | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Add/Edit/Remove Employees | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| View System-Wide Stats | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Reset Leave Balances | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| Create Admin Accounts | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| Manage System Settings | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| View Organization Reports | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Action | Employee | Manager | Admin | Super Admin |
+|--------|:--------:|:-------:|:-----:|:-----------:|
+| Login | ✅ | ✅ | ✅ | ✅ |
+| View Own Dashboard | ✅ | ✅ | ✅ | ✅ |
+| Apply for Leave | ✅ | ✅ | ✅ | ✅ |
+| View Own Leave History | ✅ | ✅ | ✅ | ✅ |
+| Cancel Own Pending Leave | ✅ | ✅ | ✅ | ✅ |
+| View Team Pending Requests | ❌ | ✅ | ✅ | ✅ |
+| Approve/Reject Leave | ❌ | ✅ | ✅ | ✅ |
+| View Team Calendar | ❌ | ✅ | ✅ | ✅ |
+| Create Roles | ❌ | ❌ | ✅ | ✅ |
+| Add/Edit/Remove Employees | ❌ | ❌ | ✅ | ✅ |
+| View System-Wide Stats | ❌ | ❌ | ✅ | ✅ |
+| Reset Leave Balances | ❌ | ❌ | ✅ | ✅ |
+| Create Admin Accounts | ❌ | ❌ | ❌ | ✅ |
+| Manage System Settings | ❌ | ❌ | ❌ | ✅ |
+| View Organization Reports | ❌ | ❌ | ❌ | ✅ |
 
 ---
 

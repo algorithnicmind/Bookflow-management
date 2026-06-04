@@ -260,19 +260,19 @@
                               │        LEAVE MANAGEMENT SYSTEM       │
                               └─────────────────────────────────────┘
                                                 │
-    ┌───────────────────┬─────────────────────┼─────────────────────┬──────────────────┐
-    │                   │                     │                     │                  │
-┌───▼─────┐       ┌─────▼─────┐         ┌─────▼─────┐        ┌─────▼──────┐    ┌──────▼──────┐
-│EMPLOYEE │       │  MANAGER  │         │   ADMIN   │        │SUPER ADMIN │    │  HR/FINANCE │
-└───┬─────┘       └─────┬─────┘         └─────┬─────┘        └─────┬──────┘    └──────┬──────┘
-    │                   │                     │                     │                  │
-┌───▼──────────┐  ┌─────▼────────┐     ┌─────▼─────────┐   ┌──────▼────────┐  ┌──────▼──────┐
-│ US-001 Login │  │ US-001 Login │     │ US-001 Login  │   │ US-001 Login  │  │ US-001 Login│
-│ US-003 Apply │  │ US-007 View  │     │ US-011 View   │   │ US-018 Create │  │ US-003 Apply│
-│ US-004 Hist. │  │ US-008 Appr. │     │ US-012 Add    │   │   Admin Acct  │  │ US-004 Hist.│
-│ US-005 Bal.  │  │ US-009 Reject│     │ US-013 Edit   │   │ US-019 System │  │ US-005 Bal. │
-│ US-006 Cancel│  │ US-010 Team  │     │ US-014 Remove │   │   Settings    │  │ US-015 Dash │
-│ US-015 Dash  │  │ US-016 Dash  │     │ US-017 Dash   │   │ US-020 Org    │  └─────────────┘
+    ┌───────────────────┬─────────────────────┼─────────────────────┐
+    │                   │                     │                     │
+┌───▼─────┐       ┌─────▼─────┐         ┌─────▼─────┐        ┌─────▼──────┐
+│EMPLOYEE │       │  MANAGER  │         │   ADMIN   │        │SUPER ADMIN │
+└───┬─────┘       └─────┬─────┘         └─────┬─────┘        └─────┬──────┘
+    │                   │                     │                     │
+┌───▼──────────┐  ┌─────▼────────┐     ┌─────▼─────────┐   ┌──────▼────────┐
+│ US-001 Login │  │ US-001 Login │     │ US-001 Login  │   │ US-001 Login  │
+│ US-003 Apply │  │ US-007 View  │     │ US-011 View   │   │ US-018 Create │
+│ US-004 Hist. │  │ US-008 Appr. │     │ US-012 Add    │   │   Admin Acct  │
+│ US-005 Bal.  │  │ US-009 Reject│     │ US-013 Edit   │   │ US-019 System │
+│ US-006 Cancel│  │ US-010 Team  │     │ US-014 Remove │   │   Settings    │
+│ US-015 Dash  │  │ US-016 Dash  │     │ US-017 Dash   │   │ US-020 Org    │
 └──────────────┘  └──────────────┘     └───────────────┘   │   Reports    │
                                                             └──────────────┘
 
