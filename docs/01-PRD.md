@@ -14,7 +14,7 @@ Organizations face significant challenges managing employee leave requests manua
 - **Paper-based or email-based leave requests** cause delays, miscommunication, and lack of accountability
 - **Managers lack visibility** into team availability, leading to scheduling conflicts and understaffing
 - **Employees have no real-time status updates** on their leave requests, causing frustration and repeated follow-ups
-- **HR/Admin teams spend excessive time** tracking leave balances, generating reports, and ensuring policy compliance
+- **Admin teams spend excessive time** tracking leave balances, generating reports, and ensuring policy compliance
 - **No centralized dashboard** exists to monitor leave trends and make data-driven staffing decisions
 
 ### The Solution
