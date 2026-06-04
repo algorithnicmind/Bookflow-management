@@ -1,11 +1,12 @@
+import uvicorn
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
 
 from app.routes import auth, leaves, employees, dashboard
-import uvicorn
-import os
+
 
 from app.config import settings
 from app.middleware.handlers import RequestLoggingMiddleware, global_exception_handler
