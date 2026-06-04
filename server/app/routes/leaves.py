@@ -48,7 +48,7 @@ async def apply_leave(
             LeaveBalance.employee_id == current_user.id,
             LeaveBalance.leave_type == request.leave_type,
             LeaveBalance.year == current_year
-        )
+        ).with_for_update()
         balance_res = await db.execute(balance_query)
         balance = balance_res.scalar_one_or_none()
         
@@ -147,7 +147,7 @@ async def cancel_leave(
             LeaveBalance.employee_id == leave.employee_id,
             LeaveBalance.leave_type == leave.leave_type,
             LeaveBalance.year == current_year
-        ))
+        ).with_for_update())
         balance = b_res.scalar_one_or_none()
         if balance:
             balance.used_days -= requested_days
@@ -185,7 +185,7 @@ async def approve_leave(
     db: AsyncSession = Depends(get_db),
     current_user: Employee = Depends(RoleChecker(["manager", "admin", "super_admin"]))
 ):
-    result = await db.execute(select(LeaveRequest, Employee).join(Employee).where(LeaveRequest.id == leave_id))
+    result = await db.execute(select(LeaveRequest, Employee).join(Employee).where(LeaveRequest.id == leave_id).with_for_update())
     row = result.first()
     
     if not row:
@@ -218,7 +218,7 @@ async def reject_leave(
     if not action.comments or not action.comments.strip():
         raise HTTPException(status_code=400, detail="Rejection reason is required")
         
-    result = await db.execute(select(LeaveRequest, Employee).join(Employee).where(LeaveRequest.id == leave_id))
+    result = await db.execute(select(LeaveRequest, Employee).join(Employee).where(LeaveRequest.id == leave_id).with_for_update())
     row = result.first()
     
     if not row:
@@ -247,7 +247,7 @@ async def reject_leave(
             LeaveBalance.employee_id == leave.employee_id,
             LeaveBalance.leave_type == leave.leave_type,
             LeaveBalance.year == current_year
-        ))
+        ).with_for_update())
         balance = b_res.scalar_one_or_none()
         if balance:
             balance.used_days -= requested_days

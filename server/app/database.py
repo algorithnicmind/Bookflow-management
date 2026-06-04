@@ -24,7 +24,11 @@ AsyncSessionLocal = async_sessionmaker(
 
 Base = declarative_base()
 
-# Dependency to get DB session
+# Dependency to get DB session with proper transaction management
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as session:
-        yield session
+        try:
+            yield session
+        except Exception:
+            await session.rollback()
+            raise
