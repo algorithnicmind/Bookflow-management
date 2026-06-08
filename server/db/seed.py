@@ -7,8 +7,10 @@ import sys
 # Add parent directory to path to import app modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.models import Base, Employee, LeaveBalance
-from app.config import settings
+from app.modules.employees.models import Employee
+from app.modules.leaves.models import LeaveBalance
+from app.core.database import Base
+from app.core.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
