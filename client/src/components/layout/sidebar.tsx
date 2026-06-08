@@ -1,10 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useRole } from "@/hooks/use-role";
 import { ROUTES } from "@/constants/routes";
+import { getPendingRequests } from "@/services/leaves.service";
 
 interface NavItem {
   label: string;
@@ -21,6 +23,16 @@ interface SidebarProps {
 export function Sidebar({ pendingCount = 0 }: SidebarProps) {
   const pathname = usePathname();
   const { role, isManager, isAdmin, isSuperAdmin } = useRole();
+  const [actualCount, setActualCount] = useState(pendingCount);
+
+  useEffect(() => {
+    if (isManager) {
+      getPendingRequests()
+        .then((res) => setActualCount(res.pending.length))
+        .catch(() => {});
+    }
+  }, [isManager, pathname]);
+
 
   const navItems: NavItem[] = [
     { label: "Dashboard", href: ROUTES.DASHBOARD, icon: "📊" },
@@ -32,7 +44,7 @@ export function Sidebar({ pendingCount = 0 }: SidebarProps) {
             label: "Pending Approvals",
             href: ROUTES.PENDING_APPROVALS,
             icon: "⏳",
-            badge: pendingCount,
+            badge: actualCount,
           },
         ]
       : []),

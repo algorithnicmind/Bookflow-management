@@ -36,16 +36,16 @@
 - [x] Leave type selector with balance display
 - [x] Date pickers with auto-calculated duration
 - [x] Zod validation
-- [ ] Leave History page with table
-- [ ] Status filter
-- [ ] Cancel leave functionality
+- [x] Leave History page with table
+- [x] Status filter
+- [x] Cancel leave functionality
 
 ## Milestone 5: Manager Portal
-- [ ] Pending Approvals page
-- [ ] Approve dialog with optional comments
-- [ ] Reject dialog with required comments
-- [ ] Empty state for no pending requests
-- [ ] Sidebar pending count badge
+- [x] Pending Approvals page
+- [x] Approve dialog with optional comments
+- [x] Reject dialog with required comments
+- [x] Empty state for no pending requests
+- [x] Sidebar pending count badge
 
 ## Milestone 6: Admin & Super Admin Panels
 - [ ] Employee Management page (table + search)

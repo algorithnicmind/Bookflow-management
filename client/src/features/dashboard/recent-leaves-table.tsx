@@ -36,7 +36,7 @@ export function RecentLeavesTable({ leaves }: { leaves: LeaveRequest[] }) {
                 <td className="px-6 py-4 text-[var(--text-secondary)]">
                   {format(new Date(leave.start_date), "MMM d")} - {format(new Date(leave.end_date), "MMM d, yyyy")}
                 </td>
-                <td className="px-6 py-4">{leave.days_count}</td>
+                <td className="px-6 py-4">{leave.days}</td>
                 <td className="px-6 py-4">
                   <StatusBadge status={leave.status} />
                 </td>

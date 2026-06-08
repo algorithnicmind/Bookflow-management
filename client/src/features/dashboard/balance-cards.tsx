@@ -10,8 +10,8 @@ export function BalanceCards({ balances }: { balances: LeaveBalance[] }) {
       <h2 className="text-lg font-semibold mb-4">Leave Balances</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {balances.map((balance, i) => {
-          const used = balance.total_allocated - balance.remaining;
-          const percentage = Math.min(100, Math.max(0, (used / balance.total_allocated) * 100));
+          const used = balance.used_days;
+          const percentage = Math.min(100, Math.max(0, (used / balance.total_days) * 100));
           
           return (
             <motion.div
@@ -39,7 +39,7 @@ export function BalanceCards({ balances }: { balances: LeaveBalance[] }) {
               
               <div className="flex justify-between text-xs text-[var(--text-muted)]">
                 <span>{used} used</span>
-                <span>{balance.total_allocated} total</span>
+                <span>{balance.total_days} total</span>
               </div>
             </motion.div>
           );

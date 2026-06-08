@@ -16,7 +16,7 @@ import { ROUTES } from "@/constants/routes";
 
 const leaveSchema = z.object({
   leave_type: z.enum(["casual", "sick", "earned", "unpaid"] as const, {
-    required_error: "Please select a leave type.",
+    message: "Please select a leave type."
   }),
   start_date: z.string().min(1, "Start date is required."),
   end_date: z.string().min(1, "End date is required."),

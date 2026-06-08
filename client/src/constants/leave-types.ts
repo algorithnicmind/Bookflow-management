@@ -49,3 +49,11 @@ export const LEAVE_STATUS_CONFIG = {
 export function getLeaveTypeConfig(type: string): LeaveTypeConfig | undefined {
   return LEAVE_TYPES.find((lt) => lt.value === type);
 }
+
+export const LEAVE_TYPE_LABELS: Record<string, string> = {
+  casual: "Casual Leave",
+  sick: "Sick Leave",
+  earned: "Earned Leave",
+  unpaid: "Unpaid Leave"
+};
+
