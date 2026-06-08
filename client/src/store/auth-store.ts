@@ -14,6 +14,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (typeof window !== "undefined") {
       localStorage.setItem(AUTH_TOKEN_KEY, token);
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+      document.cookie = `leaveflow_token=${token}; path=/; max-age=86400; SameSite=Lax`;
     }
     set({ user, token, isAuthenticated: true, isLoading: false });
   },
@@ -22,6 +23,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (typeof window !== "undefined") {
       localStorage.removeItem(AUTH_TOKEN_KEY);
       localStorage.removeItem(AUTH_USER_KEY);
+      document.cookie = "leaveflow_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     }
     set({ user: null, token: null, isAuthenticated: false, isLoading: false });
   },

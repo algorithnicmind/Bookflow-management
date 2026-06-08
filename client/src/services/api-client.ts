@@ -30,6 +30,7 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && typeof window !== "undefined") {
       localStorage.removeItem("leaveflow_token");
       localStorage.removeItem("leaveflow_user");
+      document.cookie = "leaveflow_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       // Only redirect if not already on login page
       if (!window.location.pathname.includes("/login")) {
         window.location.href = "/login";

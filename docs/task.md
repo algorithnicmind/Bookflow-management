@@ -4,38 +4,38 @@
 - [x] Initialize Next.js 14 with TypeScript + Tailwind + App Router
 - [x] Install dependencies (shadcn/ui, axios, zustand, zod, react-hook-form, framer-motion, recharts, sonner, date-fns)
 - [x] Configure Tailwind with design system tokens
-- [ ] Set up shadcn/ui (dark theme)
+- [x] Set up shadcn/ui (dark theme)
 - [x] Create TypeScript type definitions
 - [x] Create constants (roles, routes, leave-types)
 - [x] Create Axios API client with auth interceptor
 - [x] Create Zustand auth store
-- [ ] Create Next.js middleware for auth redirects
+- [x] Create Next.js middleware for auth redirects
 - [x] Create RBAC utilities (RoleGuard, useRole hook)
 - [x] Build layout shell: Sidebar + Topbar
 - [x] Create shared components (StatusBadge, LoadingSkeleton, EmptyState)
 
 ## Milestone 2: Authentication System
-- [ ] Build login page with glassmorphism design
-- [ ] Create login form with RHF + Zod
-- [ ] Implement auth service (form-data login)
-- [ ] Role-based redirect after login
-- [ ] Logout implementation
-- [ ] Token expiry handling (401 interceptor)
+- [x] Build login page with glassmorphism design
+- [x] Create login form with RHF + Zod
+- [x] Implement auth service (form-data login)
+- [x] Role-based redirect after login
+- [x] Logout implementation
+- [x] Token expiry handling (401 interceptor)
 
 ## Milestone 3: Employee Dashboard
-- [ ] Dashboard page with stats cards
-- [ ] Leave balance cards with progress indicators
-- [ ] Recent leaves table
-- [ ] Quick action buttons
-- [ ] Manager-specific section (team pending, on-leave-today)
-- [ ] Admin-specific section (org stats)
-- [ ] Staggered entry animations
+- [x] Dashboard page with stats cards
+- [x] Leave balance cards with progress indicators
+- [x] Recent leaves table
+- [x] Quick action buttons
+- [x] Manager-specific section (team pending, on-leave-today)
+- [x] Admin-specific section (org stats)
+- [x] Staggered entry animations
 
 ## Milestone 4: Leave Management Module
-- [ ] Apply Leave page with form
-- [ ] Leave type selector with balance display
-- [ ] Date pickers with auto-calculated duration
-- [ ] Zod validation
+- [x] Apply Leave page with form
+- [x] Leave type selector with balance display
+- [x] Date pickers with auto-calculated duration
+- [x] Zod validation
 - [ ] Leave History page with table
 - [ ] Status filter
 - [ ] Cancel leave functionality
