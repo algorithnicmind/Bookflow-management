@@ -291,25 +291,6 @@ Coverage Goal:
 80%+
 
 ====================================================
-DEVOPS REQUIREMENTS
-====================================================
-
-Create:
-
-- Docker
-- Docker Compose
-- GitHub Actions
-- Environment Management
-- CI/CD Pipelines
-
-Pipeline:
-
-Lint
-→ Test
-→ Build
-→ Deploy
-
-====================================================
 SECURITY REQUIREMENTS
 ====================================================
 
