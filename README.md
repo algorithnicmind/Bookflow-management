@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🏢 Leave Management System
+# 🏢 Leaveflow Management System
 
 ### A Modern, Role-Based Employee Leave Management Platform
 
