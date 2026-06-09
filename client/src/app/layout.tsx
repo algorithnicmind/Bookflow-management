@@ -25,9 +25,17 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col bg-background text-foreground overflow-x-hidden relative">
+        {/* Global animated ambient background elements */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none -z-50">
+          <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-primary/5 blur-[120px] animate-pulse-glow opacity-50" />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-blue-600/5 blur-[120px] opacity-40" />
+        </div>
+        
+        {children}
+      </body>
     </html>
   );
 }

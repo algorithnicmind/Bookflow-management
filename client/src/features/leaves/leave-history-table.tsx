@@ -54,12 +54,15 @@ export function LeaveHistoryTable() {
   return (
     <div className="space-y-6">
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 glass-card p-4">
-        <h3 className="text-lg font-medium">Filter Records</h3>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 glass-card p-6 border-l-4 border-[var(--primary)] hover:border-[var(--primary-hover)] transition-colors">
+        <h3 className="text-xl font-bold flex items-center gap-2">
+          <span className="text-2xl">🔍</span>
+          <span className="text-[var(--text-primary)]">Filter Records</span>
+        </h3>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="input-field max-w-[200px]"
+          className="input-field max-w-[200px] shadow-sm font-semibold"
         >
           <option value="all">All Requests</option>
           <option value="pending">Pending</option>
@@ -70,9 +73,9 @@ export function LeaveHistoryTable() {
       </div>
 
       {/* Table */}
-      <div className="glass-card overflow-hidden">
+      <div className="glass-card overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.2)] border border-[var(--glass-border)]">
         {isLoading ? (
-          <div className="p-6">
+          <div className="p-8">
             <LoadingSkeleton lines={5} />
           </div>
         ) : leaves.length === 0 ? (
@@ -86,35 +89,37 @@ export function LeaveHistoryTable() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="text-xs text-[var(--text-muted)] uppercase bg-white/5 border-b border-[var(--glass-border)]">
+              <thead className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider bg-[var(--bg-secondary)]/50">
                 <tr>
-                  <th className="px-6 py-4">Type</th>
-                  <th className="px-6 py-4">Date Range</th>
-                  <th className="px-6 py-4">Days</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
+                  <th className="px-6 py-4 border-b border-[var(--glass-border)]">Type</th>
+                  <th className="px-6 py-4 border-b border-[var(--glass-border)]">Date Range</th>
+                  <th className="px-6 py-4 border-b border-[var(--glass-border)] text-center">Days</th>
+                  <th className="px-6 py-4 border-b border-[var(--glass-border)]">Status</th>
+                  <th className="px-6 py-4 border-b border-[var(--glass-border)] text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-[var(--glass-border)]">
                 {leaves.map((leave, index) => (
                   <motion.tr 
                     key={leave.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="border-b border-[var(--glass-border)] hover:bg-white/5 transition-colors"
+                    className="group hover:bg-[var(--primary)]/5 transition-colors cursor-default"
                   >
-                    <td className="px-6 py-4 font-medium text-[var(--text-primary)]">
+                    <td className="px-6 py-4 font-semibold text-[var(--text-primary)] group-hover:text-[var(--primary)] transition-colors">
                       {LEAVE_TYPE_LABELS[leave.leave_type] || leave.leave_type}
-                      <p className="text-xs text-[var(--text-muted)] font-normal mt-1 max-w-[200px] truncate" title={leave.reason}>
+                      <p className="text-xs text-[var(--text-secondary)] font-medium mt-1 max-w-[200px] truncate" title={leave.reason}>
                         {leave.reason}
                       </p>
                     </td>
-                    <td className="px-6 py-4 text-[var(--text-secondary)]">
+                    <td className="px-6 py-4 text-[var(--text-secondary)] font-medium">
                       <div>{format(new Date(leave.start_date), "MMM d, yyyy")}</div>
                       <div className="text-xs text-[var(--text-muted)]">to {format(new Date(leave.end_date), "MMM d, yyyy")}</div>
                     </td>
-                    <td className="px-6 py-4 font-medium">{leave.days}</td>
+                    <td className="px-6 py-4 text-center font-bold">
+                      <span className="bg-white/5 px-3 py-1 rounded-lg border border-white/5">{leave.days}</span>
+                    </td>
                     <td className="px-6 py-4">
                       <StatusBadge status={leave.status} />
                     </td>
@@ -123,12 +128,12 @@ export function LeaveHistoryTable() {
                         <button
                           onClick={() => handleCancel(leave.id)}
                           disabled={isCancelling === leave.id}
-                          className="text-[var(--danger)] hover:bg-[var(--danger)]/10 px-3 py-1.5 rounded-md transition-colors text-xs font-semibold disabled:opacity-50"
+                          className="text-[var(--danger)] bg-[var(--danger)]/5 hover:bg-[var(--danger)]/15 border border-[var(--danger)]/20 px-3 py-1.5 rounded-lg transition-colors text-xs font-bold disabled:opacity-50"
                         >
                           {isCancelling === leave.id ? "Cancelling..." : "Cancel"}
                         </button>
                       ) : (
-                        <span className="text-xs text-[var(--text-muted)]">—</span>
+                        <span className="text-xs font-bold text-[var(--text-muted)] opacity-50">—</span>
                       )}
                     </td>
                   </motion.tr>

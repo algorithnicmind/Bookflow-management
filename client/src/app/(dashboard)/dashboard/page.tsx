@@ -54,11 +54,11 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold gradient-text">Welcome back, {user?.name}</h1>
-          <p className="text-[var(--text-secondary)]">Here's what's happening today.</p>
+    <div className="space-y-8 stagger-children">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
+        <div className="animate-slide-in">
+          <h1 className="text-3xl font-bold gradient-text">Welcome back, {user?.name}</h1>
+          <p className="text-[var(--text-secondary)] mt-1">Here's what's happening today.</p>
         </div>
         
         <div className="flex gap-3">
@@ -81,16 +81,16 @@ export default function DashboardPage() {
       )}
 
       {data.org_stats && (
-        <div className="glass-card p-6 mb-8 border-l-4 border-[var(--primary)]">
-          <h3 className="text-lg font-bold mb-2">Organization Overview</h3>
-          <div className="flex gap-8">
-            <div>
-              <p className="text-sm text-[var(--text-muted)]">Total Employees</p>
-              <p className="text-xl font-semibold">{data.org_stats.total_employees}</p>
+        <div className="glass-card p-6 border-l-4 border-[var(--primary)] hover:border-[var(--primary-hover)] transition-colors">
+          <h3 className="text-xl font-bold mb-4">Organization Overview</h3>
+          <div className="grid grid-cols-2 gap-8">
+            <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+              <p className="text-sm text-[var(--text-muted)] uppercase tracking-wider font-semibold mb-1">Total Employees</p>
+              <p className="text-3xl font-bold gradient-text">{data.org_stats.total_employees}</p>
             </div>
-            <div>
-              <p className="text-sm text-[var(--text-muted)]">Total Requests</p>
-              <p className="text-xl font-semibold">{data.org_stats.total_requests}</p>
+            <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+              <p className="text-sm text-[var(--text-muted)] uppercase tracking-wider font-semibold mb-1">Total Requests</p>
+              <p className="text-3xl font-bold gradient-text">{data.org_stats.total_requests}</p>
             </div>
           </div>
         </div>
