@@ -34,7 +34,7 @@
 │              │   Pass: password123       │              │
 │              └───────────────────────────┘              │
 │                                                         │
-│              ─── Dark gradient background ───           │
+    ---🌈 Purple → Pink → Indigo Gradient Background----         │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -49,38 +49,46 @@
 ## 2. Employee Dashboard
 
 ```
-┌──────────────────────────────────────────────────────────────────────┐
-│  ☰  LEAVE MANAGER                              👤 John Doe  ⏏ Logout│
-├────────────┬─────────────────────────────────────────────────────────┤
-│            │                                                         │
-│  📊 Dash   │  Welcome back, John! 👋                                │
-│            │                                                         │
-│  ✏️ Apply  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  │
-│            │  │ 🏖 Casual │ │ 🏥 Sick  │ │ 📅 Earned│ │ 📊 Total │  │
-│  📋 History│  │          │ │          │ │          │ │          │  │
-│            │  │  9 / 12  │ │  9 / 10  │ │ 15 / 15 │ │  33 / 37 │  │
-│  ──────    │  │ remaining│ │ remaining│ │ remaining│ │ remaining│  │
-│            │  └──────────┘ └──────────┘ └──────────┘ └──────────┘  │
-│            │                                                         │
-│            │  ┌─────────────────────────────────────────────────┐    │
-│            │  │ Recent Leave Requests                           │    │
-│            │  ├───────┬───────┬──────────┬──────────┬──────────┤    │
-│            │  │ Type  │ Dates │ Reason   │ Status   │ Action   │    │
-│            │  ├───────┼───────┼──────────┼──────────┼──────────┤    │
-│            │  │Casual │Jun 15 │Family    │🟡Pending │ Cancel   │    │
-│            │  │       │-17    │event     │          │          │    │
-│            │  ├───────┼───────┼──────────┼──────────┼──────────┤    │
-│            │  │Sick   │May 10 │Doctor    │🟢Approved│   —      │    │
-│            │  │       │       │visit     │          │          │    │
-│            │  ├───────┼───────┼──────────┼──────────┼──────────┤    │
-│            │  │Earned │Apr 20 │Vacation  │🔴Rejected│   —      │    │
-│            │  │       │-25    │          │          │          │    │
-│            │  └───────┴───────┴──────────┴──────────┴──────────┘    │
-│            │                                                         │
-│            │  ┌─────────────────────────┐                           │
-│            │  │  ✏️ Apply for New Leave  │                           │
-│            │  └─────────────────────────┘                           │
-└────────────┴─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ☰ LEAVE MANAGER                                🔔 👤 John Doe  ⏏ Logout     │
+├─────────────┬────────────────────────────────────────────────────────────────┤
+│             │                                                                │
+│ 📊 Dashboard│  👋 Welcome Back, John!                                        │
+│             │                                                                │
+│ ✏️ Apply    │  Leave Balance Overview                                        │
+│             │                                                                │
+│ 📋 History  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐          │
+│             │  │ 🏖️ CL    │ │ 🏥 SL    │ │ 📅 EL/PL │ │ 📊 Total │          │
+│ 👔 Manager  │  │ 10 / 12  │ │ 11 / 12  │ │ 16 / 18  │ │ 37 / 42  │          │
+│             │  │ Available│ │ Available│ │ Available│ │ Available│          │
+│ ⚙ Settings  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘          │
+│             │                                                                │
+│ 🚪 Logout   │  Special Leave Benefits                                        │
+│             │                                                                │
+│             │  ┌───────────────────────────────────────────────────────┐     │
+│             │  │ 👶 Maternity Leave     │ 26 Weeks (Paid)             │     │
+│             │  ├───────────────────────────────────────────────────────┤     │
+│             │  │ 💝 Miscarriage Leave   │ 6 Weeks (Paid)              │     │
+│             │  ├───────────────────────────────────────────────────────┤     │
+│             │  │ 📄 Unpaid Leave (LWP) │ Unlimited                    │     │
+│             │  └───────────────────────────────────────────────────────┘     │
+│             │                                                                │
+│             │  Carry Forward Information                                     │
+│             │                                                                │
+│             │  🏖️ Casual Leave      → Not Allowed                           │
+│             │  🏥 Sick Leave        → Not Allowed                           │
+│             │  📅 Earned Leave      → Max 5 Days Carry Forward              │
+│             │                                                                │
+│             │  Recent Leave Requests                                         │
+│             │  ┌───────────────────────────────────────────────────────┐     │
+│             │  │ Casual Leave    │ Jun 15-17 │ 🟡 Pending             │     │
+│             │  │ Sick Leave      │ May 10    │ 🟢 Approved            │     │
+│             │  │ Earned Leave    │ Apr 20-25 │ 🔴 Rejected            │     │
+│             │  └───────────────────────────────────────────────────────┘     │
+│             │                                                                │
+│             │            [ ✏️ Apply New Leave ]                              │
+│             │                                                                │
+└─────────────┴────────────────────────────────────────────────────────────────┘
 ```
 
 **Design Notes:**
@@ -301,3 +309,21 @@
 | Border Radius | 12px (cards), 8px (inputs), 6px (badges) |
 | Shadows | Multi-layer for depth |
 | Animations | 0.2s ease transitions, subtle hover lifts |
+
+| Element       | Color                               |
+| ------------- | ----------------------------------- |
+| Primary       | #6366F1 (Indigo)                    |
+| Secondary     | #8B5CF6 (Purple)                    |
+| Success       | #22C55E (Green)                     |
+| Warning       | #F59E0B (Orange)                    |
+| Danger        | #EF4444 (Red)                       |
+| Background    | Linear Gradient (#0F172A → #1E293B) |
+| Cards         | Glassmorphism + Blur                |
+| Font          | Inter / Poppins                     |
+| Border Radius | 16px                                |
+| Shadow        | Soft Floating Shadow                |
+---
+🟢 Approved    → Green Badge
+🟡 Pending     → Orange Badge
+🔴 Rejected    → Red Badge
+🔵 Cancelled   → Blue Badge

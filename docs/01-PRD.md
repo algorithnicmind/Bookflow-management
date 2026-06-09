@@ -124,15 +124,31 @@ The highest-level authority in the system. Responsible for creating Admin accoun
 
 ## 4. Leave Types
 
-| Type | Annual Quota | Carry Forward | Description |
-|------|:-----------:|:-------------:|-------------|
-| **Casual Leave** | 12 days | No | For personal errands, short absences |
-| **Sick Leave** | 10 days | No | For medical reasons (doctor's note may be required for 3+ days) |
-| **Earned Leave** | 15 days | Yes (max 5) | Accrued leave, typically for planned vacations |
-| **Unpaid Leave** | Unlimited | N/A | When all paid leave is exhausted |
+| Type                                       | Annual Quota |   Carry Forward  | Description                                                                                                 |
+| ------------------------------------------ | :----------: | :--------------: | ----------------------------------------------------------------------------------------------------------- |
+| **Casual Leave (CL)**                      |    12 Days   |        No        | Personal work, emergencies, family functions, or short-term absences. Applicable to all employees.          |
+| **Sick Leave (SL)**                        |    12 Days   |        No        | For illness, medical treatment, or health-related issues. Medical proof may be required for extended leave. |
+| **Earned Leave / Privilege Leave (EL/PL)** |    18 Days   | Yes (Max 5 Days) | Planned vacations, long breaks, or personal commitments. Accumulated based on company policy.               |
+| **Maternity Leave**                        |   26 Weeks   |        N/A       | Paid leave for female employees before and after childbirth as per Maternity Benefit Act, 1961.             |
+| **Miscarriage Leave**                      |    6 Weeks   |        N/A       | Paid leave granted to female employees in case of miscarriage, as per applicable labor laws.                |
+| **Unpaid Leave (LWP)**                     |   Unlimited  |        N/A       | Granted when paid leave balance is exhausted or under special circumstances.                                |
 
----
-
+## Admin Leave Policy Page
+┌────────────────────────────────────────────────────────────┐
+│ 📋 Company Leave Policy                                   │
+├────────────────────────────────────────────────────────────┤
+│ Casual Leave (CL)                 12 Days                 │
+│ Sick Leave (SL)                   12 Days                 │
+│ Earned Leave (EL/PL)              18 Days                 │
+│ Maternity Leave                   26 Weeks               │
+│ Miscarriage Leave                 6 Weeks                │
+│ Leave Without Pay (LWP)           Unlimited              │
+├────────────────────────────────────────────────────────────┤
+│ Carry Forward Rules                                     │
+│ • CL → Not Allowed                                      │
+│ • SL → Not Allowed                                      │
+│ • EL/PL → Maximum 5 Days                               │
+└────────────────────────────────────────────────────────────┘
 ## 5. Key Business Rules
 
 1. Leave **end date** must be ≥ **start date**
