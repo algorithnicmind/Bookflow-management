@@ -6,9 +6,9 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     ENVIRONMENT: str = "development"
     
-    DATABASE_URL: str = "postgresql+asyncpg://localhost:5432/leave_management"
+    DATABASE_URL: str
     
-    JWT_SECRET: str = "your-super-cryptographically-secure-key-phrase-12345"
+    JWT_SECRET: str
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
 
