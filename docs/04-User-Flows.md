@@ -9,7 +9,7 @@
 ## 1. Employee — Login Flow
 
 ```mermaid
-flowchart TD
+--flowchart TD
     A[🌐 Open Application] --> B[📄 Login Page]
     B --> C[✍️ Enter Email & Password]
     C --> D{Valid Credentials?}
@@ -74,7 +74,7 @@ flowchart TD
     C -->|No| D[ℹ️ No Pending Requests]
     C -->|Yes| E[📄 Review Request Details]
     E --> F{Decision}
-    F -->|Approve| G[💬 Add Optional Comments]
+    F -->|Approved| G[💬 Add Optional Comments]
     F -->|Reject| H[💬 Add Mandatory Reason]
     G --> I[✅ Status → APPROVED]
     H --> J[❌ Status → REJECTED]
