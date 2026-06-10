@@ -70,15 +70,15 @@ export function LoginForm() {
       variants={fadeInUp}
       initial="hidden"
       animate="visible"
-      className="glass-card p-8 sm:p-10 w-full max-w-md mx-auto relative z-10"
+      className="bg-white/50 dark:bg-[#111326]/50 backdrop-blur-xl border border-[var(--glass-border)] shadow-2xl p-8 sm:p-10 w-full mx-auto relative z-10 rounded-3xl"
     >
       {/* Header */}
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--primary)] to-indigo-600 shadow-lg shadow-[var(--primary-glow)] mb-5">
-          <span className="text-2xl font-bold text-white">L</span>
+        <div className="lg:hidden inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--primary)] to-indigo-600 shadow-lg shadow-[var(--primary-glow)] mb-4">
+          <span className="text-xl font-bold text-white">L</span>
         </div>
-        <h1 className="text-3xl font-bold gradient-text mb-2">LeaveFlow</h1>
-        <p className="text-[var(--text-secondary)] text-sm">Sign in to your account to continue</p>
+        <h2 className="text-3xl font-bold mb-2 text-[var(--text-primary)]">Welcome back</h2>
+        <p className="text-[var(--text-secondary)] text-sm">Please enter your details to sign in.</p>
       </div>
 
       {/* Form */}
@@ -163,7 +163,7 @@ export function LoginForm() {
       </form>
 
       {/* Demo Credentials */}
-      <div className="mt-8 text-center text-sm text-[var(--text-muted)] bg-white/[0.02] p-4 rounded-xl border border-[var(--glass-border)]">
+      <div className="mt-8 text-center text-sm text-[var(--text-muted)] bg-[var(--bg-secondary)]/50 dark:bg-white/[0.02] p-4 rounded-2xl border border-[var(--glass-border)]">
         <p className="font-semibold mb-3 text-[var(--text-secondary)] text-xs uppercase tracking-wider">Demo Credentials</p>
         <div className="space-y-2 text-xs">
           {[
