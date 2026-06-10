@@ -28,11 +28,46 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from sqlalchemy import select
+from app.core.database import AsyncSessionLocal
+from app.core.security import pwd_context
+
+async def seed_demo_users():
+    async with AsyncSessionLocal() as db:
+        admin_res = await db.execute(select(Employee).where(Employee.email == "admin@leaveflow.com"))
+        if not admin_res.scalar_one_or_none():
+            db.add(Employee(
+                name="Admin Demo",
+                email="admin@leaveflow.com",
+                password_hash=pwd_context.hash("admin123"),
+                role="admin",
+                department="Management",
+                is_active=True
+            ))
+            db.add(Employee(
+                name="Manager Demo",
+                email="manager@leaveflow.com",
+                password_hash=pwd_context.hash("pass123"),
+                role="manager",
+                department="Engineering",
+                is_active=True
+            ))
+            db.add(Employee(
+                name="Employee Demo",
+                email="employee1@leaveflow.com",
+                password_hash=pwd_context.hash("pass123"),
+                role="employee",
+                department="Engineering",
+                is_active=True
+            ))
+            await db.commit()
+
 @app.on_event("startup")
 async def startup_event():
     # Initialize DB (Creates tables automatically if they don't exist)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    await seed_demo_users()
 
 app.include_router(auth_router)
 app.include_router(employees_router)
