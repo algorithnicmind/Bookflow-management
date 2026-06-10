@@ -70,7 +70,7 @@ export function LoginForm() {
       variants={fadeInUp}
       initial="hidden"
       animate="visible"
-      className="bg-white/50 dark:bg-[#111326]/50 backdrop-blur-xl border border-[var(--glass-border)] shadow-2xl p-8 sm:p-10 w-full mx-auto relative z-10 rounded-3xl"
+      className="w-full mx-auto relative z-10"
     >
       {/* Header */}
       <div className="text-left mb-8">
@@ -167,7 +167,7 @@ export function LoginForm() {
       </form>
 
       {/* Demo Credentials */}
-      <div className="mt-8 text-left text-sm text-[var(--text-muted)] bg-[var(--bg-secondary)]/50 dark:bg-white/[0.02] p-5 rounded-2xl border border-[var(--glass-border)]">
+      <div className="mt-8 text-left text-sm text-[var(--text-muted)] bg-gray-50 dark:bg-white/[0.03] p-5 rounded-2xl">
         <p className="font-semibold mb-3 text-[var(--text-secondary)] text-xs uppercase tracking-wider">Demo Credentials</p>
         <div className="space-y-2 text-xs">
           {[
