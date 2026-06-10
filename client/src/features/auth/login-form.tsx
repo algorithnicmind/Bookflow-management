@@ -167,7 +167,7 @@ export function LoginForm() {
       </form>
 
       {/* Demo Credentials */}
-      <div className="mt-8 text-center text-sm text-[var(--text-muted)] bg-[var(--bg-secondary)]/50 dark:bg-white/[0.02] p-4 rounded-2xl border border-[var(--glass-border)]">
+      <div className="mt-8 text-left text-sm text-[var(--text-muted)] bg-[var(--bg-secondary)]/50 dark:bg-white/[0.02] p-5 rounded-2xl border border-[var(--glass-border)]">
         <p className="font-semibold mb-3 text-[var(--text-secondary)] text-xs uppercase tracking-wider">Demo Credentials</p>
         <div className="space-y-2 text-xs">
           {[
