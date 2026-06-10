@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useRole } from "@/hooks/use-role";
@@ -77,6 +78,11 @@ export function Sidebar() {
   const adminItems = navItems.filter((i) => i.group === "admin");
   const systemItems = navItems.filter((i) => i.group === "system");
 
+  const itemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    show: { opacity: 1, x: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } }
+  };
+
   const renderNavLink = (item: NavItem) => {
     const isActive = pathname === item.href;
     const Icon = item.icon;
@@ -122,9 +128,9 @@ export function Sidebar() {
       </Link>
     );
 
-    if (sidebarCollapsed) {
-      return (
-        <Tooltip key={item.href}>
+    return sidebarCollapsed ? (
+      <motion.div variants={itemVariants} key={item.href}>
+        <Tooltip>
           <TooltipTrigger render={linkContent} />
           <TooltipContent side="right" sideOffset={12}>
             <p className="font-medium">{item.label}</p>
@@ -133,10 +139,12 @@ export function Sidebar() {
             )}
           </TooltipContent>
         </Tooltip>
-      );
-    }
-
-    return linkContent;
+      </motion.div>
+    ) : (
+      <motion.div variants={itemVariants} key={item.href}>
+        {linkContent}
+      </motion.div>
+    );
   };
 
   const renderGroup = (label: string, items: NavItem[]) => {
@@ -177,7 +185,15 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-2 px-3 space-y-6 overflow-y-auto">
+      <motion.nav 
+        initial="hidden"
+        animate="show"
+        variants={{
+          hidden: { opacity: 0 },
+          show: { opacity: 1, transition: { staggerChildren: 0.05, delayChildren: 0.1 } }
+        }}
+        className="flex-1 py-2 px-3 space-y-6 overflow-y-auto"
+      >
         {renderGroup("Menu", mainItems)}
         {adminItems.length > 0 && (
           <>
@@ -187,7 +203,7 @@ export function Sidebar() {
         )}
         {!sidebarCollapsed && <Separator className="my-2 opacity-50" />}
         {renderGroup("System", systemItems)}
-      </nav>
+      </motion.nav>
 
       {/* Collapse Toggle */}
       <div className={cn(

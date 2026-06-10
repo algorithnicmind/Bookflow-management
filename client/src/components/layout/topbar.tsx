@@ -15,6 +15,7 @@ import {
   Sun,
   User,
   Settings,
+  Search,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -32,6 +33,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { NotificationsDropdown } from "./notifications-dropdown";
+import { CommandPalette } from "@/components/ui/command-palette";
 
 const ROUTE_LABELS: Record<string, string> = {
   "/dashboard": "Dashboard",
@@ -49,6 +51,7 @@ export function Topbar() {
   const { theme, toggleTheme, unreadNotificationsCount } = useUIStore();
   const router = useRouter();
   const pathname = usePathname();
+  const [cmdOpen, setCmdOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -102,8 +105,21 @@ export function Topbar() {
           </nav>
         </div>
 
-        {/* Right: Actions */}
-        <div className="flex items-center gap-1">
+        {/* Center/Right: Search & Actions */}
+        <div className="flex flex-1 items-center justify-end gap-2 lg:gap-4 ml-4">
+          {/* Search / Command Palette Hint */}
+          <button 
+            className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-[var(--bg-secondary)]/50 hover:bg-[var(--bg-secondary)] border border-[var(--glass-border)] rounded-xl text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-all max-w-[240px] w-full"
+            onClick={() => setCmdOpen(true)}
+          >
+            <Search className="w-4 h-4" />
+            <span className="text-sm flex-1 text-left">Search...</span>
+            <kbd className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-[var(--bg-tertiary)] border border-[var(--glass-border)]">
+              <span className="text-xs">⌘</span>K
+            </kbd>
+          </button>
+          
+          <div className="flex items-center gap-1">
           {/* Theme Toggle */}
           <Tooltip>
             <TooltipTrigger render={
@@ -177,7 +193,9 @@ export function Topbar() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+        </div>
       </div>
+      <CommandPalette open={cmdOpen} setOpen={setCmdOpen} />
     </header>
   );
 }

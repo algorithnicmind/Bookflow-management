@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  LineChart, Line
+  AreaChart, Area
 } from "recharts";
 import { toast } from "sonner";
 import { Download, Users, ClipboardList, Clock, Palmtree, Calendar as CalendarIcon, Filter } from "lucide-react";
@@ -150,29 +150,41 @@ export function AnalyticsDashboard() {
         <ChartCard title="Leave Status Breakdown" delay={0.6}>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={orgStats.status_breakdown}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
-              <XAxis dataKey="status" stroke="rgba(255,255,255,0.5)" tick={{fill: 'rgba(255,255,255,0.5)'}} />
-              <YAxis stroke="rgba(255,255,255,0.5)" tick={{fill: 'rgba(255,255,255,0.5)'}} />
+              <defs>
+                <linearGradient id="colorBar" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#7C3AED" stopOpacity={0.8}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+              <XAxis dataKey="status" stroke="rgba(255,255,255,0.4)" tick={{fill: 'rgba(255,255,255,0.4)'}} axisLine={false} tickLine={false} />
+              <YAxis stroke="rgba(255,255,255,0.4)" tick={{fill: 'rgba(255,255,255,0.4)'}} axisLine={false} tickLine={false} />
               <Tooltip 
-                contentStyle={{ background: 'rgba(17, 19, 38, 0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
-                cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                contentStyle={{ background: 'rgba(11, 12, 22, 0.95)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
+                cursor={{ fill: 'rgba(255,255,255,0.02)' }}
               />
-              <Bar dataKey="count" fill="#4F46E5" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="count" fill="url(#colorBar)" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
 
         <ChartCard title="Monthly Leave Trend" delay={0.7} className="lg:col-span-2">
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={orgStats.monthly_trend}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
-              <XAxis dataKey="month" stroke="rgba(255,255,255,0.5)" tick={{fill: 'rgba(255,255,255,0.5)'}} />
-              <YAxis stroke="rgba(255,255,255,0.5)" tick={{fill: 'rgba(255,255,255,0.5)'}} />
+            <AreaChart data={orgStats.monthly_trend}>
+              <defs>
+                <linearGradient id="colorTrend" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+              <XAxis dataKey="month" stroke="rgba(255,255,255,0.4)" tick={{fill: 'rgba(255,255,255,0.4)'}} axisLine={false} tickLine={false} />
+              <YAxis stroke="rgba(255,255,255,0.4)" tick={{fill: 'rgba(255,255,255,0.4)'}} axisLine={false} tickLine={false} />
               <Tooltip 
-                contentStyle={{ background: 'rgba(17, 19, 38, 0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
+                contentStyle={{ background: 'rgba(11, 12, 22, 0.95)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
               />
-              <Line type="monotone" dataKey="count" stroke="#10B981" strokeWidth={3} dot={{ fill: '#10B981', r: 4 }} activeDot={{ r: 6, strokeWidth: 0 }} />
-            </LineChart>
+              <Area type="monotone" dataKey="count" stroke="#10B981" strokeWidth={3} fillOpacity={1} fill="url(#colorTrend)" activeDot={{ r: 6, strokeWidth: 0, fill: '#10B981' }} />
+            </AreaChart>
           </ResponsiveContainer>
         </ChartCard>
       </div>
@@ -187,7 +199,7 @@ function StatCard({ title, value, icon, delay }: { title: string; value: number;
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
     >
-      <Card className="glass-card-flat h-full transition-colors hover:border-[var(--primary)]/50 group">
+      <Card className="glass-card h-full transition-colors hover:border-[var(--primary)]/50 group hover:-translate-y-1">
         <CardContent className="p-6 flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-[var(--text-muted)] mb-1">{title}</p>
@@ -210,7 +222,7 @@ function ChartCard({ title, children, delay, className = "" }: { title: string; 
       transition={{ delay }}
       className={className}
     >
-      <Card className="glass-card-flat h-full border border-[var(--glass-border)] shadow-lg">
+      <Card className="glass-card h-full border border-[var(--glass-border)] shadow-xl">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg font-bold text-[var(--text-primary)]">{title}</CardTitle>
         </CardHeader>

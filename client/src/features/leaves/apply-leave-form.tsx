@@ -126,7 +126,7 @@ export function ApplyLeaveForm() {
         </div>
       </div>
 
-      <Card className="glass-card-flat">
+      <Card className="glass-card shadow-2xl border-[var(--glass-border)]">
         <CardContent className="p-6 md:p-8">
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             
@@ -139,7 +139,7 @@ export function ApplyLeaveForm() {
                   control={form.control}
                   render={({ field }) => (
                     <Select disabled={isLoading} onValueChange={(val) => field.onChange(val || '')} defaultValue={field.value}>
-                      <SelectTrigger className="w-[200px] input-field">
+                      <SelectTrigger className="w-[200px] input-field bg-[var(--bg-tertiary)] border-[var(--glass-border)] focus:ring-[var(--primary)]/50 transition-all">
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                       <SelectContent>
@@ -176,7 +176,7 @@ export function ApplyLeaveForm() {
                     {...form.register("start_date")}
                     id="start_date"
                     type="date"
-                    className="input-field pl-9"
+                    className="input-field pl-9 bg-[var(--bg-tertiary)] border-[var(--glass-border)] focus:ring-[var(--primary)]/50 transition-all"
                     min={format(new Date(), "yyyy-MM-dd")}
                     disabled={isLoading}
                   />
@@ -196,7 +196,7 @@ export function ApplyLeaveForm() {
                     {...form.register("end_date")}
                     id="end_date"
                     type="date"
-                    className="input-field pl-9"
+                    className="input-field pl-9 bg-[var(--bg-tertiary)] border-[var(--glass-border)] focus:ring-[var(--primary)]/50 transition-all"
                     min={startDate || format(new Date(), "yyyy-MM-dd")}
                     disabled={isLoading}
                   />
@@ -227,7 +227,7 @@ export function ApplyLeaveForm() {
               <Textarea
                 {...form.register("reason")}
                 id="reason"
-                className="input-field min-h-[140px] resize-y"
+                className="input-field min-h-[140px] resize-y bg-[var(--bg-tertiary)] border-[var(--glass-border)] focus:ring-[var(--primary)]/50 transition-all"
                 placeholder="Please provide a detailed reason for your leave request..."
                 disabled={isLoading}
               />

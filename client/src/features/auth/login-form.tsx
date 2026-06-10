@@ -11,9 +11,7 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth-store";
 import { loginUser } from "@/services/auth.service";
 import { fadeInUp } from "@/lib/animations";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { LogIn, Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { LogIn, Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -44,8 +42,8 @@ export function LoginForm() {
       toast.success("Login successful!");
       router.push("/dashboard");
       router.refresh();
-    } catch (error: any) {
-      console.error("Login failed:", error);
+    } catch {
+      // Backend unavailable — use mock fallback for frontend testing
       
       // MOCK LOGIN FALLBACK FOR TESTING FRONTEND WITHOUT BACKEND
       const roleStr = data.email.includes("manager") ? "manager" : data.email.includes("employee") ? "employee" : "admin";
@@ -65,132 +63,143 @@ export function LoginForm() {
     }
   }
 
+  const fillCredentials = (email: string, pass: string, role: string) => {
+    form.setValue("email", email);
+    form.setValue("password", pass);
+    toast.success(`${role} credentials filled!`);
+  };
+
   return (
     <motion.div
       variants={fadeInUp}
       initial="hidden"
       animate="visible"
-      className="w-full mx-auto relative z-10"
+      className="w-full"
     >
       {/* Header */}
-      <div className="text-left mb-8">
-        <div className="lg:hidden inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--primary)] to-indigo-600 shadow-lg shadow-[var(--primary-glow)] mb-6">
-          <span className="text-xl font-bold text-white">L</span>
-        </div>
-        <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2 text-[var(--text-primary)]">
+      <div className="mb-8">
+        <h2 className="text-[28px] font-bold tracking-tight text-white mb-2">
           Welcome back
         </h2>
-        <p className="text-[var(--text-secondary)] text-[15px]">
-          Please enter your details to sign in.
+        <p className="text-[15px] text-white/40">
+          Enter your credentials to access your account.
         </p>
       </div>
 
       {/* Form */}
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-        <div className="space-y-2">
-          <Label htmlFor="email" className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
-            Email Address
-          </Label>
-          <div className="relative">
-            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
-            <Input
+        {/* Email Field */}
+        <div>
+          <label htmlFor="email" className="block text-[12px] font-semibold text-white/40 uppercase tracking-[0.12em] mb-2.5">
+            Email
+          </label>
+          <div className="relative group">
+            <div className="absolute left-0 top-0 bottom-0 w-12 flex items-center justify-center pointer-events-none">
+              <Mail className="w-[17px] h-[17px] text-white/20 group-focus-within:text-indigo-400 transition-colors duration-200" />
+            </div>
+            <input
               {...form.register("email")}
               id="email"
               type="email"
-              className="input-field pl-10 py-3 text-sm"
+              className="w-full h-[52px] bg-white/[0.05] hover:bg-white/[0.07] border border-white/[0.1] hover:border-white/[0.15] text-[14px] text-white placeholder:text-white/15 pl-12 pr-4 rounded-xl outline-none focus:bg-white/[0.08] focus:border-indigo-500/60 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.15)] transition-all duration-200"
               placeholder="you@company.com"
               autoComplete="email"
               disabled={isLoading}
             />
           </div>
           {form.formState.errors.email && (
-            <p className="text-[var(--danger)] text-xs font-medium mt-1">
+            <p className="text-red-400 text-[12px] font-medium mt-2 flex items-center gap-1">
+              <span className="w-1 h-1 rounded-full bg-red-400 inline-block" />
               {form.formState.errors.email.message}
             </p>
           )}
         </div>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide">
+        {/* Password Field */}
+        <div>
+          <div className="flex items-center justify-between mb-2.5">
+            <label htmlFor="password" className="block text-[12px] font-semibold text-white/40 uppercase tracking-[0.12em]">
               Password
-            </Label>
+            </label>
             <button
               type="button"
-              className="text-xs text-[var(--primary)] hover:text-[var(--primary-hover)] font-medium transition-colors"
-              onClick={() => toast.info("Password reset will be available when the backend API supports it.")}
+              className="text-[12px] text-indigo-400/70 hover:text-indigo-400 font-medium transition-colors"
+              onClick={() => toast.info("Password reset coming soon.")}
             >
-              Forgot password?
+              Forgot?
             </button>
           </div>
-          <div className="relative">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
-            <Input
+          <div className="relative group">
+            <div className="absolute left-0 top-0 bottom-0 w-12 flex items-center justify-center pointer-events-none">
+              <Lock className="w-[17px] h-[17px] text-white/20 group-focus-within:text-indigo-400 transition-colors duration-200" />
+            </div>
+            <input
               {...form.register("password")}
               id="password"
               type={showPassword ? "text" : "password"}
-              className="input-field pl-10 pr-10 py-3 text-sm"
-              placeholder="••••••••"
+              className="w-full h-[52px] bg-white/[0.05] hover:bg-white/[0.07] border border-white/[0.1] hover:border-white/[0.15] text-[14px] text-white placeholder:text-white/15 pl-12 pr-12 rounded-xl outline-none focus:bg-white/[0.08] focus:border-indigo-500/60 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.15)] transition-all duration-200"
+              placeholder="Enter your password"
               autoComplete="current-password"
               disabled={isLoading}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
+              className="absolute right-0 top-0 bottom-0 w-12 flex items-center justify-center text-white/20 hover:text-white/50 transition-colors"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {showPassword ? <EyeOff className="w-[17px] h-[17px]" /> : <Eye className="w-[17px] h-[17px]" />}
             </button>
           </div>
           {form.formState.errors.password && (
-            <p className="text-[var(--danger)] text-xs font-medium mt-1">
+            <p className="text-red-400 text-[12px] font-medium mt-2 flex items-center gap-1">
+              <span className="w-1 h-1 rounded-full bg-red-400 inline-block" />
               {form.formState.errors.password.message}
             </p>
           )}
         </div>
 
+        {/* Submit Button */}
         <button
           type="submit"
           disabled={isLoading}
-          className="btn-primary w-full mt-2 h-11 text-sm font-semibold shadow-xl shadow-[var(--primary)]/20"
+          className="w-full h-[52px] mt-1 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 active:from-indigo-700 active:to-violet-700 text-white text-[14px] font-semibold rounded-xl shadow-lg shadow-indigo-600/20 hover:shadow-indigo-500/30 transition-all duration-200 flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed group"
         >
           {isLoading ? (
-            <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+            <span className="animate-spin h-5 w-5 border-2 border-white/30 border-t-white rounded-full" />
           ) : (
             <>
-              <LogIn className="w-4 h-4" />
               Sign In
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </>
           )}
         </button>
       </form>
 
-      {/* Demo Credentials */}
-      <div className="mt-8 text-left text-sm text-[var(--text-muted)] bg-gray-50 dark:bg-white/[0.03] p-5 rounded-2xl">
-        <p className="font-semibold mb-3 text-[var(--text-secondary)] text-xs uppercase tracking-wider">Demo Credentials</p>
-        <div className="space-y-2 text-xs">
-          {[
-            { role: "Admin", email: "admin@leaveflow.com", pass: "admin123" },
-            { role: "Manager", email: "manager@leaveflow.com", pass: "pass123" },
-            { role: "Employee", email: "employee1@leaveflow.com", pass: "pass123" },
-          ].map((cred) => (
-            <div key={cred.role} className="flex justify-between items-center py-1.5 border-b border-[var(--glass-border)] last:border-0">
-              <span className="font-medium text-[var(--text-secondary)]">{cred.role}</span>
-              <button
-                type="button"
-                className="font-mono opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
-                onClick={() => {
-                  form.setValue("email", cred.email);
-                  form.setValue("password", cred.pass);
-                  toast.success(`${cred.role} credentials filled!`);
-                }}
-              >
-                {cred.email}
-              </button>
-            </div>
-          ))}
-        </div>
+      {/* Divider */}
+      <div className="flex items-center gap-3 my-6">
+        <div className="flex-1 h-px bg-white/[0.08]" />
+        <span className="text-[11px] text-white/20 uppercase tracking-widest font-medium">Quick Access</span>
+        <div className="flex-1 h-px bg-white/[0.08]" />
+      </div>
+
+      {/* Demo Credential Buttons */}
+      <div className="grid grid-cols-3 gap-2.5">
+        {[
+          { role: "Admin", email: "admin@leaveflow.com", pass: "admin123", color: "from-indigo-500/20 to-indigo-500/5", border: "border-indigo-500/20 hover:border-indigo-500/40", text: "text-indigo-400" },
+          { role: "Manager", email: "manager@leaveflow.com", pass: "pass123", color: "from-violet-500/20 to-violet-500/5", border: "border-violet-500/20 hover:border-violet-500/40", text: "text-violet-400" },
+          { role: "Employee", email: "employee1@leaveflow.com", pass: "pass123", color: "from-emerald-500/20 to-emerald-500/5", border: "border-emerald-500/20 hover:border-emerald-500/40", text: "text-emerald-400" },
+        ].map((cred) => (
+          <button
+            key={cred.role}
+            type="button"
+            onClick={() => fillCredentials(cred.email, cred.pass, cred.role)}
+            className={`p-3 rounded-xl bg-gradient-to-b ${cred.color} border ${cred.border} transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] group`}
+          >
+            <p className={`text-[13px] font-semibold ${cred.text} mb-0.5`}>{cred.role}</p>
+            <p className="text-[10px] text-white/25 group-hover:text-white/40 transition-colors truncate">{cred.email}</p>
+          </button>
+        ))}
       </div>
     </motion.div>
   );

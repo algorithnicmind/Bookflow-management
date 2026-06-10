@@ -72,14 +72,14 @@ export function DataTable<TData, TValue>({
           />
         </div>
       )}
-      <div className="rounded-xl border border-[var(--glass-border)] overflow-hidden bg-card">
+      <div className="rounded-xl border border-[var(--glass-border)] overflow-hidden glass-card-flat bg-transparent">
         <Table>
-          <TableHeader className="bg-muted/50">
+          <TableHeader className="bg-white/5 uppercase tracking-widest text-[10px] text-[var(--text-muted)]">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="hover:bg-transparent border-[var(--glass-border)]">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className="font-semibold">
+                    <TableHead key={header.id} className="font-bold py-3 text-[var(--text-secondary)]">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -98,7 +98,7 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="border-[var(--glass-border)] hover:bg-muted/30"
+                  className="border-[var(--glass-border)] hover:bg-white/[0.04] transition-colors"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className="py-3">
