@@ -6,13 +6,24 @@
 - [x] Configure Tailwind with design system tokens
 - [x] Set up shadcn/ui (dark theme)
 - [x] Create TypeScript type definitions
+- [x] 1.4 Animations
+- [x] Integrate animation variants into layout and shared components
 - [x] Create constants (roles, routes, leave-types)
 - [x] Create Axios API client with auth interceptor
 - [x] Create Zustand auth store
+- [x] 1.0 Critical Fixes
+- [x] Rename `proxy.ts` → `middleware.ts` (fix Next.js middleware detection)
+- [x] Update routes.ts with new routes (settings, help)
 - [x] Create Next.js middleware for auth redirects
 - [x] Create RBAC utilities (RoleGuard, useRole hook)
 - [x] Build layout shell: Sidebar + Topbar
+- [x] 1.2 shadcn/ui Component Library
+- [x] Install shadcn components (input, dialog, table, badge, card, select, etc.)
+- [ ] Create reusable `DataTable` component
 - [x] Create shared components (StatusBadge, LoadingSkeleton, EmptyState)
+- [x] 1.1 Design System
+- [x] Fix globals.css — resolve CSS variable conflicts, enhance shadows/contrast
+- [x] Create `lib/animations.ts` — Framer Motion variant library
 
 ## Milestone 2: Authentication System
 - [x] Build login page with glassmorphism design
@@ -24,6 +35,10 @@
 
 ## Milestone 3: Employee Dashboard
 - [x] Dashboard page with stats cards
+- [x] 2.2 Dashboard
+- [x] Enhance metric cards with trend indicators and Lucide icons
+- [x] Add Recharts visualizations for org_stats
+- [x] Improve responsive layout
 - [x] Leave balance cards with progress indicators
 - [x] Recent leaves table
 - [x] Quick action buttons
@@ -36,6 +51,12 @@
 - [x] Leave type selector with balance display
 - [x] Date pickers with auto-calculated duration
 - [x] Zod validation
+- [x] 2.3 Leaves
+- [x] Enhance apply-leave form with shadcn
+### 2.5 Employees
+- [x] Refactor monolith into smaller components
+- [x] Use shadcn Dialog
+- [x] Add pagination basic history tracking if backend doesn't support list-all-approved)
 - [x] Leave History page with table
 - [x] Status filter
 - [x] Cancel leave functionality
@@ -59,3 +80,11 @@
 - [x] Department distribution chart
 - [x] Leave status breakdown chart
 - [x] Org stats cards
+- [x] 2.6 Analytics
+  - [x] Add multiple chart types and filters
+  - [x] Add export functionality
+
+## Milestone 8: Notifications
+- [x] 2.8 Notifications
+  - [x] Create notification center dropdown
+  - [x] Add notification icon to topbar

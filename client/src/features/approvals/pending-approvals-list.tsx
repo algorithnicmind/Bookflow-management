@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { Check, X, Calendar, User, Clock, AlertCircle } from "lucide-react";
 
 import { getPendingRequests, approveLeave, rejectLeave } from "@/services/leaves.service";
 import { LeaveRequest } from "@/types/leave.types";
@@ -11,19 +12,41 @@ import { LEAVE_TYPE_LABELS } from "@/constants/leave-types";
 import { LoadingSkeleton } from "@/components/shared/loading-skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
 function ActionModal({ 
   leave, 
   action, 
+  isOpen,
   onClose, 
   onSubmit 
 }: { 
-  leave: LeaveRequest, 
-  action: 'approve' | 'reject', 
+  leave: LeaveRequest | null, 
+  action: 'approve' | 'reject' | null, 
+  isOpen: boolean,
   onClose: () => void, 
   onSubmit: (id: number, comments: string) => Promise<void> 
 }) {
   const [comments, setComments] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Reset comments when modal opens
+  useEffect(() => {
+    if (isOpen) setComments("");
+  }, [isOpen]);
+
+  if (!leave || !action) return null;
 
   const handleSubmit = async () => {
     if (action === 'reject' && !comments.trim()) {
@@ -36,48 +59,69 @@ function ActionModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="glass-card p-6 w-full max-w-md relative border border-[var(--glass-border)] shadow-2xl"
-      >
-        <h3 className="text-xl font-bold mb-4">
-          {action === 'approve' ? 'Approve' : 'Reject'} Leave Request
-        </h3>
-        <div className="mb-4 text-sm text-[var(--text-secondary)]">
-          <p><strong>Employee:</strong> {leave.employee_name}</p>
-          <p><strong>Type:</strong> {LEAVE_TYPE_LABELS[leave.leave_type]}</p>
-          <p><strong>Dates:</strong> {format(new Date(leave.start_date), "MMM d")} - {format(new Date(leave.end_date), "MMM d, yyyy")} ({leave.days} days)</p>
-        </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            {action === 'approve' ? (
+              <><Check className="w-5 h-5 text-[var(--success)]" /> Approve Request</>
+            ) : (
+              <><X className="w-5 h-5 text-[var(--danger)]" /> Reject Request</>
+            )}
+          </DialogTitle>
+          <DialogDescription>
+            You are about to {action} {leave.employee_name}'s leave request.
+          </DialogDescription>
+        </DialogHeader>
         
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-1">
-            Comments {action === 'reject' ? <span className="text-[var(--danger)]">*</span> : <span className="text-[var(--text-muted)]">(Optional)</span>}
-          </label>
-          <textarea
-            value={comments}
-            onChange={(e) => setComments(e.target.value)}
-            className="input-field min-h-[100px]"
-            placeholder={action === 'approve' ? "Have a great time!" : "Please provide a reason for rejection..."}
-          />
+        <div className="space-y-4 py-4">
+          <div className="bg-white/5 border border-[var(--glass-border)] rounded-xl p-4 text-sm space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[var(--text-muted)] flex items-center gap-2"><User className="w-4 h-4"/> Employee</span>
+              <span className="font-semibold">{leave.employee_name}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[var(--text-muted)] flex items-center gap-2"><Clock className="w-4 h-4"/> Type</span>
+              <span className="font-semibold">{LEAVE_TYPE_LABELS[leave.leave_type as keyof typeof LEAVE_TYPE_LABELS] || leave.leave_type}</span>
+            </div>
+            <div className="flex items-center justify-between border-t border-[var(--glass-border)] pt-2 mt-2">
+              <span className="text-[var(--text-muted)] flex items-center gap-2"><Calendar className="w-4 h-4"/> Duration</span>
+              <span className="font-semibold">{leave.days} days ({format(new Date(leave.start_date), "MMM d")} - {format(new Date(leave.end_date), "MMM d")})</span>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium flex items-center gap-2">
+              Comments
+              {action === 'reject' ? (
+                <span className="text-[var(--danger)]">*</span>
+              ) : (
+                <span className="text-[var(--text-muted)] font-normal">(Optional)</span>
+              )}
+            </label>
+            <Textarea
+              value={comments}
+              onChange={(e) => setComments(e.target.value)}
+              className="resize-none"
+              placeholder={action === 'approve' ? "Have a great time!" : "Please provide a reason for rejection..."}
+            />
+          </div>
         </div>
 
-        <div className="flex justify-end gap-3">
-          <button onClick={onClose} disabled={isSubmitting} className="btn-ghost">Cancel</button>
-          <button 
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button 
             onClick={handleSubmit} 
-            disabled={isSubmitting} 
-            className={`px-4 py-2 rounded-md font-semibold text-white transition-all ${
-              action === 'approve' ? 'bg-[var(--success)] hover:bg-[var(--success)]/80' : 'bg-[var(--danger)] hover:bg-[var(--danger)]/80'
-            }`}
+            disabled={isSubmitting}
+            className={action === 'approve' ? 'bg-[var(--success)] hover:bg-[var(--success)]/80 text-white' : 'bg-[var(--danger)] hover:bg-[var(--danger)]/80 text-white'}
           >
             {isSubmitting ? "Processing..." : action === 'approve' ? "Confirm Approval" : "Confirm Rejection"}
-          </button>
-        </div>
-      </motion.div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -138,64 +182,75 @@ export function PendingApprovalsList() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {requests.map((leave, i) => (
         <motion.div
           key={leave.id}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.05 }}
-          className="glass-card p-5 flex flex-col h-full"
+          className="h-full"
         >
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h3 className="font-bold text-lg">{leave.employee_name}</h3>
-              <p className="text-xs text-[var(--text-muted)] uppercase tracking-wider">{leave.department}</p>
-            </div>
-            <span className="bg-white/10 px-2 py-1 rounded text-xs font-semibold whitespace-nowrap">
-              {leave.days} days
-            </span>
-          </div>
+          <Card className="glass-card-flat h-full flex flex-col border border-[var(--glass-border)]">
+            <CardContent className="p-5 flex flex-col h-full">
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--primary)] to-purple-600 text-white flex items-center justify-center font-bold shadow-md">
+                    {leave.employee_name?.charAt(0).toUpperCase() || 'U'}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-base leading-tight">{leave.employee_name || 'Unknown'}</h3>
+                    <p className="text-[10px] text-[var(--primary)] font-bold uppercase tracking-wider">{leave.department}</p>
+                  </div>
+                </div>
+                <Badge variant="outline" className="bg-white/5 border-white/10 text-xs">
+                  {leave.days} {leave.days === 1 ? 'day' : 'days'}
+                </Badge>
+              </div>
 
-          <div className="space-y-3 mb-6 flex-1">
-            <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-              <span>{LEAVE_TYPE_LABELS[leave.leave_type]}</span>
-              <span>•</span>
-              <span>{format(new Date(leave.start_date), "MMM d")} - {format(new Date(leave.end_date), "MMM d, yyyy")}</span>
-            </div>
-            <div className="p-3 bg-white/5 rounded-md border border-[var(--glass-border)] text-sm">
-              <p className="text-[var(--text-muted)] text-xs mb-1">Reason:</p>
-              <p className="line-clamp-3">{leave.reason}</p>
-            </div>
-          </div>
+              <div className="space-y-3 mb-6 flex-1">
+                <div className="flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)]">
+                  <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {LEAVE_TYPE_LABELS[leave.leave_type as keyof typeof LEAVE_TYPE_LABELS] || leave.leave_type}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)]">
+                  <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> {format(new Date(leave.start_date), "MMM d")} - {format(new Date(leave.end_date), "MMM d, yyyy")}</span>
+                </div>
+                
+                <div className="p-3 bg-white/5 rounded-lg border border-[var(--glass-border)] mt-2">
+                  <p className="text-[var(--text-muted)] text-[10px] uppercase font-bold tracking-wider mb-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> Reason</p>
+                  <p className="text-sm line-clamp-2" title={leave.reason}>{leave.reason}</p>
+                </div>
+              </div>
 
-          <div className="flex gap-3 mt-auto pt-4 border-t border-[var(--glass-border)]">
-            <button 
-              onClick={() => setActiveModal({ leave, action: 'reject' })}
-              className="flex-1 px-4 py-2 rounded-md font-semibold text-[var(--danger)] bg-[var(--danger)]/10 hover:bg-[var(--danger)]/20 transition-colors"
-            >
-              Reject
-            </button>
-            <button 
-              onClick={() => setActiveModal({ leave, action: 'approve' })}
-              className="flex-1 px-4 py-2 rounded-md font-semibold text-[var(--success)] bg-[var(--success)]/10 hover:bg-[var(--success)]/20 transition-colors"
-            >
-              Approve
-            </button>
-          </div>
+              <div className="flex gap-3 mt-auto pt-4 border-t border-[var(--glass-border)]">
+                <Button 
+                  variant="outline"
+                  onClick={() => setActiveModal({ leave, action: 'reject' })}
+                  className="flex-1 text-[var(--danger)] hover:bg-[var(--danger)]/10 hover:text-[var(--danger)] border-[var(--danger)]/20"
+                >
+                  <X className="w-4 h-4 mr-1.5" />
+                  Reject
+                </Button>
+                <Button 
+                  onClick={() => setActiveModal({ leave, action: 'approve' })}
+                  className="flex-1 bg-[var(--success)]/10 text-[var(--success)] hover:bg-[var(--success)]/20 border-0"
+                >
+                  <Check className="w-4 h-4 mr-1.5" />
+                  Approve
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </motion.div>
       ))}
 
-      <AnimatePresence>
-        {activeModal && (
-          <ActionModal 
-            leave={activeModal.leave} 
-            action={activeModal.action} 
-            onClose={() => setActiveModal(null)} 
-            onSubmit={handleActionSubmit} 
-          />
-        )}
-      </AnimatePresence>
+      <ActionModal 
+        leave={activeModal?.leave || null} 
+        action={activeModal?.action || null} 
+        isOpen={!!activeModal}
+        onClose={() => setActiveModal(null)} 
+        onSubmit={handleActionSubmit} 
+      />
     </div>
   );
 }

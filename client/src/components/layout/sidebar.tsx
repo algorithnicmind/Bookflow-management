@@ -7,110 +7,207 @@ import { cn } from "@/lib/utils";
 import { useRole } from "@/hooks/use-role";
 import { ROUTES } from "@/constants/routes";
 import { getPendingRequests } from "@/services/leaves.service";
+import { useUIStore } from "@/store/ui-store";
+import {
+  LayoutDashboard,
+  PenSquare,
+  CalendarDays,
+  Clock,
+  Users,
+  BarChart3,
+  Settings,
+  HelpCircle,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Separator } from "@/components/ui/separator";
 
 interface NavItem {
   label: string;
   href: string;
-  icon: string;
+  icon: React.ElementType;
   roles?: string[];
   badge?: number;
+  group: "main" | "admin" | "system";
 }
 
-interface SidebarProps {
-  pendingCount?: number;
-}
-
-export function Sidebar({ pendingCount = 0 }: SidebarProps) {
+export function Sidebar() {
   const pathname = usePathname();
-  const { role, isManager, isAdmin, isSuperAdmin } = useRole();
-  const [actualCount, setActualCount] = useState(pendingCount);
+  const { isManager, isAdmin } = useRole();
+  const { sidebarCollapsed, toggleSidebar } = useUIStore();
+  const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
     if (isManager) {
       getPendingRequests()
-        .then((res) => setActualCount(res.pending.length))
+        .then((res) => setPendingCount(res.pending.length))
         .catch(() => {});
     }
   }, [isManager, pathname]);
 
-
   const navItems: NavItem[] = [
-    { label: "Dashboard", href: ROUTES.DASHBOARD, icon: "📊" },
-    { label: "Apply Leave", href: ROUTES.APPLY_LEAVE, icon: "✏️" },
-    { label: "Leave History", href: ROUTES.LEAVE_HISTORY, icon: "📋" },
+    { label: "Dashboard", href: ROUTES.DASHBOARD, icon: LayoutDashboard, group: "main" },
+    { label: "Apply Leave", href: ROUTES.APPLY_LEAVE, icon: PenSquare, group: "main" },
+    { label: "Leave History", href: ROUTES.LEAVE_HISTORY, icon: CalendarDays, group: "main" },
     ...(isManager
-      ? [
-          {
-            label: "Pending Approvals",
-            href: ROUTES.PENDING_APPROVALS,
-            icon: "⏳",
-            badge: actualCount,
-          },
-        ]
+      ? [{
+          label: "Pending Approvals",
+          href: ROUTES.PENDING_APPROVALS,
+          icon: Clock,
+          badge: pendingCount,
+          group: "main" as const,
+        }]
       : []),
     ...(isAdmin
       ? [
-          { label: "Employees", href: ROUTES.EMPLOYEES, icon: "👥" },
-          { label: "Analytics", href: ROUTES.ANALYTICS, icon: "📈" },
+          { label: "Employees", href: ROUTES.EMPLOYEES, icon: Users, group: "admin" as const },
+          { label: "Analytics", href: ROUTES.ANALYTICS, icon: BarChart3, group: "admin" as const },
         ]
       : []),
+    { label: "Settings", href: ROUTES.SETTINGS, icon: Settings, group: "system" },
+    { label: "Help", href: ROUTES.HELP, icon: HelpCircle, group: "system" },
   ];
 
+  const mainItems = navItems.filter((i) => i.group === "main");
+  const adminItems = navItems.filter((i) => i.group === "admin");
+  const systemItems = navItems.filter((i) => i.group === "system");
+
+  const renderNavLink = (item: NavItem) => {
+    const isActive = pathname === item.href;
+    const Icon = item.icon;
+
+    const linkContent = (
+      <Link
+        key={item.href}
+        href={item.href}
+        className={cn(
+          "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative overflow-hidden",
+          sidebarCollapsed && "justify-center px-2.5",
+          isActive
+            ? "bg-[var(--primary)]/10 text-[var(--text-primary)] shadow-sm"
+            : "text-[var(--text-secondary)] hover:bg-white/5 hover:text-[var(--text-primary)]"
+        )}
+      >
+        {isActive && (
+          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-gradient-to-b from-[var(--primary)] to-purple-600 rounded-r-full shadow-[0_0_8px_var(--primary-glow)]" />
+        )}
+
+        <Icon
+          className={cn(
+            "shrink-0 transition-all duration-200",
+            isActive ? "text-[var(--primary)]" : "text-[var(--text-muted)] group-hover:text-[var(--text-secondary)]",
+            sidebarCollapsed ? "w-5 h-5" : "w-[18px] h-[18px]"
+          )}
+        />
+
+        {!sidebarCollapsed && (
+          <>
+            <span className="truncate">{item.label}</span>
+            {item.badge && item.badge > 0 ? (
+              <span className="ml-auto bg-[var(--danger)] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center leading-none">
+                {item.badge}
+              </span>
+            ) : null}
+          </>
+        )}
+
+        {sidebarCollapsed && item.badge && item.badge > 0 ? (
+          <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[var(--danger)] rounded-full border-2 border-[var(--bg-secondary)]" />
+        ) : null}
+      </Link>
+    );
+
+    if (sidebarCollapsed) {
+      return (
+        <Tooltip key={item.href}>
+          <TooltipTrigger render={linkContent} />
+          <TooltipContent side="right" sideOffset={12}>
+            <p className="font-medium">{item.label}</p>
+            {item.badge && item.badge > 0 && (
+              <p className="text-xs text-muted-foreground">{item.badge} pending</p>
+            )}
+          </TooltipContent>
+        </Tooltip>
+      );
+    }
+
+    return linkContent;
+  };
+
+  const renderGroup = (label: string, items: NavItem[]) => {
+    if (items.length === 0) return null;
+    return (
+      <div className="space-y-1">
+        {!sidebarCollapsed && (
+          <p className="px-3 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-[0.15em] mb-2">
+            {label}
+          </p>
+        )}
+        {items.map(renderNavLink)}
+      </div>
+    );
+  };
+
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-[var(--sidebar-width)] bg-[var(--bg-secondary)]/30 backdrop-blur-3xl z-40 flex flex-col overflow-hidden max-lg:hidden shadow-[4px_0_24px_rgba(0,0,0,0.1)]">
+    <aside
+      className={cn(
+        "fixed left-0 top-0 bottom-0 z-40 flex flex-col overflow-hidden max-lg:hidden transition-all duration-300 ease-out",
+        "bg-[var(--bg-secondary)]/30 backdrop-blur-2xl border-r border-[var(--glass-border)]",
+        sidebarCollapsed ? "w-[var(--sidebar-collapsed)]" : "w-[var(--sidebar-width)]"
+      )}
+    >
       {/* Logo */}
-      <div className="flex items-center gap-4 px-8 py-8">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-purple-600 flex items-center justify-center shadow-lg shadow-[var(--primary-glow)]">
-          <span className="text-xl text-white">🏢</span>
+      <div className={cn(
+        "flex items-center gap-3 py-6 transition-all duration-300",
+        sidebarCollapsed ? "px-4 justify-center" : "px-6"
+      )}>
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--primary)] to-purple-600 flex items-center justify-center shadow-lg shadow-[var(--primary-glow)] shrink-0">
+          <span className="text-lg text-white font-bold">L</span>
         </div>
-        <div>
-          <h1 className="text-xl font-black tracking-tight gradient-text">LeaveFlow</h1>
-        </div>
+        {!sidebarCollapsed && (
+          <div className="overflow-hidden">
+            <h1 className="text-lg font-black tracking-tight gradient-text leading-tight">LeaveFlow</h1>
+          </div>
+        )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-4 px-4 space-y-2 overflow-y-auto mt-4">
-        <p className="px-4 text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4">Main Menu</p>
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 group relative overflow-hidden",
-                isActive
-                  ? "bg-[var(--primary)]/10 text-[var(--text-primary)]"
-                  : "text-[var(--text-secondary)] hover:bg-white/5 hover:text-[var(--text-primary)]"
-              )}
-            >
-              {isActive && (
-                <span className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[var(--primary)] to-purple-600 rounded-r-full shadow-[0_0_12px_var(--primary)]" />
-              )}
-              
-              <span className={cn(
-                "text-xl transition-transform duration-300",
-                isActive ? "scale-110" : "group-hover:scale-110"
-              )}>{item.icon}</span>
-              
-              <span className="z-10">{item.label}</span>
-              
-              {item.badge && item.badge > 0 ? (
-                <span className="ml-auto bg-[var(--danger)] text-white text-[11px] font-bold px-2 py-0.5 rounded-full shadow-sm shadow-[var(--danger)]/20 z-10">
-                  {item.badge}
-                </span>
-              ) : null}
-            </Link>
-          );
-        })}
+      <nav className="flex-1 py-2 px-3 space-y-6 overflow-y-auto">
+        {renderGroup("Menu", mainItems)}
+        {adminItems.length > 0 && (
+          <>
+            {!sidebarCollapsed && <Separator className="my-2 opacity-50" />}
+            {renderGroup("Admin", adminItems)}
+          </>
+        )}
+        {!sidebarCollapsed && <Separator className="my-2 opacity-50" />}
+        {renderGroup("System", systemItems)}
       </nav>
 
-      {/* Footer */}
-      <div className="p-6">
-        <div className="bg-white/5 rounded-2xl p-4 text-center border border-white/5 shadow-inner">
-          <p className="text-xs font-medium text-[var(--text-secondary)] mb-1">LeaveFlow v1.0</p>
-          <p className="text-[10px] text-[var(--text-muted)]">Enterprise Edition</p>
-        </div>
+      {/* Collapse Toggle */}
+      <div className={cn(
+        "p-3 border-t border-[var(--glass-border)]",
+        sidebarCollapsed && "flex justify-center"
+      )}>
+        <button
+          onClick={toggleSidebar}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-white/5 transition-all w-full"
+          aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {sidebarCollapsed ? (
+            <ChevronRight className="w-4 h-4 mx-auto" />
+          ) : (
+            <>
+              <ChevronLeft className="w-4 h-4" />
+              <span>Collapse</span>
+            </>
+          )}
+        </button>
       </div>
     </aside>
   );

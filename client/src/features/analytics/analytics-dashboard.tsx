@@ -7,18 +7,27 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   LineChart, Line
 } from "recharts";
+import { toast } from "sonner";
+import { Download, Users, ClipboardList, Clock, Palmtree, Calendar as CalendarIcon, Filter } from "lucide-react";
+
 import { getDashboardStats } from "@/services/dashboard.service";
-import { DashboardResponse, OrgStats } from "@/types/dashboard.types";
+import { DashboardResponse } from "@/types/dashboard.types";
 import { LoadingSkeleton } from "@/components/shared/loading-skeleton";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 const COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#F43F5E', '#8B5CF6', '#EC4899'];
 
 export function AnalyticsDashboard() {
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState("all_time");
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       try {
         const stats = await getDashboardStats();
         setData(stats);
@@ -31,6 +40,29 @@ export function AnalyticsDashboard() {
     fetchData();
   }, []);
 
+  const handleExport = () => {
+    if (!data?.org_stats) return;
+
+    try {
+      // Create a simple CSV of the department breakdown as an example
+      const deptData = data.org_stats.department_breakdown;
+      const csvContent = "data:text/csv;charset=utf-8," 
+        + "Department,Count\n" 
+        + deptData.map(e => `${e.department},${e.count}`).join("\n");
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `leaveflow_analytics_${timeRange}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success("Analytics data exported successfully!");
+    } catch (e) {
+      toast.error("Failed to export data.");
+    }
+  };
+
   if (isLoading) {
     return <LoadingSkeleton lines={10} className="p-8" />;
   }
@@ -39,26 +71,54 @@ export function AnalyticsDashboard() {
 
   if (!orgStats) {
     return (
-      <div className="glass-card p-12 text-center">
-        <span className="text-5xl mb-4 block">📈</span>
-        <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">No Analytics Data</h2>
-        <p className="text-[var(--text-muted)]">Check back later once the organization has more activity.</p>
-      </div>
+      <Card className="glass-card-flat">
+        <CardContent className="p-12 text-center flex flex-col items-center">
+          <div className="w-16 h-16 bg-[var(--primary)]/10 rounded-2xl flex items-center justify-center mb-4">
+            <ClipboardList className="w-8 h-8 text-[var(--primary)]" />
+          </div>
+          <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">No Analytics Data</h2>
+          <p className="text-[var(--text-muted)]">Check back later once the organization has more activity.</p>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold gradient-text">Organization Analytics</h1>
-        <p className="text-[var(--text-secondary)] mt-1">High-level overview of organization health and leave trends.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold gradient-text">Organization Analytics</h1>
+          <p className="text-[var(--text-secondary)] mt-1">High-level overview of organization health and leave trends.</p>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 bg-white/5 border border-[var(--glass-border)] rounded-lg p-1">
+            <Filter className="w-4 h-4 text-[var(--text-muted)] ml-2" />
+            <Select value={timeRange} onValueChange={(val) => setTimeRange(val || "all_time")}>
+              <SelectTrigger className="w-[140px] border-0 bg-transparent focus:ring-0 shadow-none h-8 text-sm">
+                <SelectValue placeholder="Time Range" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="this_month">This Month</SelectItem>
+                <SelectItem value="last_quarter">Last Quarter</SelectItem>
+                <SelectItem value="ytd">Year to Date</SelectItem>
+                <SelectItem value="all_time">All Time</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <Button onClick={handleExport} className="btn-primary h-10">
+            <Download className="w-4 h-4 mr-2" />
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Employees" value={orgStats.total_employees} icon="👥" delay={0.1} />
-        <StatCard title="Total Leave Requests" value={orgStats.total_requests} icon="📋" delay={0.2} />
-        <StatCard title="Pending Approvals" value={data.stats.pending} icon="⏳" delay={0.3} />
-        <StatCard title="Active Leaves" value={data.team_on_leave_today?.length || 0} icon="🏖️" delay={0.4} />
+        <StatCard title="Total Employees" value={orgStats.total_employees} icon={<Users className="w-6 h-6 text-blue-400" />} delay={0.1} />
+        <StatCard title="Total Requests" value={orgStats.total_requests} icon={<ClipboardList className="w-6 h-6 text-indigo-400" />} delay={0.2} />
+        <StatCard title="Pending Approvals" value={data.stats.pending} icon={<Clock className="w-6 h-6 text-[var(--warning)]" />} delay={0.3} />
+        <StatCard title="Active Leaves" value={data.team_on_leave_today?.length || 0} icon={<Palmtree className="w-6 h-6 text-emerald-400" />} delay={0.4} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -120,21 +180,24 @@ export function AnalyticsDashboard() {
   );
 }
 
-function StatCard({ title, value, icon, delay }: { title: string; value: number; icon: string; delay: number }) {
+function StatCard({ title, value, icon, delay }: { title: string; value: number; icon: React.ReactNode; delay: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      className="glass-card p-6 flex items-center justify-between group hover:border-[var(--primary)] transition-colors"
     >
-      <div>
-        <p className="text-sm font-medium text-[var(--text-muted)] mb-1">{title}</p>
-        <h3 className="text-3xl font-bold text-[var(--text-primary)] group-hover:text-[var(--primary)] transition-colors">{value}</h3>
-      </div>
-      <div className="w-12 h-12 rounded-2xl bg-[var(--bg-tertiary)] flex items-center justify-center text-2xl group-hover:bg-[var(--primary)]/10 transition-colors">
-        {icon}
-      </div>
+      <Card className="glass-card-flat h-full transition-colors hover:border-[var(--primary)]/50 group">
+        <CardContent className="p-6 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-[var(--text-muted)] mb-1">{title}</p>
+            <h3 className="text-3xl font-bold text-[var(--text-primary)] group-hover:text-[var(--primary)] transition-colors">{value}</h3>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-white/5 border border-[var(--glass-border)] flex items-center justify-center group-hover:bg-[var(--primary)]/10 group-hover:border-[var(--primary)]/20 transition-all">
+            {icon}
+          </div>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 }
@@ -145,10 +208,18 @@ function ChartCard({ title, children, delay, className = "" }: { title: string; 
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay }}
-      className={`glass-card p-6 ${className}`}
+      className={className}
     >
-      <h3 className="text-lg font-bold text-[var(--text-primary)] mb-6">{title}</h3>
-      {children}
+      <Card className="glass-card-flat h-full border border-[var(--glass-border)] shadow-lg">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg font-bold text-[var(--text-primary)]">{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="pt-4">
+            {children}
+          </div>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 }

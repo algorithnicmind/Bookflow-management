@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ROUTES } from "@/constants/routes";
+import { Clock, TreePalm, ArrowRight } from "lucide-react";
 
 export function TeamOverview({ pendingCount, onLeave }: { pendingCount: number, onLeave: string[] }) {
   return (
@@ -15,8 +16,8 @@ export function TeamOverview({ pendingCount, onLeave }: { pendingCount: number, 
         <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--warning)]/5 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
         <div className="flex justify-between items-start mb-6 relative z-10">
           <div>
-            <h3 className="text-xl font-bold flex items-center gap-2">
-              <span className="text-2xl">⏳</span>
+            <h3 className="text-lg font-bold flex items-center gap-2">
+              <Clock className="w-5 h-5 text-[var(--warning)]" />
               <span className="text-[var(--text-primary)]">Pending Approvals</span>
             </h3>
           </div>
@@ -29,7 +30,7 @@ export function TeamOverview({ pendingCount, onLeave }: { pendingCount: number, 
         </p>
         <Link href={ROUTES.PENDING_APPROVALS} className="inline-flex items-center gap-2 text-sm font-bold text-[var(--warning)] hover:text-yellow-400 transition-colors relative z-10">
           <span>Review now</span>
-          <span className="group-hover:translate-x-1 transition-transform">→</span>
+          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </Link>
       </motion.div>
 
@@ -40,8 +41,8 @@ export function TeamOverview({ pendingCount, onLeave }: { pendingCount: number, 
         transition={{ delay: 0.4, duration: 0.5 }}
         className="glass-card p-8 relative overflow-hidden"
       >
-        <h3 className="text-xl font-bold mb-6 flex items-center gap-2 relative z-10">
-          <span className="text-2xl">🏖️</span>
+        <h3 className="text-lg font-bold mb-4 flex items-center gap-2 relative z-10">
+          <TreePalm className="w-5 h-5 text-emerald-400" />
           <span className="text-[var(--text-primary)]">Team on Leave Today</span>
         </h3>
         

@@ -1,15 +1,16 @@
 import { motion } from "framer-motion";
 import { LeaveBalance } from "@/types/leave.types";
 import { LEAVE_TYPE_LABELS } from "@/constants/leave-types";
+import { Wallet } from "lucide-react";
 
 export function BalanceCards({ balances }: { balances: LeaveBalance[] }) {
   if (!balances || balances.length === 0) return null;
 
   return (
-    <div className="mb-10">
-      <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-        <span className="text-2xl">⚖️</span>
-        <span className="gradient-text">Leave Balances</span>
+    <div>
+      <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+        <Wallet className="w-5 h-5 text-[var(--primary)]" />
+        <span>Leave Balances</span>
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {balances.map((balance, i) => {

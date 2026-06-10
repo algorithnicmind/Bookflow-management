@@ -6,6 +6,8 @@ export const ROUTES = {
   PENDING_APPROVALS: "/pending-approvals",
   EMPLOYEES: "/employees",
   ANALYTICS: "/analytics",
+  SETTINGS: "/settings",
+  HELP: "/help",
 } as const;
 
 export type AppRoute = (typeof ROUTES)[keyof typeof ROUTES];
