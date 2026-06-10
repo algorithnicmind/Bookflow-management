@@ -10,11 +10,18 @@ interface MobileNavProps {
   pendingCount?: number;
 }
 
+interface NavItem {
+  label: string;
+  href: string;
+  icon: string;
+  badge?: number;
+}
+
 export function MobileNav({ pendingCount = 0 }: MobileNavProps) {
   const pathname = usePathname();
   const { isManager, isAdmin } = useRole();
 
-  const items = [
+  const items: NavItem[] = [
     { label: "Home", href: ROUTES.DASHBOARD, icon: "📊" },
     { label: "Apply", href: ROUTES.APPLY_LEAVE, icon: "✏️" },
     { label: "History", href: ROUTES.LEAVE_HISTORY, icon: "📋" },
@@ -22,7 +29,7 @@ export function MobileNav({ pendingCount = 0 }: MobileNavProps) {
       ? [{ label: "Approvals", href: ROUTES.PENDING_APPROVALS, icon: "⏳", badge: pendingCount }]
       : []),
     ...(isAdmin
-      ? [{ label: "Team", href: ROUTES.EMPLOYEES, icon: "👥" }]
+      ? [{ label: "Team", href: ROUTES.EMPLOYEES, icon: "👥" }, { label: "Analytics", href: ROUTES.ANALYTICS, icon: "📈" }]
       : []),
   ];
 
@@ -44,9 +51,9 @@ export function MobileNav({ pendingCount = 0 }: MobileNavProps) {
             >
               <span className="text-lg">{item.icon}</span>
               <span>{item.label}</span>
-              {"badge" in item && (item as { badge?: number }).badge && (item as { badge: number }).badge > 0 ? (
+              {item.badge !== undefined && item.badge > 0 ? (
                 <span className="absolute -top-0.5 right-0 bg-[var(--danger)] text-white text-[8px] font-bold px-1 py-0.5 rounded-full min-w-[14px] text-center">
-                  {(item as { badge: number }).badge}
+                  {item.badge}
                 </span>
               ) : null}
             </Link>

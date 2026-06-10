@@ -12,10 +12,22 @@ export interface DepartmentBreakdown {
   count: number;
 }
 
+export interface MonthlyTrend {
+  month: string;
+  count: number;
+}
+
+export interface StatusBreakdown {
+  status: string;
+  count: number;
+}
+
 export interface OrgStats {
   total_employees: number;
   total_requests: number;
   department_breakdown: DepartmentBreakdown[];
+  monthly_trend: MonthlyTrend[];
+  status_breakdown: StatusBreakdown[];
 }
 
 export interface DashboardResponse {

@@ -48,14 +48,14 @@
 - [x] Sidebar pending count badge
 
 ## Milestone 6: Admin & Super Admin Panels
-- [ ] Employee Management page (table + search)
-- [ ] Add Employee dialog
-- [ ] Edit Employee dialog
-- [ ] Deactivate Employee with confirmation
-- [ ] Super Admin: Create Admin form
+- [x] Employee Management page (table + search)
+- [x] Add Employee dialog
+- [x] Edit Employee dialog
+- [x] Deactivate Employee with confirmation
+- [x] Super Admin: Create Admin form
 
 ## Milestone 7: Analytics Dashboard
-- [ ] Analytics page (Admin/Super Admin only)
-- [ ] Department distribution chart
-- [ ] Leave status breakdown chart
-- [ ] Org stats cards
+- [x] Analytics page (Admin/Super Admin only)
+- [x] Department distribution chart
+- [x] Leave status breakdown chart
+- [x] Org stats cards
