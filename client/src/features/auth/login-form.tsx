@@ -73,12 +73,16 @@ export function LoginForm() {
       className="bg-white/50 dark:bg-[#111326]/50 backdrop-blur-xl border border-[var(--glass-border)] shadow-2xl p-8 sm:p-10 w-full mx-auto relative z-10 rounded-3xl"
     >
       {/* Header */}
-      <div className="text-center mb-8">
-        <div className="lg:hidden inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--primary)] to-indigo-600 shadow-lg shadow-[var(--primary-glow)] mb-4">
+      <div className="text-left mb-8">
+        <div className="lg:hidden inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--primary)] to-indigo-600 shadow-lg shadow-[var(--primary-glow)] mb-6">
           <span className="text-xl font-bold text-white">L</span>
         </div>
-        <h2 className="text-3xl font-bold mb-2 text-[var(--text-primary)]">Welcome back</h2>
-        <p className="text-[var(--text-secondary)] text-sm">Please enter your details to sign in.</p>
+        <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2 text-[var(--text-primary)]">
+          Welcome back
+        </h2>
+        <p className="text-[var(--text-secondary)] text-[15px]">
+          Please enter your details to sign in.
+        </p>
       </div>
 
       {/* Form */}
