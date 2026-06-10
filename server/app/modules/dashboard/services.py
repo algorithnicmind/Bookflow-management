@@ -105,35 +105,11 @@ class DashboardService:
             )
             dept_breakdown = [{"department": r[0], "count": r[1]} for r in dept_res.all()]
 
-            # Monthly trend: leave requests per month for current year
-            current_year = datetime.today().year
-            trend_res = await self.db.execute(
-                select(
-                    func.date_trunc('month', LeaveRequest.created_at).label('month'),
-                    func.count(LeaveRequest.id).label('count')
-                )
-                .where(func.extract('year', LeaveRequest.created_at) == current_year)
-                .group_by('month')
-                .order_by('month')
-            )
-            monthly_trend = [
-                {"month": str(r[0])[:7], "count": r[1]} 
-                for r in trend_res.all()
-            ]
-
-            # Leave status breakdown for charts
-            status_res = await self.db.execute(
-                select(LeaveRequest.status, func.count(LeaveRequest.id))
-                .group_by(LeaveRequest.status)
-            )
-            status_breakdown = [{"status": r[0], "count": r[1]} for r in status_res.all()]
             
             response.org_stats = {
                 "total_employees": total_employees,
                 "total_requests": total_reqs,
-                "department_breakdown": dept_breakdown,
-                "monthly_trend": monthly_trend,
-                "status_breakdown": status_breakdown
+                "department_breakdown": dept_breakdown
             }
             
         return response
