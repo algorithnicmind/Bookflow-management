@@ -2,24 +2,24 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { format } from "date-fns";
-import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { Check, X, Calendar, User, Clock, AlertCircle, ShieldCheck } from "lucide-react";
+import { Check, X, Clock, Filter, ChevronDown } from "lucide-react";
 
 import { getPendingRequests, approveLeave, rejectLeave } from "@/services/leaves.service";
 import { LeaveRequest } from "@/types/leave.types";
 import { EmptyState } from "@/components/shared/empty-state";
 
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { skeletonPulse } from "@/lib/animations";
 
 function ActionModal({ 
   leave, 
@@ -55,53 +55,35 @@ function ActionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[425px] bg-[var(--bg-primary)] border-[var(--border)] shadow-lg rounded-2xl p-0 overflow-hidden">
-        <div className={`h-1.5 w-full ${action === 'approve' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+      <DialogContent className="sm:max-w-[425px] bg-white border border-gray-200 shadow-xl rounded-2xl p-0 overflow-hidden text-gray-900">
+        <div className={`h-1.5 w-full ${action === 'approve' ? 'bg-emerald-500' : 'bg-red-500'}`} />
         <div className="p-6">
           <DialogHeader className="mb-6">
-            <DialogTitle className="flex items-center gap-2.5 text-xl font-bold text-white">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${action === 'approve' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
+            <DialogTitle className="flex items-center gap-2.5 text-xl font-bold text-gray-900">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${action === 'approve' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
                 {action === 'approve' ? <Check className="w-5 h-5" /> : <X className="w-5 h-5" />}
               </div>
               {action === 'approve' ? "Approve Request" : "Reject Request"}
             </DialogTitle>
-            <DialogDescription className="text-[var(--text-secondary)] text-sm mt-2">
-              You are about to {action} <strong className="text-white">{leave.employee_name}</strong>&apos;s leave request.
+            <DialogDescription className="text-gray-500 text-sm mt-2">
+              You are about to {action} <strong className="text-gray-900">{leave.employee_name}</strong>&apos;s leave request.
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-5">
-            <div className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl p-4 text-sm space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[var(--text-secondary)] flex items-center gap-2 uppercase tracking-widest text-[10px] font-bold"><User className="w-3.5 h-3.5"/> Employee</span>
-                <span className="font-semibold text-white">{leave.employee_name}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-[var(--text-secondary)] flex items-center gap-2 uppercase tracking-widest text-[10px] font-bold"><Clock className="w-3.5 h-3.5"/> Type</span>
-                <span className="font-semibold text-white capitalize">{leave.leave_type} Leave</span>
-              </div>
-              <div className="flex items-center justify-between border-t border-white/[0.06] pt-3 mt-3">
-                <span className="text-[var(--text-secondary)] flex items-center gap-2 uppercase tracking-widest text-[10px] font-bold"><Calendar className="w-3.5 h-3.5"/> Duration</span>
-                <span className="font-semibold text-white">
-                  {leave.days} {leave.days === 1 ? 'day' : 'days'} 
-                  <span className="text-[var(--text-secondary)] ml-2 font-normal text-xs">({format(new Date(leave.start_date), "MMM d")} - {format(new Date(leave.end_date), "MMM d")})</span>
-                </span>
-              </div>
-            </div>
-
+          <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-xs font-bold text-white/60 uppercase tracking-widest flex items-center gap-2">
+              <label className="text-[11px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
                 Comments
                 {action === 'reject' ? (
-                  <span className="text-rose-400">*</span>
+                  <span className="text-red-500">*</span>
                 ) : (
-                  <span className="text-[var(--text-muted)] font-medium normal-case tracking-normal">(Optional)</span>
+                  <span className="text-gray-400 font-medium normal-case tracking-normal">(Optional)</span>
                 )}
               </label>
               <Textarea
                 value={comments}
                 onChange={(e) => setComments(e.target.value)}
-                className="resize-none min-h-[100px] bg-[var(--bg-secondary)] border-[var(--border)] rounded-xl text-white placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-indigo-500"
+                className="resize-none min-h-[100px] bg-white border-gray-300 rounded-xl text-gray-900 placeholder:text-gray-400 focus:ring-1 focus:ring-[#083A81]"
                 placeholder={action === 'approve' ? "Have a great time off!" : "Please provide a reason for rejection..."}
               />
             </div>
@@ -112,25 +94,20 @@ function ActionModal({
               type="button"
               onClick={onClose} 
               disabled={isSubmitting}
-              className="px-4 py-2.5 rounded-xl border border-white/10 text-white/60 font-semibold hover:bg-white/5 hover:text-white transition-colors text-sm"
+              className="px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors text-sm"
             >
               Cancel
             </button>
             <button 
               onClick={handleSubmit} 
               disabled={isSubmitting}
-              className={`px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg transition-all ${
+              className={`px-6 py-2.5 rounded-xl font-bold text-sm shadow-sm transition-all text-white ${
                 action === 'approve' 
-                  ? 'bg-emerald-500 text-emerald-950 hover:bg-emerald-400 shadow-emerald-500/20' 
-                  : 'bg-rose-500 text-white hover:bg-rose-400 shadow-rose-500/20'
+                  ? 'bg-emerald-600 hover:bg-emerald-700' 
+                  : 'bg-red-600 hover:bg-red-700'
               }`}
             >
-              {isSubmitting ? (
-                <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  Processing...
-                </span>
-              ) : action === 'approve' ? "Confirm Approval" : "Confirm Rejection"}
+              {isSubmitting ? "Processing..." : action === 'approve' ? "Confirm Approval" : "Confirm Rejection"}
             </button>
           </DialogFooter>
         </div>
@@ -177,109 +154,199 @@ export function PendingApprovalsList() {
     }
   };
 
+  const getBadgeColor = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'annual':
+      case 'earned':
+      case 'vacation':
+        return 'bg-blue-100 text-blue-700';
+      case 'sick':
+        return 'bg-amber-100 text-amber-700';
+      case 'casual':
+      case 'personal':
+        return 'bg-purple-100 text-purple-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  const getBadgeDotColor = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'annual':
+      case 'earned':
+      case 'vacation':
+        return 'bg-blue-500';
+      case 'sick':
+        return 'bg-amber-500';
+      case 'casual':
+      case 'personal':
+        return 'bg-purple-500';
+      default:
+        return 'bg-gray-500';
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[1, 2, 3, 4, 5, 6].map(i => (
-          <motion.div 
-            key={i} 
-            variants={skeletonPulse} 
-            initial="initial" 
-            animate="animate" 
-            className="h-[300px] w-full bg-white/[0.02] border border-[var(--border)] rounded-2xl"
-          />
-        ))}
-      </div>
-    );
-  }
-
-  if (requests.length === 0) {
-    return (
-      <div className="bg-[var(--bg-primary)] border border-[var(--border)] shadow-md rounded-2xl py-20 px-4">
-        <EmptyState 
-          title="All caught up!" 
-          description="There are no pending leave requests waiting for your approval."
-          icon="✨"
-        />
+      <div className="animate-pulse space-y-6">
+        <div className="h-32 bg-gray-100 rounded-2xl"></div>
+        <div className="h-64 bg-gray-100 rounded-2xl"></div>
       </div>
     );
   }
 
   return (
-    <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <AnimatePresence>
-          {requests.map((leave, i) => (
-            <motion.div
-              key={leave.id}
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: -10 }}
-              transition={{ delay: i * 0.05 }}
-              className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl p-5 sm:p-6 flex flex-col h-full hover:border-slate-700 transition-colors shadow-md"
-            >
-              <div className="flex justify-between items-start mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold shadow-lg shadow-indigo-500/20 text-lg">
-                    {leave.employee_name?.charAt(0).toUpperCase() || 'U'}
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white text-base leading-tight mb-0.5">{leave.employee_name || 'Unknown'}</h3>
-                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/5 rounded-md w-fit">
-                      <ShieldCheck className="w-3 h-3 text-[var(--text-secondary)]" />
-                      <p className="text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-widest">{leave.department}</p>
+    <div className="space-y-6 text-gray-900">
+      
+      {/* Top Filter & Stats Block */}
+      <div className="flex flex-col lg:flex-row gap-6 items-stretch">
+        
+        {/* Filters */}
+        <div className="flex-1 bg-white border border-gray-200 rounded-2xl p-6 flex flex-col justify-center shadow-sm">
+          <div className="flex flex-wrap items-end gap-6">
+            
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Department</label>
+              <button className="flex items-center justify-between w-40 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                All Departments
+                <ChevronDown className="w-4 h-4 text-gray-400" />
+              </button>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Leave Type</label>
+              <button className="flex items-center justify-between w-32 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                All Types
+                <ChevronDown className="w-4 h-4 text-gray-400" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Status</label>
+              <div className="flex bg-gray-100 rounded-lg p-1 border border-gray-200">
+                <button className="px-4 py-1.5 bg-[#083A81] text-white text-sm font-medium rounded-md shadow-sm">
+                  Pending
+                </button>
+                <button className="px-4 py-1.5 text-gray-500 text-sm font-medium hover:text-gray-900 rounded-md transition-colors">
+                  History
+                </button>
+              </div>
+            </div>
+
+            <button className="flex items-center gap-2 text-sm font-bold text-[#083A81] ml-auto mb-2 hover:underline transition-all">
+              <Filter className="w-4 h-4" />
+              Advanced Filters
+            </button>
+          </div>
+        </div>
+
+        {/* Stats Card */}
+        <div className="shrink-0 w-full lg:w-72 bg-[#083A81] border border-[#062a60] rounded-2xl p-6 flex flex-col justify-center shadow-md">
+          <p className="text-blue-100 text-[13px] font-semibold mb-1">Pending Approvals</p>
+          <h2 className="text-white text-3xl font-extrabold tracking-tight mb-3">
+            {requests.length} Requests
+          </h2>
+          <div className="flex items-center gap-1.5 text-blue-200 text-xs font-medium">
+            <Clock className="w-3.5 h-3.5" />
+            Avg response time: 4h
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+        {requests.length === 0 ? (
+          <div className="py-20 px-4">
+            <EmptyState 
+              title="All caught up!" 
+              description="There are no pending leave requests waiting for your approval."
+              icon="✨"
+            />
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent border-gray-200 border-b">
+                <TableHead className="text-[11px] font-bold text-gray-500 uppercase tracking-widest py-4 pl-6">Employee Information</TableHead>
+                <TableHead className="text-[11px] font-bold text-gray-500 uppercase tracking-widest py-4">Duration & Dates</TableHead>
+                <TableHead className="text-[11px] font-bold text-gray-500 uppercase tracking-widest py-4">Type</TableHead>
+                <TableHead className="text-[11px] font-bold text-gray-500 uppercase tracking-widest py-4">Quick Status</TableHead>
+                <TableHead className="text-[11px] font-bold text-gray-500 uppercase tracking-widest py-4 text-right pr-6">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {requests.map((leave) => (
+                <TableRow key={leave.id} className="border-gray-100 border-b hover:bg-gray-50 transition-colors">
+                  <TableCell className="py-4 pl-6">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10 border border-gray-200">
+                        <AvatarFallback className="bg-blue-50 text-[#083A81] font-bold">
+                          {leave.employee_name?.charAt(0).toUpperCase() || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-bold text-gray-900 text-sm">{leave.employee_name || 'Unknown'}</p>
+                        <p className="text-xs text-gray-500 font-medium">{leave.department || 'Employee'}</p>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4 mb-6 flex-1">
-                <div className="flex items-center gap-4">
-                  <div className="flex-1 bg-white/[0.02] border border-[var(--border)] rounded-xl p-3">
-                    <p className="text-[10px] text-[var(--text-muted)] uppercase font-bold tracking-widest mb-1">Type</p>
-                    <p className="text-sm font-semibold text-white capitalize">{leave.leave_type}</p>
-                  </div>
-                  <div className="flex-1 bg-white/[0.02] border border-[var(--border)] rounded-xl p-3">
-                    <p className="text-[10px] text-[var(--text-muted)] uppercase font-bold tracking-widest mb-1">Duration</p>
-                    <p className="text-sm font-bold text-white">{leave.days} <span className="font-medium text-[var(--text-secondary)] text-xs">days</span></p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 text-[13px] font-medium text-white/60">
-                  <Calendar className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
-                  <span>{format(new Date(leave.start_date), "MMM d")} - {format(new Date(leave.end_date), "MMM d, yyyy")}</span>
-                </div>
-                
-                <div className="p-3 bg-white/[0.02] rounded-xl border border-[var(--border)] mt-2 relative overflow-hidden group">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500/30" />
-                  <p className="text-[var(--text-muted)] text-[10px] uppercase font-bold tracking-widest mb-1.5 flex items-center gap-1.5">
-                    <AlertCircle className="w-3 h-3" /> Reason
-                  </p>
-                  <p className="text-[13px] text-white/80 leading-relaxed line-clamp-2 group-hover:line-clamp-none transition-all" title={leave.reason}>
-                    &quot;{leave.reason}&quot;
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-auto pt-5 border-t border-white/[0.06]">
-                <button 
-                  onClick={() => setActiveModal({ leave, action: 'reject' })}
-                  className="flex-1 flex justify-center items-center gap-1.5 py-2.5 rounded-xl text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition-colors text-sm font-bold"
-                >
-                  <X className="w-4 h-4" />
-                  Reject
-                </button>
-                <button 
-                  onClick={() => setActiveModal({ leave, action: 'approve' })}
-                  className="flex-1 flex justify-center items-center gap-1.5 py-2.5 rounded-xl text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 transition-colors text-sm font-bold"
-                >
-                  <Check className="w-4 h-4" />
-                  Approve
-                </button>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <p className="font-bold text-gray-900 text-sm">
+                      {leave.days} {leave.days === 1 ? 'Day' : 'Days'} <span className="font-normal text-gray-500">({leave.days < 1 ? 'Partial' : 'Full-day'})</span>
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {format(new Date(leave.start_date), "MMM d")} - {format(new Date(leave.end_date), "MMM d, yyyy")}
+                    </p>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${getBadgeColor(leave.leave_type)}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${getBadgeDotColor(leave.leave_type)}`}></span>
+                      <span className="capitalize">{leave.leave_type}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <div className="flex items-center gap-1.5 text-[13px] font-bold text-gray-700">
+                      <Clock className="w-3.5 h-3.5 text-gray-400" />
+                      PENDING
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-4 text-right pr-6">
+                    <div className="flex items-center justify-end gap-2">
+                      <button 
+                        onClick={() => setActiveModal({ leave, action: 'approve' })}
+                        className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                        title="Approve"
+                      >
+                        <Check className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => setActiveModal({ leave, action: 'reject' })}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Reject"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                      <button className="p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-900 rounded-lg transition-colors">
+                        <ChevronDown className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+        
+        {requests.length > 0 && (
+          <div className="border-t border-gray-200 p-4 flex items-center justify-between text-xs text-gray-500 font-medium bg-gray-50">
+            <p>Showing {requests.length} of {requests.length} pending requests</p>
+            <div className="flex gap-4 items-center">
+              <button className="hover:text-gray-900 disabled:opacity-50 transition-colors" disabled>&lt;</button>
+              <span className="text-gray-900 font-bold">1</span>
+              <button className="hover:text-gray-900 disabled:opacity-50 transition-colors" disabled>&gt;</button>
+            </div>
+          </div>
+        )}
       </div>
 
       <ActionModal 
@@ -289,6 +356,6 @@ export function PendingApprovalsList() {
         onClose={() => setActiveModal(null)} 
         onSubmit={handleActionSubmit} 
       />
-    </>
+    </div>
   );
 }

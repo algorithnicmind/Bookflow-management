@@ -6,15 +6,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
-
 import { useAuthStore } from "@/store/auth-store";
 import { loginUser } from "@/services/auth.service";
-import { Eye, EyeOff, Loader2, KeyRound } from "lucide-react";
+import { Loader2, Mail, Lock, Key } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
   password: z.string().min(1, "Password is required."),
+  remember: z.boolean().optional(),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -23,11 +22,10 @@ export function LoginForm() {
   const router = useRouter();
   const { login } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { email: "", password: "", remember: false },
   });
 
   async function onSubmit(data: LoginFormValues) {
@@ -45,114 +43,130 @@ export function LoginForm() {
     }
   }
 
-  const fillCredentials = (email: string, pass: string, role: string) => {
+  const fillDemo = (email: string, pass: string) => {
     form.setValue("email", email);
     form.setValue("password", pass);
-    toast.success(`${role} credentials filled`);
   };
-
-  const demoCredentials = [
-    { role: "Super Admin", email: "superadmin@company.com" },
-    { role: "Manager", email: "alice@company.com" },
-    { role: "Employee", email: "john@company.com" },
-  ];
 
   return (
     <div className="w-full">
-      <div className="mb-8 text-center">
-        <div className="w-12 h-12 bg-[var(--primary)]/10 text-[var(--primary)] rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <KeyRound className="w-6 h-6" />
-        </div>
-        <h2 className="text-2xl font-bold tracking-tight text-[var(--text-primary)] mb-2">
-          Welcome back
-        </h2>
-        <p className="text-sm text-[var(--text-secondary)]">
-          Please sign in to your account
-        </p>
-      </div>
-
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
         <div>
-          <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
-            Email address
+          <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-widest mb-2">
+            EMAIL ADDRESS
           </label>
-          <input
-            {...form.register("email")}
-            type="email"
-            className="input-field"
-            placeholder="you@company.com"
-            disabled={isLoading}
-          />
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <Mail className="w-4 h-4" />
+            </div>
+            <input
+              {...form.register("email")}
+              type="email"
+              className="w-full bg-transparent border border-gray-300 rounded-lg py-2.5 pl-10 pr-4 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#083A81] focus:ring-1 focus:ring-[#083A81] transition-all text-sm"
+              placeholder="name@company.com"
+              disabled={isLoading}
+            />
+          </div>
           {form.formState.errors.email && (
-            <p className="text-[var(--danger)] text-xs mt-1.5">
-              {form.formState.errors.email.message}
-            </p>
+            <p className="text-red-500 text-xs mt-1.5">{form.formState.errors.email.message}</p>
           )}
         </div>
 
         <div>
-          <div className="flex justify-between items-center mb-1.5">
-            <label className="block text-sm font-medium text-[var(--text-primary)]">
-              Password
+          <div className="flex justify-between items-center mb-2">
+            <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-widest">
+              PASSWORD
             </label>
             <button
               type="button"
-              className="text-xs text-[var(--primary)] hover:text-[var(--primary-hover)] font-medium transition-colors"
+              className="text-[11px] text-[#083A81] font-bold hover:underline transition-all"
             >
-              Forgot?
+              Forgot Password?
             </button>
           </div>
           <div className="relative">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <Lock className="w-4 h-4" />
+            </div>
             <input
               {...form.register("password")}
-              type={showPassword ? "text" : "password"}
-              className="input-field pr-10"
+              type="password"
+              className="w-full bg-transparent border border-gray-300 rounded-lg py-2.5 pl-10 pr-4 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#083A81] focus:ring-1 focus:ring-[#083A81] transition-all text-sm tracking-widest"
               placeholder="••••••••"
               disabled={isLoading}
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
-            >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
           </div>
           {form.formState.errors.password && (
-            <p className="text-[var(--danger)] text-xs mt-1.5">
-              {form.formState.errors.password.message}
-            </p>
+            <p className="text-red-500 text-xs mt-1.5">{form.formState.errors.password.message}</p>
           )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <input
+            {...form.register("remember")}
+            type="checkbox"
+            id="remember"
+            className="w-4 h-4 rounded border-gray-300 text-[#083A81] focus:ring-[#083A81]"
+          />
+          <label htmlFor="remember" className="text-sm text-gray-600">
+            Remember me for 30 days
+          </label>
         </div>
 
         <button
           type="submit"
           disabled={isLoading}
-          className="btn-primary w-full mt-2 h-11"
+          className="w-full bg-[#083A81] hover:bg-[#062a60] text-white font-medium rounded-lg py-2.5 mt-2 transition-colors flex items-center justify-center gap-2 text-sm shadow-sm"
         >
-          {isLoading ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> Signing in...</>
-          ) : (
-            "Sign In"
-          )}
+          {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Login"}
+        </button>
+
+        <div className="relative flex items-center py-2">
+          <div className="flex-grow border-t border-gray-200"></div>
+          <span className="flex-shrink-0 mx-4 text-[10px] font-bold text-gray-500 uppercase">OR</span>
+          <div className="flex-grow border-t border-gray-200"></div>
+        </div>
+
+        <button
+          type="button"
+          className="w-full bg-transparent border border-gray-300 text-gray-800 hover:bg-gray-50 font-medium rounded-lg py-2.5 transition-colors flex items-center justify-center gap-2 text-sm shadow-sm"
+        >
+          <Key className="w-4 h-4 text-[#083A81]" />
+          Login with SSO
         </button>
       </form>
 
-      <div className="mt-8 pt-6 border-t border-[var(--border)]">
-        <p className="text-xs text-[var(--text-secondary)] font-medium mb-3 text-center uppercase tracking-wider">
-          Demo Accounts
+      <div className="mt-6 text-center">
+        <p className="text-sm text-gray-600">
+          Don't have an account? <span className="font-bold text-[#083A81] cursor-pointer hover:underline">Contact your HR Administrator</span>
         </p>
-        <div className="flex flex-wrap gap-2 justify-center">
-          {demoCredentials.map((cred) => (
-            <button
-              key={cred.role}
-              type="button"
-              onClick={() => fillCredentials(cred.email, "password123", cred.role)}
-              className="px-3 py-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border)] hover:bg-[var(--bg-tertiary)] transition-colors text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-medium"
-            >
-              {cred.role}
-            </button>
-          ))}
+      </div>
+
+      {/* Demo Credentials Section */}
+      <div className="mt-8 border-t border-gray-200 pt-4">
+        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 text-center">DEMO CREDENTIALS</p>
+        <div className="space-y-1">
+          <div 
+            className="flex justify-between items-center text-xs cursor-pointer hover:bg-gray-50 p-1.5 rounded transition-colors"
+            onClick={() => fillDemo("admin@leaveflow.com", "admin123")}
+          >
+            <span className="text-gray-700 font-medium">Admin</span>
+            <span className="text-gray-500 font-mono">admin@leaveflow.com</span>
+          </div>
+          <div 
+            className="flex justify-between items-center text-xs cursor-pointer hover:bg-gray-50 p-1.5 rounded transition-colors"
+            onClick={() => fillDemo("manager@leaveflow.com", "pass123")}
+          >
+            <span className="text-gray-700 font-medium">Manager</span>
+            <span className="text-gray-500 font-mono">manager@leaveflow.com</span>
+          </div>
+          <div 
+            className="flex justify-between items-center text-xs cursor-pointer hover:bg-gray-50 p-1.5 rounded transition-colors"
+            onClick={() => fillDemo("employee1@leaveflow.com", "pass123")}
+          >
+            <span className="text-gray-700 font-medium">Employee</span>
+            <span className="text-gray-500 font-mono">employee1@leaveflow.com</span>
+          </div>
         </div>
       </div>
     </div>

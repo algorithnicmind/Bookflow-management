@@ -1,9 +1,9 @@
 "use client";
 
 import { LeaveRequest } from "@/types/leave.types";
-import { format } from "date-fns";
-import { Clock } from "lucide-react";
-import { StatusBadge } from "@/components/shared/status-badge";
+import { format, differenceInDays } from "date-fns";
+import Link from "next/link";
+import { ROUTES } from "@/constants/routes";
 
 interface RecentLeavesTableProps {
   leaves: LeaveRequest[];
@@ -11,85 +11,87 @@ interface RecentLeavesTableProps {
 
 export function RecentLeavesTable({ leaves }: RecentLeavesTableProps) {
   if (!leaves || leaves.length === 0) {
-    return (
-      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-md p-6 sm:p-8">
-        <h3 className="text-lg font-bold mb-4 text-white">Recent Leaves</h3>
-        <div className="py-8 text-center bg-white/[0.02] border border-[var(--border)] rounded-2xl">
-          <Clock className="w-10 h-10 text-[var(--text-muted)] mx-auto mb-3" />
-          <p className="text-sm font-medium text-[var(--text-secondary)]">No recent leaves found</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
+  const getStatusStyle = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "approved":
+        return "bg-emerald-100 text-emerald-800";
+      case "cancelled":
+      case "rejected":
+        return "bg-red-100 text-red-800";
+      case "pending":
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getTypeStyle = (type: string) => {
+    switch (type.toLowerCase()) {
+      case "annual":
+        return "bg-[#083A81]";
+      case "sick":
+        return "bg-emerald-500";
+      case "casual":
+      default:
+        return "bg-amber-700";
+    }
+  };
+
   return (
-    <div className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl shadow-sm p-0 overflow-hidden">
-      <div className="p-6 border-b border-[var(--border)] flex items-center justify-between">
-        <h3 className="text-lg font-bold text-white">Recent Leave Requests</h3>
-      </div>
-      
-      {/* Mobile Card View (< 640px) */}
-      <div className="sm:hidden flex flex-col gap-px bg-white/[0.04]">
-        {leaves.map((leave) => (
-          <div key={leave.id} className="bg-[#0b0c15] p-4 group hover:bg-[#10121d] transition-colors">
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <p className="text-sm font-bold text-white capitalize">{leave.leave_type} Leave</p>
-                <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">
-                  Applied on {format(new Date(leave.created_at), "MMM d, yyyy")}
-                </p>
-              </div>
-              <StatusBadge status={leave.status} />
-            </div>
-            
-            <div className="bg-white/[0.02] border border-[var(--border)] rounded-xl p-3 mt-3 flex items-center justify-between">
-              <div>
-                <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-semibold mb-1">From</p>
-                <p className="text-xs font-semibold text-white/80">{format(new Date(leave.start_date), "MMM dd, yyyy")}</p>
-              </div>
-              <div className="h-8 w-px bg-white/10" />
-              <div className="text-right">
-                <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-semibold mb-1">To</p>
-                <p className="text-xs font-semibold text-white/80">{format(new Date(leave.end_date), "MMM dd, yyyy")}</p>
-              </div>
-            </div>
-          </div>
-        ))}
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-[17px] font-bold text-gray-900">Recent Requests</h3>
+        <Link href={ROUTES.LEAVE_HISTORY} className="text-[13px] font-bold text-[#083A81] hover:underline">
+          See All
+        </Link>
       </div>
 
-      {/* Desktop Table View (>= 640px) */}
-      <div className="hidden sm:block overflow-x-auto">
+      <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="text-[11px] uppercase tracking-widest text-[var(--text-muted)] bg-[var(--bg-tertiary)] border-b border-[var(--border)]">
+          <thead className="text-[11px] font-bold uppercase tracking-wider text-gray-500 border-b border-gray-100">
             <tr>
-              <th className="px-6 py-4 font-semibold">Type</th>
-              <th className="px-6 py-4 font-semibold">Duration</th>
-              <th className="px-6 py-4 font-semibold">Applied On</th>
-              <th className="px-6 py-4 font-semibold text-right">Status</th>
+              <th className="pb-3 font-semibold">TYPE</th>
+              <th className="pb-3 font-semibold">DURATION</th>
+              <th className="pb-3 font-semibold">STATUS</th>
+              <th className="pb-3 font-semibold text-right">APPLIED ON</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/50">
-            {leaves.map((leave) => (
-              <tr key={leave.id} className="hover:bg-white/[0.02] transition-colors group">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0">
-                      <Clock className="w-4 h-4 text-indigo-400" />
+          <tbody className="divide-y divide-gray-100">
+            {leaves.slice(0, 4).map((leave) => {
+              const days = differenceInDays(new Date(leave.end_date), new Date(leave.start_date)) + 1;
+              
+              return (
+                <tr key={leave.id} className="group">
+                  <td className="py-4 pr-4">
+                    <div className="flex items-start gap-3">
+                      <div className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${getTypeStyle(leave.leave_type)}`} />
+                      <div>
+                        <p className="font-bold text-gray-900 capitalize text-[14px]">{leave.leave_type} Leave</p>
+                        <p className="text-[13px] text-gray-500 max-w-[180px] truncate">{leave.reason || "Personal requirements"}</p>
+                      </div>
                     </div>
-                    <span className="font-semibold text-white capitalize">{leave.leave_type}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-white/70">
-                  {format(new Date(leave.start_date), "MMM d")} - {format(new Date(leave.end_date), "MMM d, yyyy")}
-                </td>
-                <td className="px-6 py-4 text-[var(--text-secondary)]">
-                  {format(new Date(leave.created_at), "MMM d, yyyy")}
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <StatusBadge status={leave.status} />
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="py-4 pr-4">
+                    <p className="font-semibold text-gray-900 text-[14px]">
+                      {format(new Date(leave.start_date), "MMM dd")} - {format(new Date(leave.end_date), "MMM dd")}
+                    </p>
+                    <p className="text-[13px] text-gray-500">{days} Working Day{days !== 1 ? 's' : ''}</p>
+                  </td>
+                  <td className="py-4 pr-4">
+                    <span className={`inline-flex px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${getStatusStyle(leave.status)}`}>
+                      {leave.status}
+                    </span>
+                  </td>
+                  <td className="py-4 text-right">
+                    <span className="text-[13px] font-medium text-gray-600">
+                      {format(new Date(leave.created_at), "MMM dd, yyyy")}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

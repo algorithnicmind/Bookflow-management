@@ -7,8 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format, differenceInBusinessDays, parseISO, isAfter, isBefore } from "date-fns";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
-import { Clock, CalendarDays, ArrowLeft, Send, AlertCircle, Briefcase, HeartPulse, Sparkles, CheckCircle2, Baby, HeartHandshake } from "lucide-react";
+import { CalendarDays, AlertCircle, Sparkles, HeartPulse, Briefcase, Baby, HeartHandshake, CheckCircle2, Clock, Info } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
 
 import { applyLeave, getLeaveBalance } from "@/services/leaves.service";
 import { LeaveBalance } from "@/types/leave.types";
@@ -37,12 +37,10 @@ const leaveSchema = z.object({
 type LeaveFormValues = z.infer<typeof leaveSchema>;
 
 const LEAVE_TYPES = [
-  { id: "casual", label: "Casual Leave", icon: Sparkles, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/30", activeBg: "bg-blue-500/20" },
-  { id: "sick", label: "Sick Leave", icon: HeartPulse, color: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/30", activeBg: "bg-rose-500/20" },
-  { id: "earned", label: "Earned Leave", icon: Briefcase, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/30", activeBg: "bg-emerald-500/20" },
-  { id: "maternity", label: "Maternity", icon: Baby, color: "text-pink-400", bg: "bg-pink-500/10", border: "border-pink-500/30", activeBg: "bg-pink-500/20" },
-  { id: "miscarriage", label: "Miscarriage", icon: HeartHandshake, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/30", activeBg: "bg-purple-500/20" },
-  { id: "unpaid", label: "Unpaid Leave", icon: AlertCircle, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30", activeBg: "bg-amber-500/20" },
+  { id: "earned", label: "Annual Leave", desc: "Vacation & personal time", icon: Briefcase },
+  { id: "sick", label: "Sick Leave", desc: "Illness & medical visits", icon: HeartPulse },
+  { id: "casual", label: "Remote Work", desc: "Working from off-site", icon: Sparkles },
+  { id: "unpaid", label: "Other", desc: "Bereavement, jury duty, etc", icon: AlertCircle },
 ];
 
 export function ApplyLeaveForm() {
@@ -57,7 +55,7 @@ export function ApplyLeaveForm() {
   const form = useForm<LeaveFormValues>({
     resolver: zodResolver(leaveSchema),
     defaultValues: {
-      leave_type: "casual",
+      leave_type: "earned",
       start_date: "",
       end_date: "",
       reason: "",
@@ -97,36 +95,13 @@ export function ApplyLeaveForm() {
     }
   }, [startDate, endDate]);
 
-  useEffect(() => {
-    if (submitError && formRef.current) {
-      formRef.current.classList.add("animate-shake");
-      const timer = setTimeout(() => {
-        formRef.current?.classList.remove("animate-shake");
-      }, 400);
-      return () => clearTimeout(timer);
-    }
-  }, [submitError]);
-
   async function onSubmit(data: LeaveFormValues) {
     setSubmitError(null);
-
-    if (data.leave_type !== "unpaid") {
-      const balance = balances.find(b => b.leave_type === data.leave_type);
-      if (balance && duration > balance.remaining) {
-        const msg = `You only have ${balance.remaining} days of ${data.leave_type} leave remaining.`;
-        setSubmitError(msg);
-        toast.error(msg);
-        return;
-      }
-    }
-
     setIsLoading(true);
     try {
       await applyLeave(data);
       setIsSuccess(true);
-      toast.success("Leave request submitted successfully!", {
-        duration: 4000,
-      });
+      toast.success("Leave request submitted successfully!");
       setTimeout(() => {
         router.push(ROUTES.LEAVE_HISTORY);
       }, 1500);
@@ -138,250 +113,144 @@ export function ApplyLeaveForm() {
     }
   }
 
-  const selectedBalance = balances.find(b => b.leave_type === leaveType);
-
   if (isSuccess) {
     return (
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="py-16 flex flex-col items-center justify-center text-center"
-      >
-        <motion.div 
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 15 }}
-          className="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center mb-6 relative"
-        >
-          <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping" />
-          <CheckCircle2 className="w-12 h-12 text-emerald-400" />
-        </motion.div>
-        <h3 className="text-2xl font-bold text-white mb-2">Request Submitted!</h3>
-        <p className="text-[var(--text-secondary)] max-w-sm">
+      <div className="py-16 flex flex-col items-center justify-center text-center bg-[#f8fafc] rounded-2xl border border-gray-200">
+        <CheckCircle2 className="w-16 h-16 text-emerald-500 mb-4" />
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">Request Submitted!</h3>
+        <p className="text-gray-600 max-w-sm">
           Your leave request has been successfully sent to your manager for approval.
         </p>
-      </motion.div>
+      </div>
     );
   }
 
   return (
-    <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 relative">
-      {/* Error Banner */}
-      <AnimatePresence>
-        {submitError && (
-          <motion.div
-            initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-            animate={{ opacity: 1, height: "auto", marginBottom: 24 }}
-            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-            className="flex items-start gap-3 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-sm overflow-hidden"
-          >
-            <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
-            <div>
-              <p className="font-bold text-rose-400">Submission Error</p>
-              <p className="text-rose-400/80 mt-0.5">{submitError}</p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-        {/* Left Column: Leave Type & Dates */}
-        <div className="lg:col-span-7 space-y-8">
-          
-          {/* Leave Type Selector */}
-          <div className="space-y-3">
-            <Label className="text-white/60 uppercase tracking-widest text-xs font-bold">Select Leave Type</Label>
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
-              <Controller
-                name="leave_type"
-                control={form.control}
-                render={({ field }) => (
-                  <>
-                    {LEAVE_TYPES.map((type) => {
-                      const Icon = type.icon;
-                      const isActive = field.value === type.id;
-                      return (
-                        <button
-                          key={type.id}
-                          type="button"
-                          onClick={() => field.onChange(type.id)}
-                          className={`flex flex-col items-start p-4 rounded-2xl border transition-all duration-200 text-left ${
-                            isActive 
-                              ? `${type.activeBg} ${type.border} ring-2 ring-white/10` 
-                              : `bg-white/[0.02] border-[var(--border)] hover:bg-white/[0.04]`
-                          }`}
-                        >
-                          <div className={`w-8 h-8 rounded-lg ${isActive ? type.bg : 'bg-white/5'} flex items-center justify-center mb-3 transition-colors`}>
-                            <Icon className={`w-4 h-4 ${isActive ? type.color : 'text-[var(--text-secondary)]'}`} />
+    <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
+      
+      {/* Step 1: Category */}
+      <div>
+        <h4 className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-4">1. Select Category</h4>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Controller
+            name="leave_type"
+            control={form.control}
+            render={({ field }) => (
+              <>
+                {LEAVE_TYPES.map((type) => {
+                  const Icon = type.icon;
+                  const isActive = field.value === type.id;
+                  return (
+                    <button
+                      key={type.id}
+                      type="button"
+                      onClick={() => field.onChange(type.id)}
+                      className={`flex flex-col items-start p-5 rounded-xl border transition-all text-left ${
+                        isActive 
+                          ? "border-[#083A81] ring-1 ring-[#083A81] bg-blue-50/50" 
+                          : "border-gray-200 bg-white hover:border-gray-300 shadow-sm"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full mb-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isActive ? 'text-[#083A81]' : 'text-gray-400'}`}>
+                          <Icon className="w-5 h-5" />
+                        </div>
+                        {isActive && (
+                          <div className="w-5 h-5 rounded-full text-[#083A81] flex items-center justify-center">
+                            <CheckCircle2 className="w-5 h-5" />
                           </div>
-                          <p className={`font-semibold text-sm ${isActive ? 'text-white' : 'text-white/60'}`}>
-                            {type.label}
-                          </p>
-                        </button>
-                      );
-                    })}
-                  </>
-                )}
-              />
-            </div>
-            {errors.leave_type && (
-              <p className="text-rose-400 text-xs mt-1 font-semibold flex items-center gap-1.5">
-                <AlertCircle className="w-3 h-3" /> {errors.leave_type.message}
-              </p>
+                        )}
+                      </div>
+                      <p className={`font-bold text-[15px] mb-1 ${isActive ? 'text-gray-900' : 'text-gray-700'}`}>
+                        {type.label}
+                      </p>
+                      <p className="text-[13px] text-gray-500">{type.desc}</p>
+                    </button>
+                  );
+                })}
+              </>
             )}
-          </div>
-
-          {/* Dates */}
-          <div className="space-y-3">
-            <Label className="text-white/60 uppercase tracking-widest text-xs font-bold">Duration</Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <div className="relative group">
-                  <CalendarDays className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-indigo-400 transition-colors pointer-events-none" />
-                  <Input
-                    {...form.register("start_date")}
-                    id="start_date"
-                    type="date"
-                    className={`h-12 pl-11 bg-white/[0.02] border-white/[0.06] rounded-xl text-white focus:bg-white/[0.04] focus:border-indigo-500/50 transition-all ${errors.start_date ? 'border-rose-500/50 focus:border-rose-500 focus:ring-rose-500/20' : ''}`}
-                    min={format(new Date(), "yyyy-MM-dd")}
-                    disabled={isLoading}
-                  />
-                </div>
-                {errors.start_date && (
-                  <p className="text-rose-400 text-xs font-semibold flex items-center gap-1.5">
-                    <AlertCircle className="w-3 h-3" /> {errors.start_date.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="relative group">
-                  <CalendarDays className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-indigo-400 transition-colors pointer-events-none" />
-                  <Input
-                    {...form.register("end_date")}
-                    id="end_date"
-                    type="date"
-                    className={`h-12 pl-11 bg-white/[0.02] border-white/[0.06] rounded-xl text-white focus:bg-white/[0.04] focus:border-indigo-500/50 transition-all ${errors.end_date ? 'border-rose-500/50 focus:border-rose-500 focus:ring-rose-500/20' : ''}`}
-                    min={startDate || format(new Date(), "yyyy-MM-dd")}
-                    disabled={isLoading}
-                  />
-                </div>
-                {errors.end_date && (
-                  <p className="text-rose-400 text-xs font-semibold flex items-center gap-1.5">
-                    <AlertCircle className="w-3 h-3" /> {errors.end_date.message}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Duration Estimator */}
-          <AnimatePresence>
-            {duration > 0 && (
-              <motion.div
-                initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                animate={{ opacity: 1, height: "auto", marginTop: 16 }}
-                exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                className="p-4 bg-gradient-to-r from-indigo-500/10 to-transparent rounded-xl border border-indigo-500/20 flex items-center gap-3 overflow-hidden"
-              >
-                <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center shrink-0">
-                  <Clock className="w-4 h-4 text-indigo-400" />
-                </div>
-                <div>
-                  <p className="text-xs text-indigo-200/60 uppercase tracking-widest font-semibold mb-0.5">Estimated Duration</p>
-                  <p className="text-lg font-bold text-indigo-300">{duration} business days</p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          />
         </div>
+        {errors.leave_type && (
+          <p className="text-red-500 text-sm mt-2 flex items-center gap-1.5"><AlertCircle className="w-4 h-4" /> {errors.leave_type.message}</p>
+        )}
+      </div>
 
-        {/* Right Column: Balance & Reason */}
-        <div className="lg:col-span-5 space-y-8 flex flex-col h-full">
-          
-          {/* Balance Widget */}
-          <div className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl p-5 shadow-sm">
-            <h4 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-4">Available Balance</h4>
+      {/* Step 2: Dates */}
+      <div>
+        <h4 className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-4">2. Select Dates</h4>
+        <div className="flex flex-col md:flex-row gap-6">
+          <div className="flex-1 space-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-[13px] font-bold text-gray-900">Start Date</Label>
+              <Input
+                {...form.register("start_date")}
+                type="date"
+                className="h-12 bg-white border-gray-300 text-gray-900 focus:border-[#083A81] focus:ring-[#083A81] shadow-sm rounded-lg"
+                min={format(new Date(), "yyyy-MM-dd")}
+              />
+              {errors.start_date && <p className="text-red-500 text-xs">{errors.start_date.message}</p>}
+            </div>
             
-            {leaveType === "unpaid" ? (
-              <div className="flex items-center gap-3 py-2">
-                <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
-                  <AlertCircle className="w-5 h-5 text-amber-400" />
-                </div>
-                <p className="text-sm text-white/60 font-medium">Unpaid leave does not affect your regular balance.</p>
-              </div>
-            ) : selectedBalance ? (
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-4xl font-black text-white">{selectedBalance.remaining}</p>
-                  <p className="text-xs text-[var(--text-secondary)] mt-1">Days remaining out of {selectedBalance.total_days}</p>
-                </div>
-                {/* Mini chart */}
-                <div className="w-16 h-16 rounded-full border-[6px] border-white/5 flex items-center justify-center relative">
-                  <svg className="absolute inset-0 w-full h-full -rotate-90">
-                    <circle cx="29" cy="29" r="26" stroke="currentColor" strokeWidth="6" fill="none" className="text-indigo-500" strokeDasharray={`${(selectedBalance.remaining / selectedBalance.total_days) * 163} 163`} strokeLinecap="round" />
-                  </svg>
-                  <span className="text-xs font-bold text-white">{Math.round((selectedBalance.remaining / selectedBalance.total_days) * 100)}%</span>
-                </div>
-              </div>
-            ) : (
-              <div className="h-[72px] flex items-center justify-center">
-                <span className="animate-spin w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full" />
-              </div>
-            )}
-          </div>
+            <div className="space-y-1.5">
+              <Label className="text-[13px] font-bold text-gray-900">End Date</Label>
+              <Input
+                {...form.register("end_date")}
+                type="date"
+                className="h-12 bg-white border-gray-300 text-gray-900 focus:border-[#083A81] focus:ring-[#083A81] shadow-sm rounded-lg"
+                min={startDate || format(new Date(), "yyyy-MM-dd")}
+              />
+              {errors.end_date && <p className="text-red-500 text-xs">{errors.end_date.message}</p>}
+            </div>
 
-          {/* Reason */}
-          <div className="space-y-3 flex-1 flex flex-col">
-            <Label htmlFor="reason" className="text-white/60 uppercase tracking-widest text-xs font-bold">Reason for Leave</Label>
-            <Textarea
-              {...form.register("reason")}
-              id="reason"
-              className={`flex-1 min-h-[140px] resize-y bg-white/[0.02] border-white/[0.06] rounded-xl text-white placeholder:text-[var(--text-muted)] focus:bg-white/[0.04] focus:border-indigo-500/50 transition-all ${errors.reason ? 'border-rose-500/50 focus:border-rose-500 focus:ring-rose-500/20' : ''}`}
-              placeholder="Provide details about why you need this time off..."
-              disabled={isLoading}
-            />
-            <div className="flex justify-between items-start mt-1">
-              {errors.reason ? (
-                <p className="text-rose-400 text-xs font-semibold flex items-center gap-1.5">
-                  <AlertCircle className="w-3 h-3" /> {errors.reason.message}
-                </p>
-              ) : <span />}
-              <p className="text-[10px] text-[var(--text-muted)] font-medium tracking-widest">
-                {form.watch("reason")?.length || 0} / 500
+            <div className="p-4 bg-[#f8fafc] border border-gray-200 rounded-xl flex items-center gap-3 shadow-sm">
+              <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                <Info className="w-4 h-4 text-[#083A81]" />
+              </div>
+              <p className="text-[13px] text-gray-600 font-medium">
+                Total duration: <span className="font-bold text-gray-900">{duration} days</span> selected.
               </p>
             </div>
+          </div>
+
+          <div className="shrink-0 bg-[#f8fafc] rounded-2xl p-4 border border-gray-200 shadow-sm hidden md:block">
+            <Calendar
+              mode="single"
+              selected={startDate ? parseISO(startDate) : undefined}
+              className="bg-transparent text-gray-900"
+              classNames={{
+                head_cell: "text-gray-500 font-bold text-[11px] uppercase tracking-wider w-9",
+                cell: "text-center text-sm p-0 relative [&:has([aria-selected])]:bg-[#083A81] [&:has([aria-selected])]:text-white rounded-lg hover:bg-gray-100 transition-colors cursor-pointer",
+                day: "h-9 w-9 p-0 font-medium",
+                day_selected: "bg-[#083A81] text-white hover:bg-[#062a60] hover:text-white focus:bg-[#083A81] focus:text-white",
+                nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+                caption: "flex justify-center pt-1 relative items-center mb-4",
+                caption_label: "text-sm font-bold text-gray-900",
+              }}
+            />
           </div>
         </div>
       </div>
 
-      {/* Footer Actions */}
-      <div className="pt-6 border-t border-white/[0.06] flex items-center justify-between">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          disabled={isLoading}
-          className="btn-ghost"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Cancel
-        </button>
+      {/* Step 3: Reason */}
+      <div>
+        <h4 className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-4">3. Reason Details</h4>
+        <Textarea
+          {...form.register("reason")}
+          className="min-h-[120px] resize-y bg-white border-gray-300 text-gray-900 focus:border-[#083A81] focus:ring-[#083A81] shadow-sm rounded-lg"
+          placeholder="Please provide any relevant details about your request..."
+        />
+        {errors.reason && <p className="text-red-500 text-sm mt-2">{errors.reason.message}</p>}
+      </div>
+
+      <div className="flex justify-end pt-4">
         <button
           type="submit"
           disabled={isLoading || duration === 0}
-          className="btn-primary min-w-[160px] h-12 text-[15px]"
+          className="bg-[#083A81] hover:bg-[#062a60] text-white font-medium py-3 px-8 rounded-xl transition-colors disabled:opacity-50 shadow-sm"
         >
-          {isLoading ? (
-            <>
-              <span className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2" />
-              Submitting...
-            </>
-          ) : (
-            <>
-              <Send className="w-4 h-4 mr-2" />
-              Submit Request
-            </>
-          )}
+          {isLoading ? "Submitting..." : "Submit Request"}
         </button>
       </div>
 

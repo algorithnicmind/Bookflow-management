@@ -1,36 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import Link from "next/link";
 import { getDashboardStats } from "@/services/dashboard.service";
 import { DashboardResponse } from "@/types/dashboard.types";
-import { StatsCards } from "@/features/dashboard/stats-cards";
 import { BalanceCards } from "@/features/dashboard/balance-cards";
 import { RecentLeavesTable } from "@/features/dashboard/recent-leaves-table";
-import { TeamOverview } from "@/features/dashboard/team-overview";
 import { useAuthStore } from "@/store/auth-store";
-import { staggerContainer, staggerItem, pageTransition, skeletonPulse } from "@/lib/animations";
-import { ROUTES } from "@/constants/routes";
-import { PenSquare, CalendarDays, Building2, Sparkles, AlertCircle, RefreshCw } from "lucide-react";
+import { Plus, Calendar, AlertCircle } from "lucide-react";
 import { ApplyLeaveSheet } from "@/components/shared/apply-leave-sheet";
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const { user } = useAuthStore();
 
   useEffect(() => {
     async function loadData() {
       setIsLoading(true);
-      setError(null);
       try {
         const stats = await getDashboardStats();
         setData(stats);
       } catch (err: any) {
-        setError(err.message || "Failed to load dashboard data");
+        console.error(err);
       } finally {
         setIsLoading(false);
       }
@@ -38,163 +30,118 @@ export default function DashboardPage() {
     loadData();
   }, []);
 
-  if (isLoading) {
+  if (isLoading || !data) {
     return (
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row gap-4 justify-between">
-          <div className="space-y-3">
-            <motion.div variants={skeletonPulse} initial="initial" animate="animate" className="h-8 w-64 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)]" />
-            <motion.div variants={skeletonPulse} initial="initial" animate="animate" className="h-4 w-48 rounded-lg bg-[var(--bg-secondary)]" />
+      <div className="animate-pulse space-y-6">
+        <div className="h-8 w-64 bg-gray-200 rounded-lg"></div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="space-y-4">
+            <div className="h-[400px] bg-gray-200 rounded-2xl"></div>
           </div>
-          <div className="flex gap-2">
-            <motion.div variants={skeletonPulse} initial="initial" animate="animate" className="h-10 w-24 rounded-xl bg-[var(--bg-secondary)]" />
-            <motion.div variants={skeletonPulse} initial="initial" animate="animate" className="h-10 w-32 rounded-xl bg-[var(--primary)]/20" />
+          <div className="lg:col-span-2 space-y-6">
+            <div className="h-[300px] bg-gray-200 rounded-2xl"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="h-[200px] bg-gray-200 rounded-2xl"></div>
+              <div className="h-[200px] bg-[#083A81]/20 rounded-2xl"></div>
+            </div>
           </div>
         </div>
-        
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <motion.div key={i} variants={skeletonPulse} initial="initial" animate="animate" className="h-[120px] rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)]" />
-          ))}
-        </div>
-        <motion.div variants={skeletonPulse} initial="initial" animate="animate" className="h-[200px] rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)]" />
-        <motion.div variants={skeletonPulse} initial="initial" animate="animate" className="h-[300px] rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)]" />
       </div>
-    );
-  }
-
-  if (error || !data) {
-    return (
-      <motion.div 
-        variants={pageTransition} initial="hidden" animate="visible" exit="exit"
-        className="flex flex-col items-center justify-center py-20 px-4 text-center"
-      >
-        <div className="w-20 h-20 rounded-full bg-[var(--danger-bg)] flex items-center justify-center mb-6">
-          <AlertCircle className="w-10 h-10 text-[var(--danger)]" />
-        </div>
-        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Unable to load dashboard</h2>
-        <p className="text-[var(--text-secondary)] mb-8 max-w-md">{error || "We couldn't fetch your data. Please check your connection and try again."}</p>
-        <button 
-          onClick={() => window.location.reload()} 
-          className="btn-primary"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Refresh Page
-        </button>
-      </motion.div>
     );
   }
 
   return (
-    <motion.div
-      variants={staggerContainer}
-      initial="hidden"
-      animate="visible"
-      className="space-y-8"
-    >
-      {/* Welcome Header */}
-      <motion.div
-        variants={staggerItem}
-        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6"
-      >
-        <div>
-          <h1 className="text-2xl lg:text-[28px] font-extrabold text-[var(--text-primary)] flex items-center gap-2.5 tracking-tight mb-1.5">
-            Welcome back, {user?.name?.split(' ')[0] || 'User'}
-            <Sparkles className="w-6 h-6 text-amber-500 animate-pulse" />
-          </h1>
-          <p className="text-[var(--text-secondary)] text-[15px]">
-            Here&apos;s what&apos;s happening with your team today.
-          </p>
+    <div className="space-y-6 relative pb-20">
+      
+      {/* 2-Column Layout */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+        
+        {/* Left Column (Balances) - Approx 4/12 */}
+        <div className="xl:col-span-4 space-y-6">
+          <BalanceCards balances={data.balances} />
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <Link href={ROUTES.LEAVE_HISTORY} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-primary)] rounded-lg font-medium hover:bg-[var(--bg-tertiary)] transition-colors shadow-sm">
-            <CalendarDays className="w-4 h-4" />
-            History
-          </Link>
-          <button onClick={() => setSheetOpen(true)} className="btn-primary flex-1 sm:flex-none justify-center">
-            <PenSquare className="w-4 h-4" />
-            Apply Leave
-          </button>
-        </div>
-      </motion.div>
-
-      {/* Stats Cards */}
-      <motion.div variants={staggerItem}>
-        <StatsCards stats={data.stats} />
-      </motion.div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-        <div className="lg:col-span-2 space-y-6 lg:space-y-8">
-          {/* Recent Leaves */}
-          <motion.div variants={staggerItem}>
-            <RecentLeavesTable leaves={data.recent_leaves} />
-          </motion.div>
+        {/* Right Column - Approx 8/12 */}
+        <div className="xl:col-span-8 space-y-6">
+          <RecentLeavesTable leaves={data.recent_leaves} />
           
-          {/* Org Overview (admins only) */}
-          {data.org_stats && (
-            <motion.div variants={staggerItem}>
-              <div className="glass-card p-6 sm:p-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-[var(--info-bg)] flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-[var(--info)]" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* Upcoming Holidays Card */}
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-[17px] font-bold text-gray-900">Upcoming Holidays</h3>
+                <Calendar className="w-5 h-5 text-gray-400" />
+              </div>
+              
+              <div className="space-y-5">
+                <div className="flex gap-4 items-start">
+                  <div className="w-[50px] h-[54px] rounded-xl bg-blue-50 border border-blue-100 flex flex-col items-center justify-center shrink-0">
+                    <span className="text-[10px] font-bold text-[#083A81] uppercase tracking-wider">Nov</span>
+                    <span className="text-[20px] font-bold text-[#083A81] leading-none mt-0.5">23</span>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-[var(--text-primary)] leading-tight">Organization Overview</h3>
-                    <p className="text-xs text-[var(--text-secondary)] mt-0.5">Global company statistics</p>
+                  <div className="mt-1">
+                    <h4 className="font-bold text-gray-900 text-[15px]">Thanksgiving Day</h4>
+                    <p className="text-[13px] text-gray-500 mt-0.5">Public Holiday • Thursday</p>
                   </div>
                 </div>
-                
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div className="bg-[var(--bg-secondary)] rounded-xl p-5 border border-[var(--border)]">
-                    <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-[0.1em] font-bold mb-2">Total Staff</p>
-                    <p className="text-2xl font-bold text-[var(--text-primary)]">{data.org_stats.total_employees}</p>
+
+                <div className="flex gap-4 items-start">
+                  <div className="w-[50px] h-[54px] rounded-xl bg-gray-50 border border-gray-200 flex flex-col items-center justify-center shrink-0">
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Dec</span>
+                    <span className="text-[20px] font-bold text-gray-900 leading-none mt-0.5">25</span>
                   </div>
-                  <div className="bg-[var(--bg-secondary)] rounded-xl p-5 border border-[var(--border)]">
-                    <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-[0.1em] font-bold mb-2">Requests</p>
-                    <p className="text-2xl font-bold text-[var(--text-primary)]">{data.org_stats.total_requests}</p>
-                  </div>
-                  <div className="bg-[var(--bg-secondary)] rounded-xl p-5 border border-[var(--border)]">
-                    <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-[0.1em] font-bold mb-2">Depts</p>
-                    <p className="text-2xl font-bold text-[var(--text-primary)]">{data.org_stats.department_breakdown?.length || 0}</p>
-                  </div>
-                  <div className="bg-[var(--info-bg)] rounded-xl p-5 border border-[var(--info)]/20 shadow-sm">
-                    <p className="text-[10px] text-[var(--info)] uppercase tracking-[0.1em] font-bold mb-2">Approval Rate</p>
-                    <p className="text-2xl font-bold text-[var(--info)]">
-                      {data.org_stats.status_breakdown
-                        ? `${Math.round(
-                            ((data.org_stats.status_breakdown.find((s) => s.status === "approved")?.count || 0) /
-                              Math.max(data.org_stats.total_requests, 1)) *
-                              100
-                          )}%`
-                        : "N/A"}
-                    </p>
+                  <div className="mt-1">
+                    <h4 className="font-bold text-gray-900 text-[15px]">Christmas Day</h4>
+                    <p className="text-[13px] text-gray-500 mt-0.5">Public Holiday • Monday</p>
                   </div>
                 </div>
               </div>
-            </motion.div>
-          )}
-        </div>
+            </div>
 
-        <div className="space-y-6 lg:space-y-8">
-          {/* Leave Balances */}
-          <motion.div variants={staggerItem}>
-            <BalanceCards balances={data.balances} />
-          </motion.div>
+            {/* Team Snapshot Card */}
+            <div className="bg-[#083A81] rounded-2xl shadow-sm p-6 relative overflow-hidden flex flex-col justify-between">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-white opacity-[0.03] rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
+              
+              <div className="relative z-10">
+                <h3 className="text-[18px] font-bold text-white mb-2">Team Snapshot</h3>
+                <p className="text-blue-100 text-[14px]">
+                  {(data.team_on_leave_today && data.team_on_leave_today.length > 0) 
+                    ? `${data.team_on_leave_today.length} teammate${data.team_on_leave_today.length > 1 ? 's' : ''} currently out on leave.`
+                    : "No teammates are currently on leave."}
+                </p>
+              </div>
 
-          {/* Team Overview (managers only) */}
-          {(data.team_pending_count !== undefined || data.team_on_leave_today) && (
-            <motion.div variants={staggerItem}>
-              <TeamOverview
-                pendingCount={data.team_pending_count || 0}
-                onLeave={data.team_on_leave_today || []}
-              />
-            </motion.div>
-          )}
+              <div className="flex -space-x-2 mt-8 relative z-10">
+                {/* Simulated avatars for design fidelity */}
+                <div className="w-10 h-10 rounded-full border-2 border-[#083A81] bg-gray-200 overflow-hidden">
+                  <img src="https://i.pravatar.cc/100?img=11" alt="Team member" className="w-full h-full object-cover" />
+                </div>
+                <div className="w-10 h-10 rounded-full border-2 border-[#083A81] bg-gray-200 overflow-hidden">
+                  <img src="https://i.pravatar.cc/100?img=5" alt="Team member" className="w-full h-full object-cover" />
+                </div>
+                <div className="w-10 h-10 rounded-full border-2 border-[#083A81] bg-gray-200 overflow-hidden">
+                  <img src="https://i.pravatar.cc/100?img=33" alt="Team member" className="w-full h-full object-cover" />
+                </div>
+                <div className="w-10 h-10 rounded-full border-2 border-[#083A81] bg-white flex items-center justify-center">
+                  <span className="text-[#083A81] text-[11px] font-bold">+2</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
 
+      {/* Floating Action Button (FAB) */}
+      <button 
+        onClick={() => setSheetOpen(true)}
+        className="fixed bottom-8 right-8 w-14 h-14 bg-[#083A81] hover:bg-[#062a60] text-white rounded-full flex items-center justify-center shadow-[0_8px_30px_rgb(8,58,129,0.4)] hover:shadow-[0_8px_30px_rgb(8,58,129,0.6)] transition-all hover:scale-105 z-40"
+      >
+        <Plus className="w-6 h-6" />
+      </button>
+
       <ApplyLeaveSheet open={sheetOpen} onOpenChange={setSheetOpen} />
-    </motion.div>
+    </div>
   );
 }
