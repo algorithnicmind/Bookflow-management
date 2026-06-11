@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import or_, and_
+from sqlalchemy.orm import joinedload
 from typing import List, Optional
 from datetime import date
 from app.modules.leaves.models import LeaveRequest, LeaveApproval, LeaveBalance
@@ -53,12 +54,14 @@ class LeaveRepository:
         return list(result.scalars().all())
 
     async def list_history(self, employee_id: int, status: Optional[str] = None) -> List[LeaveRequest]:
-        query = select(LeaveRequest).where(LeaveRequest.employee_id == employee_id)
+        query = select(LeaveRequest).options(
+            joinedload(LeaveRequest.approval).joinedload(LeaveApproval.manager)
+        ).where(LeaveRequest.employee_id == employee_id)
         if status and status.lower() != "all":
             query = query.where(LeaveRequest.status == status.lower())
         query = query.order_by(LeaveRequest.created_at.desc())
         result = await self.db.execute(query)
-        return list(result.scalars().all())
+        return list(result.unique().scalars().all())
 
     async def list_pending_requests_for_manager(self, manager_id: int):
         query = select(LeaveRequest, Employee).join(Employee).where(
@@ -67,6 +70,14 @@ class LeaveRepository:
         )
         result = await self.db.execute(query)
         return result.all()
+
+    async def list_all_pending_requests(self):
+        query = select(LeaveRequest, Employee).join(Employee).where(
+            LeaveRequest.status == "pending"
+        )
+        result = await self.db.execute(query)
+        return result.all()
+
 
     async def create_request(self, leave: LeaveRequest) -> LeaveRequest:
         self.db.add(leave)

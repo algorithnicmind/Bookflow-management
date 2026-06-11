@@ -57,6 +57,14 @@ class LeaveService:
         leaves = await self.repo.list_history(employee_id, status)
         responses = []
         for leave in leaves:
+            approval_data = None
+            if leave.approval:
+                approval_data = {
+                    "manager_name": leave.approval.manager.name if leave.approval.manager else None,
+                    "action": leave.approval.action,
+                    "comments": leave.approval.comments,
+                    "acted_at": leave.approval.acted_at
+                }
             responses.append({
                 "id": leave.id,
                 "employee_id": leave.employee_id,
@@ -67,7 +75,8 @@ class LeaveService:
                 "status": leave.status,
                 "created_at": leave.created_at,
                 "updated_at": leave.updated_at,
-                "days": self.get_business_days(leave.start_date, leave.end_date)
+                "days": self.get_business_days(leave.start_date, leave.end_date),
+                "approval": approval_data
             })
         return responses
 
@@ -106,8 +115,11 @@ class LeaveService:
         await self.repo.commit()
         return {"message": "Leave request cancelled successfully"}
 
-    async def get_pending_requests(self, manager_id: int) -> List[dict]:
-        rows = await self.repo.list_pending_requests_for_manager(manager_id)
+    async def get_pending_requests(self, manager_id: int, is_admin: bool = False) -> List[dict]:
+        if is_admin:
+            rows = await self.repo.list_all_pending_requests()
+        else:
+            rows = await self.repo.list_pending_requests_for_manager(manager_id)
         res = []
         for leave, emp in rows:
             res.append({
@@ -125,6 +137,7 @@ class LeaveService:
                 "department": emp.department
             })
         return res
+
 
     async def approve_leave(self, leave_id: int, manager_id: int, is_admin: bool, action: LeaveApprovalAction) -> dict:
         row = await self.repo.get_request_with_employee(leave_id)

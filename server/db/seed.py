@@ -1,8 +1,17 @@
 import asyncio
+import socket
+
+# Monkey-patch socket.getaddrinfo to force IPv4 and prevent Neon DB connection hangs over IPv6
+original_getaddrinfo = socket.getaddrinfo
+def getaddrinfo_ipv4(host, port, family=0, type=0, proto=0, flags=0):
+    return original_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
+socket.getaddrinfo = getaddrinfo_ipv4
+
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 import os
 import sys
+
 
 # Add parent directory to path to import app modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

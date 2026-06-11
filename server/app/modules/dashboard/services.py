@@ -70,26 +70,45 @@ class DashboardService:
         
         # 2. Manager-specific stats
         if current_user.role in ["manager", "admin", "super_admin"]:
-            p_res = await self.db.execute(
-                select(func.count(LeaveRequest.id))
-                .join(Employee)
-                .where(LeaveRequest.status == "pending", Employee.manager_id == current_user.id)
-            )
+            is_admin = current_user.role in ["admin", "super_admin"]
+            if is_admin:
+                p_res = await self.db.execute(
+                    select(func.count(LeaveRequest.id))
+                    .where(LeaveRequest.status == "pending")
+                )
+            else:
+                p_res = await self.db.execute(
+                    select(func.count(LeaveRequest.id))
+                    .join(Employee)
+                    .where(LeaveRequest.status == "pending", Employee.manager_id == current_user.id)
+                )
             response.team_pending_count = p_res.scalar()
             
             # team on leave today
             today = datetime.today().date()
-            on_leave_res = await self.db.execute(
-                select(Employee.name)
-                .join(LeaveRequest)
-                .where(
-                    Employee.manager_id == current_user.id,
-                    LeaveRequest.status == "approved",
-                    LeaveRequest.start_date <= today,
-                    LeaveRequest.end_date >= today
+            if is_admin:
+                on_leave_res = await self.db.execute(
+                    select(Employee.name)
+                    .join(LeaveRequest)
+                    .where(
+                        LeaveRequest.status == "approved",
+                        LeaveRequest.start_date <= today,
+                        LeaveRequest.end_date >= today
+                    )
                 )
-            )
+            else:
+                on_leave_res = await self.db.execute(
+                    select(Employee.name)
+                    .join(LeaveRequest)
+                    .where(
+                        Employee.manager_id == current_user.id,
+                        LeaveRequest.status == "approved",
+                        LeaveRequest.start_date <= today,
+                        LeaveRequest.end_date >= today
+                    )
+                )
             response.team_on_leave_today = [name for name in on_leave_res.scalars().all()]
+
             
         # 3. Admin-specific org stats
         if current_user.role in ["admin", "super_admin"]:

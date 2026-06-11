@@ -54,8 +54,10 @@ async def get_pending_requests(
     service: LeaveService = Depends(get_leave_service),
     current_user: Employee = Depends(RoleChecker(["manager", "admin", "super_admin"]))
 ):
-    pending = await service.get_pending_requests(current_user.id)
+    is_admin = current_user.role in ["admin", "super_admin"]
+    pending = await service.get_pending_requests(current_user.id, is_admin)
     return {"pending": pending}
+
 
 @router.put("/{leave_id}/approve")
 async def approve_leave(
