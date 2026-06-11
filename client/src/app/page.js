@@ -37,23 +37,40 @@ export default function LandingPage() {
   if (user) return null
 
   return (
-    <div className="relative min-h-screen bg-[var(--bg-primary)] flex flex-col overflow-hidden">
+    <div style={{
+      minHeight: '100vh',
+      background: 'var(--bg-primary)',
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
       <BackgroundBeams />
-      <header className="relative z-10 flex items-center justify-between px-8 py-4 border-b border-[var(--border)]">
-        <div className="flex items-center gap-3">
+      <header style={{
+        padding: '16px 32px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderBottom: '1px solid var(--border)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{
             width: 38, height: 38, borderRadius: 10,
             background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '1.1rem', fontWeight: 800, color: '#fff',
           }}>L</div>
-          <span className="font-bold text-lg">LeaveFlow</span>
+          <span style={{ fontWeight: 700, fontSize: '1.15rem' }}>LeaveFlow</span>
         </div>
         <button
           onClick={() => router.push('/login')}
-          className="px-6 py-2.5 rounded-[var(--radius-sm)] text-white font-semibold text-sm border-none cursor-pointer"
           style={{
+            padding: '10px 24px',
+            borderRadius: 'var(--radius-sm)',
             background: 'linear-gradient(135deg, #4f46e5, #4338ca)',
+            color: '#fff',
+            border: 'none',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            cursor: 'pointer',
             transition: 'var(--transition)',
           }}
           onMouseEnter={(e) => e.target.style.opacity = '0.9'}
@@ -63,51 +80,88 @@ export default function LandingPage() {
         </button>
       </header>
 
-      <main className="relative z-10 flex-1 flex flex-col">
-        <section className="flex-1 flex flex-col items-center justify-center text-center px-6 py-10 max-w-[900px] mx-auto w-full">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-sm font-medium mb-8"
-            style={{
-              background: 'var(--accent-glow)',
-              borderColor: 'rgba(79, 70, 229, 0.3)',
-              color: 'var(--accent)',
-            }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <section style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+          padding: '40px 24px',
+          maxWidth: 900,
+          margin: '0 auto',
+        }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '6px 16px',
+            borderRadius: 100,
+            background: 'var(--accent-glow)',
+            border: '1px solid rgba(79, 70, 229, 0.3)',
+            fontSize: '0.82rem',
+            color: 'var(--accent)',
+            fontWeight: 500,
+            marginBottom: 32,
+          }}>
             ✨ Enterprise Leave Management
           </div>
 
-          <h1 className="text-[clamp(2.2rem,5vw,3.8rem)] font-extrabold leading-[1.1] tracking-tight mb-5">
+          <h1 style={{
+            fontSize: 'clamp(2.2rem, 5vw, 3.8rem)',
+            fontWeight: 800,
+            lineHeight: 1.1,
+            letterSpacing: '-1px',
+            marginBottom: 20,
+          }}>
             Streamline Your{' '}
             <span style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               Leave Management
             </span>
           </h1>
 
-          <p className="text-[clamp(0.95rem,2vw,1.15rem)] text-[var(--text-muted)] max-w-[600px] leading-relaxed mb-10">
+          <p style={{
+            fontSize: 'clamp(0.95rem, 2vw, 1.15rem)',
+            color: 'var(--text-muted)',
+            maxWidth: 600,
+            lineHeight: 1.7,
+            marginBottom: 40,
+          }}>
             A powerful, enterprise-grade platform for managing employee leave requests, 
             approvals, and tracking — all in one seamless experience.
           </p>
 
-          <div className="flex gap-3 flex-wrap justify-center">
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
             <button
               onClick={() => router.push('/login')}
-              className="px-8 py-3.5 rounded-[var(--radius-sm)] text-white font-semibold border-none cursor-pointer"
               style={{
+                padding: '14px 32px',
+                borderRadius: 'var(--radius-sm)',
                 background: 'linear-gradient(135deg, #4f46e5, #4338ca)',
+                color: '#fff',
+                border: 'none',
                 fontSize: '0.95rem',
+                fontWeight: 600,
+                cursor: 'pointer',
                 transition: 'var(--transition)',
               }}
-              onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)' }}
-              onMouseLeave={(e) => { e.target.style.transform = 'none' }}
+              onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
+              onMouseLeave={(e) => e.target.style.transform = 'none'}
             >
               Get Started →
             </button>
             <button
               onClick={() => router.push('/login')}
-              className="px-8 py-3.5 rounded-[var(--radius-sm)] font-semibold cursor-pointer"
               style={{
+                padding: '14px 32px',
+                borderRadius: 'var(--radius-sm)',
                 background: 'transparent',
                 color: 'var(--text-main)',
                 border: '1px solid var(--border)',
                 fontSize: '0.95rem',
+                fontWeight: 600,
+                cursor: 'pointer',
                 transition: 'var(--transition)',
               }}
               onMouseEnter={(e) => { e.target.style.borderColor = 'var(--accent)'; e.target.style.transform = 'translateY(-2px)' }}
@@ -118,18 +172,29 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-5 px-8 pb-20 max-w-[1100px] mx-auto w-full">
+        <section style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: 20,
+          padding: '40px 32px 80px',
+          maxWidth: 1100,
+          margin: '0 auto',
+          width: '100%',
+        }}>
           {[
             { icon: '🎯', title: 'Easy Apply', desc: 'Submit leave requests in seconds with an intuitive interface.' },
             { icon: '⚡', title: 'Fast Approvals', desc: 'Managers can review and approve requests with one click.' },
             { icon: '📊', title: 'Smart Dashboard', desc: 'Role-based dashboards with real-time stats and insights.' },
             { icon: '🔒', title: 'Secure & Private', desc: 'Enterprise-grade security with JWT authentication.' },
           ].map((feature, i) => (
-            <div key={i} className="glass glass-hover animate-in text-center p-6"
-              style={{ animationDelay: `${i * 0.1}s` }}>
+            <div key={i} className="glass glass-hover animate-in" style={{
+              padding: '24px',
+              textAlign: 'center',
+              animationDelay: `${i * 0.1}s`,
+            }}>
               <div style={{ fontSize: '2rem', marginBottom: 12 }}>{feature.icon}</div>
-              <h3 className="text-base font-bold mb-2">{feature.title}</h3>
-              <p className="text-sm text-[var(--text-muted)] leading-relaxed">{feature.desc}</p>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: 8 }}>{feature.title}</h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>{feature.desc}</p>
             </div>
           ))}
         </section>

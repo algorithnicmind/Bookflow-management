@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { authApi } from '@/services/api'
-import Card from '@/components/UI/Card'
-import Button from '@/components/UI/Button'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
 
 export default function ManageAdminsPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '' })

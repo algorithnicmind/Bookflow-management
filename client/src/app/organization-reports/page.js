@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { reportsApi } from '@/services/api'
-import Card from '@/components/UI/Card'
-import StatCard from '@/components/UI/StatCard'
+import Card from '@/components/ui/Card'
+import StatCard from '@/components/ui/StatCard'
 
 export default function OrganizationReportsPage() {
   const [data, setData] = useState(null)

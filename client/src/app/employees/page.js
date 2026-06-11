@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { employeesApi } from '@/services/api'
-import Card from '@/components/UI/Card'
-import Button from '@/components/UI/Button'
-import Modal from '@/components/UI/Modal'
-import Badge from '@/components/UI/Badge'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import Modal from '@/components/ui/Modal'
+import Badge from '@/components/ui/Badge'
 import { formatDate } from '@/lib/utils'
 
 const roles = ['employee', 'manager', 'admin']

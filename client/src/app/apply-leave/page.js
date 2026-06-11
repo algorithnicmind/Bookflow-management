@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { leavesApi } from '@/services/api'
-import Button from '@/components/UI/Button'
-import Card from '@/components/UI/Card'
+import Button from '@/components/ui/Button'
+import Card from '@/components/ui/Card'
 
 const leaveTypes = [
   { value: 'casual', label: 'Casual Leave (CL)', quota: 12 },

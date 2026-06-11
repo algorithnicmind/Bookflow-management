@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { dashboardApi, leavesApi } from '@/services/api'
-import Card from '@/components/UI/Card'
-import StatCard from '@/components/UI/StatCard'
-import Badge from '@/components/UI/Badge'
-import Button from '@/components/UI/Button'
+import Card from '@/components/ui/Card'
+import StatCard from '@/components/ui/StatCard'
+import Badge from '@/components/ui/Badge'
+import Button from '@/components/ui/Button'
 import { formatDate, getLeaveTypeIcon } from '@/lib/utils'
 
 export default function TeamOverviewPage() {

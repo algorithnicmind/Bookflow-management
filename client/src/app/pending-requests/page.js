@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { leavesApi } from '@/services/api'
-import Card from '@/components/UI/Card'
-import Badge from '@/components/UI/Badge'
-import Button from '@/components/UI/Button'
-import Modal from '@/components/UI/Modal'
+import Card from '@/components/ui/Card'
+import Badge from '@/components/ui/Badge'
+import Button from '@/components/ui/Button'
+import Modal from '@/components/ui/Modal'
 import { formatDate, formatDateTime, getLeaveTypeIcon } from '@/lib/utils'
 
 export default function PendingRequestsPage() {
