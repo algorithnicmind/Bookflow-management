@@ -7,19 +7,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format, differenceInBusinessDays, parseISO, isAfter, isBefore } from "date-fns";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
-import { PenSquare, Clock, CalendarDays, ArrowLeft, Send, AlertCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Clock, CalendarDays, ArrowLeft, Send, AlertCircle, Briefcase, HeartPulse, Sparkles, CheckCircle2 } from "lucide-react";
 
 import { applyLeave, getLeaveBalance } from "@/services/leaves.service";
 import { LeaveBalance } from "@/types/leave.types";
-import { LEAVE_TYPE_LABELS } from "@/constants/leave-types";
 import { ROUTES } from "@/constants/routes";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 const leaveSchema = z.object({
   leave_type: z.enum(["casual", "sick", "earned", "unpaid"] as const, {
@@ -39,10 +36,18 @@ const leaveSchema = z.object({
 
 type LeaveFormValues = z.infer<typeof leaveSchema>;
 
+const LEAVE_TYPES = [
+  { id: "casual", label: "Casual Leave", icon: Sparkles, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/30", activeBg: "bg-blue-500/20" },
+  { id: "sick", label: "Sick Leave", icon: HeartPulse, color: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/30", activeBg: "bg-rose-500/20" },
+  { id: "earned", label: "Earned Leave", icon: Briefcase, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/30", activeBg: "bg-emerald-500/20" },
+  { id: "unpaid", label: "Unpaid Leave", icon: AlertCircle, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30", activeBg: "bg-amber-500/20" },
+];
+
 export function ApplyLeaveForm() {
   const router = useRouter();
   const [balances, setBalances] = useState<LeaveBalance[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [duration, setDuration] = useState(0);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -61,7 +66,7 @@ export function ApplyLeaveForm() {
   const endDate = form.watch("end_date");
   const leaveType = form.watch("leave_type");
 
-  const { errors, isSubmitting } = form.formState;
+  const { errors } = form.formState;
 
   useEffect(() => {
     async function loadBalances() {
@@ -90,7 +95,6 @@ export function ApplyLeaveForm() {
     }
   }, [startDate, endDate]);
 
-  // Shake form on error
   useEffect(() => {
     if (submitError && formRef.current) {
       formRef.current.classList.add("animate-shake");
@@ -107,7 +111,7 @@ export function ApplyLeaveForm() {
     if (data.leave_type !== "unpaid") {
       const balance = balances.find(b => b.leave_type === data.leave_type);
       if (balance && duration > balance.remaining) {
-        const msg = `You only have ${balance.remaining} days of ${LEAVE_TYPE_LABELS[data.leave_type]} leave remaining.`;
+        const msg = `You only have ${balance.remaining} days of ${data.leave_type} leave remaining.`;
         setSubmitError(msg);
         toast.error(msg);
         return;
@@ -117,207 +121,268 @@ export function ApplyLeaveForm() {
     setIsLoading(true);
     try {
       await applyLeave(data);
+      setIsSuccess(true);
       toast.success("Leave request submitted successfully!", {
         duration: 4000,
       });
-      router.push(ROUTES.LEAVE_HISTORY);
+      setTimeout(() => {
+        router.push(ROUTES.LEAVE_HISTORY);
+      }, 1500);
     } catch (error: any) {
       const msg = error.response?.data?.detail || "Failed to submit leave request.";
       setSubmitError(msg);
       toast.error(msg);
-    } finally {
       setIsLoading(false);
     }
   }
 
   const selectedBalance = balances.find(b => b.leave_type === leaveType);
 
+  if (isSuccess) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="py-16 flex flex-col items-center justify-center text-center"
+      >
+        <motion.div 
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 200, damping: 15 }}
+          className="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center mb-6 relative"
+        >
+          <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping" />
+          <CheckCircle2 className="w-12 h-12 text-emerald-400" />
+        </motion.div>
+        <h3 className="text-2xl font-bold text-white mb-2">Request Submitted!</h3>
+        <p className="text-white/50 max-w-sm">
+          Your leave request has been successfully sent to your manager for approval.
+        </p>
+      </motion.div>
+    );
+  }
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="max-w-2xl mx-auto space-y-6"
-    >
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--primary)] to-indigo-600 flex items-center justify-center shadow-lg shadow-[var(--primary)]/20">
-          <PenSquare className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold gradient-text tracking-tight">Submit Request</h2>
-          <p className="text-[var(--text-secondary)] text-sm font-medium">Apply for a new leave of absence</p>
-        </div>
-      </div>
-
-      <Card className="glass-card shadow-2xl border-[var(--glass-border)]">
-        <CardContent className="p-6 md:p-8">
-          <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-
-            {/* Error Banner */}
-            {submitError && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-start gap-3 p-4 rounded-xl bg-[var(--danger)]/10 border border-[var(--danger)]/20 text-sm"
-              >
-                <AlertCircle className="w-5 h-5 text-[var(--danger)] shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-[var(--danger)]">Submission Error</p>
-                  <p className="text-[var(--text-secondary)] mt-0.5">{submitError}</p>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Leave Type */}
-            <div className="space-y-3">
-              <Label>Leave Type</Label>
-              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                <Controller
-                  name="leave_type"
-                  control={form.control}
-                  render={({ field }) => (
-                    <Select disabled={isLoading} onValueChange={(val) => field.onChange(val || '')} defaultValue={field.value}>
-                      <SelectTrigger className="w-[200px] input-field bg-[var(--bg-tertiary)] border-[var(--glass-border)] focus:ring-[var(--primary)]/50 transition-all">
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="casual">Casual Leave</SelectItem>
-                        <SelectItem value="sick">Sick Leave</SelectItem>
-                        <SelectItem value="earned">Earned Leave</SelectItem>
-                        <SelectItem value="unpaid">Unpaid Leave</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-
-                {selectedBalance && leaveType !== "unpaid" && (
-                  <div className="text-sm px-4 py-2 bg-[var(--primary)]/10 rounded-lg border border-[var(--primary)]/20 shadow-sm flex items-center gap-2">
-                    <span className="text-[var(--text-secondary)] font-medium">Available Balance:</span>
-                    <span className="font-bold text-[var(--primary)]">{selectedBalance.remaining} days</span>
-                  </div>
-                )}
-              </div>
-              {errors.leave_type && (
-                <p className="text-[var(--danger)] text-xs mt-1 font-semibold">
-                  {errors.leave_type.message}
-                </p>
-              )}
+    <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 relative">
+      {/* Error Banner */}
+      <AnimatePresence>
+        {submitError && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+            animate={{ opacity: 1, height: "auto", marginBottom: 24 }}
+            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+            className="flex items-start gap-3 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-sm overflow-hidden"
+          >
+            <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-rose-400">Submission Error</p>
+              <p className="text-rose-400/80 mt-0.5">{submitError}</p>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-            {/* Dates */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <Label htmlFor="start_date">Start Date</Label>
-                <div className="relative">
-                  <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] pointer-events-none" />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+        {/* Left Column: Leave Type & Dates */}
+        <div className="lg:col-span-7 space-y-8">
+          
+          {/* Leave Type Selector */}
+          <div className="space-y-3">
+            <Label className="text-white/60 uppercase tracking-widest text-xs font-bold">Select Leave Type</Label>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <Controller
+                name="leave_type"
+                control={form.control}
+                render={({ field }) => (
+                  <>
+                    {LEAVE_TYPES.map((type) => {
+                      const Icon = type.icon;
+                      const isActive = field.value === type.id;
+                      return (
+                        <button
+                          key={type.id}
+                          type="button"
+                          onClick={() => field.onChange(type.id)}
+                          className={`flex flex-col items-start p-4 rounded-2xl border transition-all duration-200 text-left ${
+                            isActive 
+                              ? `${type.activeBg} ${type.border} ring-2 ring-white/10` 
+                              : `bg-white/[0.02] border-white/[0.04] hover:bg-white/[0.04]`
+                          }`}
+                        >
+                          <div className={`w-8 h-8 rounded-lg ${isActive ? type.bg : 'bg-white/5'} flex items-center justify-center mb-3 transition-colors`}>
+                            <Icon className={`w-4 h-4 ${isActive ? type.color : 'text-white/40'}`} />
+                          </div>
+                          <p className={`font-semibold text-sm ${isActive ? 'text-white' : 'text-white/60'}`}>
+                            {type.label}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </>
+                )}
+              />
+            </div>
+            {errors.leave_type && (
+              <p className="text-rose-400 text-xs mt-1 font-semibold flex items-center gap-1.5">
+                <AlertCircle className="w-3 h-3" /> {errors.leave_type.message}
+              </p>
+            )}
+          </div>
+
+          {/* Dates */}
+          <div className="space-y-3">
+            <Label className="text-white/60 uppercase tracking-widest text-xs font-bold">Duration</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <div className="relative group">
+                  <CalendarDays className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 group-focus-within:text-indigo-400 transition-colors pointer-events-none" />
                   <Input
                     {...form.register("start_date")}
                     id="start_date"
                     type="date"
-                    className={`input-field pl-9 bg-[var(--bg-tertiary)] border-[var(--glass-border)] focus:ring-[var(--primary)]/50 transition-all ${errors.start_date ? 'border-[var(--danger)]/50 focus:border-[var(--danger)] focus:ring-[var(--danger)]/20' : ''}`}
+                    className={`h-12 pl-11 bg-white/[0.02] border-white/[0.06] rounded-xl text-white focus:bg-white/[0.04] focus:border-indigo-500/50 transition-all ${errors.start_date ? 'border-rose-500/50 focus:border-rose-500 focus:ring-rose-500/20' : ''}`}
                     min={format(new Date(), "yyyy-MM-dd")}
                     disabled={isLoading}
                   />
                 </div>
                 {errors.start_date && (
-                  <motion.p
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="text-[var(--danger)] text-xs mt-1 font-semibold"
-                  >
-                    {errors.start_date.message}
-                  </motion.p>
+                  <p className="text-rose-400 text-xs font-semibold flex items-center gap-1.5">
+                    <AlertCircle className="w-3 h-3" /> {errors.start_date.message}
+                  </p>
                 )}
               </div>
 
-              <div className="space-y-3">
-                <Label htmlFor="end_date">End Date</Label>
-                <div className="relative">
-                  <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] pointer-events-none" />
+              <div className="space-y-1.5">
+                <div className="relative group">
+                  <CalendarDays className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 group-focus-within:text-indigo-400 transition-colors pointer-events-none" />
                   <Input
                     {...form.register("end_date")}
                     id="end_date"
                     type="date"
-                    className={`input-field pl-9 bg-[var(--bg-tertiary)] border-[var(--glass-border)] focus:ring-[var(--primary)]/50 transition-all ${errors.end_date ? 'border-[var(--danger)]/50 focus:border-[var(--danger)] focus:ring-[var(--danger)]/20' : ''}`}
+                    className={`h-12 pl-11 bg-white/[0.02] border-white/[0.06] rounded-xl text-white focus:bg-white/[0.04] focus:border-indigo-500/50 transition-all ${errors.end_date ? 'border-rose-500/50 focus:border-rose-500 focus:ring-rose-500/20' : ''}`}
                     min={startDate || format(new Date(), "yyyy-MM-dd")}
                     disabled={isLoading}
                   />
                 </div>
                 {errors.end_date && (
-                  <motion.p
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="text-[var(--danger)] text-xs mt-1 font-semibold"
-                  >
-                    {errors.end_date.message}
-                  </motion.p>
+                  <p className="text-rose-400 text-xs font-semibold flex items-center gap-1.5">
+                    <AlertCircle className="w-3 h-3" /> {errors.end_date.message}
+                  </p>
                 )}
               </div>
             </div>
+          </div>
 
-            {/* Duration Estimator */}
+          {/* Duration Estimator */}
+          <AnimatePresence>
             {duration > 0 && (
               <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                className="p-4 bg-gradient-to-r from-[var(--info)]/20 to-[var(--info)]/5 text-[var(--info)] rounded-xl border border-[var(--info)]/30 text-sm flex items-center gap-3 shadow-sm"
+                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                animate={{ opacity: 1, height: "auto", marginTop: 16 }}
+                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                className="p-4 bg-gradient-to-r from-indigo-500/10 to-transparent rounded-xl border border-indigo-500/20 flex items-center gap-3 overflow-hidden"
               >
-                <Clock className="w-5 h-5 shrink-0" />
-                <span>Estimated duration: <strong className="text-base">{duration} business days</strong></span>
+                <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center shrink-0">
+                  <Clock className="w-4 h-4 text-indigo-400" />
+                </div>
+                <div>
+                  <p className="text-xs text-indigo-200/60 uppercase tracking-widest font-semibold mb-0.5">Estimated Duration</p>
+                  <p className="text-lg font-bold text-indigo-300">{duration} business days</p>
+                </div>
               </motion.div>
             )}
+          </AnimatePresence>
+        </div>
 
-            {/* Reason */}
-            <div className="space-y-3">
-              <Label htmlFor="reason">Reason</Label>
-              <Textarea
-                {...form.register("reason")}
-                id="reason"
-                className={`input-field min-h-[140px] resize-y bg-[var(--bg-tertiary)] border-[var(--glass-border)] focus:ring-[var(--primary)]/50 transition-all ${errors.reason ? 'border-[var(--danger)]/50 focus:border-[var(--danger)] focus:ring-[var(--danger)]/20' : ''}`}
-                placeholder="Please provide a detailed reason for your leave request..."
-                disabled={isLoading}
-              />
-              <div className="flex justify-between items-start mt-1">
-                {errors.reason ? (
-                  <p className="text-[var(--danger)] text-xs font-semibold">
-                    {errors.reason.message}
-                  </p>
-                ) : <span />}
-                <p className="text-xs text-[var(--text-muted)] font-medium">
-                  {form.watch("reason")?.length || 0}/500 characters
-                </p>
+        {/* Right Column: Balance & Reason */}
+        <div className="lg:col-span-5 space-y-8 flex flex-col h-full">
+          
+          {/* Balance Widget */}
+          <div className="bg-[#090a10] border border-white/[0.04] rounded-2xl p-5 shadow-inner">
+            <h4 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-4">Available Balance</h4>
+            
+            {leaveType === "unpaid" ? (
+              <div className="flex items-center gap-3 py-2">
+                <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
+                  <AlertCircle className="w-5 h-5 text-amber-400" />
+                </div>
+                <p className="text-sm text-white/60 font-medium">Unpaid leave does not affect your regular balance.</p>
               </div>
-            </div>
+            ) : selectedBalance ? (
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-4xl font-black text-white">{selectedBalance.remaining}</p>
+                  <p className="text-xs text-white/40 mt-1">Days remaining out of {selectedBalance.total_days}</p>
+                </div>
+                {/* Mini chart */}
+                <div className="w-16 h-16 rounded-full border-[6px] border-white/5 flex items-center justify-center relative">
+                  <svg className="absolute inset-0 w-full h-full -rotate-90">
+                    <circle cx="29" cy="29" r="26" stroke="currentColor" strokeWidth="6" fill="none" className="text-indigo-500" strokeDasharray={`${(selectedBalance.remaining / selectedBalance.total_days) * 163} 163`} strokeLinecap="round" />
+                  </svg>
+                  <span className="text-xs font-bold text-white">{Math.round((selectedBalance.remaining / selectedBalance.total_days) * 100)}%</span>
+                </div>
+              </div>
+            ) : (
+              <div className="h-[72px] flex items-center justify-center">
+                <span className="animate-spin w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full" />
+              </div>
+            )}
+          </div>
 
-            {/* Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-[var(--glass-border)]">
-              <button
-                type="button"
-                onClick={() => router.back()}
-                disabled={isLoading}
-                className="btn-ghost"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isLoading || duration === 0}
-                className="btn-primary min-w-[150px]"
-              >
-                {isLoading ? (
-                  <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    Submit Request
-                  </>
-                )}
-              </button>
+          {/* Reason */}
+          <div className="space-y-3 flex-1 flex flex-col">
+            <Label htmlFor="reason" className="text-white/60 uppercase tracking-widest text-xs font-bold">Reason for Leave</Label>
+            <Textarea
+              {...form.register("reason")}
+              id="reason"
+              className={`flex-1 min-h-[140px] resize-y bg-white/[0.02] border-white/[0.06] rounded-xl text-white placeholder:text-white/20 focus:bg-white/[0.04] focus:border-indigo-500/50 transition-all ${errors.reason ? 'border-rose-500/50 focus:border-rose-500 focus:ring-rose-500/20' : ''}`}
+              placeholder="Provide details about why you need this time off..."
+              disabled={isLoading}
+            />
+            <div className="flex justify-between items-start mt-1">
+              {errors.reason ? (
+                <p className="text-rose-400 text-xs font-semibold flex items-center gap-1.5">
+                  <AlertCircle className="w-3 h-3" /> {errors.reason.message}
+                </p>
+              ) : <span />}
+              <p className="text-[10px] text-white/30 font-medium tracking-widest">
+                {form.watch("reason")?.length || 0} / 500
+              </p>
             </div>
+          </div>
+        </div>
+      </div>
 
-          </form>
-        </CardContent>
-      </Card>
-    </motion.div>
+      {/* Footer Actions */}
+      <div className="pt-6 border-t border-white/[0.06] flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          disabled={isLoading}
+          className="btn-ghost"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={isLoading || duration === 0}
+          className="btn-primary min-w-[160px] h-12 text-[15px]"
+        >
+          {isLoading ? (
+            <>
+              <span className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2" />
+              Submitting...
+            </>
+          ) : (
+            <>
+              <Send className="w-4 h-4 mr-2" />
+              Submit Request
+            </>
+          )}
+        </button>
+      </div>
+
+    </form>
   );
 }

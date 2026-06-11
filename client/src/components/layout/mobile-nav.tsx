@@ -2,84 +2,109 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useRole } from "@/hooks/use-role";
 import { ROUTES } from "@/constants/routes";
+import { useUIStore } from "@/store/ui-store";
 import {
   LayoutDashboard,
   PenSquare,
   CalendarDays,
   Clock,
-  Users,
-  BarChart3,
-  MoreHorizontal,
+  Menu,
 } from "lucide-react";
-
-interface MobileNavItem {
-  label: string;
-  href: string;
-  icon: React.ElementType;
-}
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 export function MobileNav() {
   const pathname = usePathname();
-  const { isManager, isAdmin } = useRole();
+  const { isManager } = useRole();
 
-  const navItems: MobileNavItem[] = [
-    { label: "Home", href: ROUTES.DASHBOARD, icon: LayoutDashboard },
-    { label: "Apply", href: ROUTES.APPLY_LEAVE, icon: PenSquare },
-    { label: "History", href: ROUTES.LEAVE_HISTORY, icon: CalendarDays },
+  const mainLinks = [
+    { href: ROUTES.DASHBOARD, icon: LayoutDashboard, label: "Home" },
+    { href: ROUTES.APPLY_LEAVE, icon: PenSquare, label: "Apply" },
+    { href: ROUTES.LEAVE_HISTORY, icon: CalendarDays, label: "History" },
     ...(isManager
-      ? [{ label: "Approvals", href: ROUTES.PENDING_APPROVALS, icon: Clock }]
-      : []),
-    ...(isAdmin
-      ? [{ label: "Team", href: ROUTES.EMPLOYEES, icon: Users }]
+      ? [{ href: ROUTES.PENDING_APPROVALS, icon: Clock, label: "Approvals" }]
       : []),
   ];
 
-  // Limit to 5 items for mobile — truncate with "More"
-  const visibleItems = navItems.slice(0, 4);
-  const hasMore = navItems.length > 4;
-
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[var(--bg-secondary)]/80 backdrop-blur-2xl border-t border-[var(--glass-border)] px-2 pb-[env(safe-area-inset-bottom)]">
-      <div className="flex items-center justify-around py-1">
-        {visibleItems.map((item) => {
-          const isActive = pathname === item.href;
-          const Icon = item.icon;
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-2 bg-gradient-to-t from-[#04050b] via-[#04050b]/90 to-transparent pointer-events-none">
+      <div className="mx-auto max-w-md bg-[#131627]/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] pointer-events-auto flex items-center justify-around">
+        {mainLinks.map((link) => {
+          const isActive = pathname === link.href;
+          const Icon = link.icon;
+
           return (
             <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all min-w-[60px]",
-                isActive
-                  ? "text-[var(--primary)]"
-                  : "text-[var(--text-muted)]"
-              )}
+              key={link.href}
+              href={link.href}
+              className="relative flex flex-col items-center justify-center w-[4.5rem] h-14 rounded-xl outline-none group"
             >
-              <Icon className={cn(
-                "w-5 h-5 transition-transform",
-                isActive && "scale-110"
-              )} />
-              <span className="text-[10px] font-semibold leading-tight">{item.label}</span>
               {isActive && (
-                <span className="w-1 h-1 rounded-full bg-[var(--primary)] mt-0.5" />
+                <motion.div
+                  layoutId="mobileNavActive"
+                  className="absolute inset-0 bg-indigo-500/15 rounded-xl border border-indigo-500/20"
+                  initial={false}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                />
               )}
+              
+              {/* Active dot indicator */}
+              {isActive && (
+                <span className="absolute top-1 w-1 h-1 rounded-full bg-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
+              )}
+
+              <Icon
+                className={cn(
+                  "w-5 h-5 mb-1 transition-all duration-300 relative z-10",
+                  isActive
+                    ? "text-indigo-400 scale-110"
+                    : "text-white/40 group-hover:text-white/70"
+                )}
+              />
+              <span
+                className={cn(
+                  "text-[10px] font-semibold transition-all duration-300 relative z-10",
+                  isActive ? "text-indigo-200" : "text-white/30"
+                )}
+              >
+                {link.label}
+              </span>
             </Link>
           );
         })}
 
-        {hasMore && (
-          <Link
-            href={ROUTES.SETTINGS}
-            className="flex flex-col items-center gap-0.5 px-3 py-2 text-[var(--text-muted)] min-w-[60px]"
-          >
-            <MoreHorizontal className="w-5 h-5" />
-            <span className="text-[10px] font-semibold leading-tight">More</span>
-          </Link>
-        )}
+        {/* More Menu (Sheet) */}
+        <Sheet>
+          <SheetTrigger className="relative flex flex-col items-center justify-center w-[4.5rem] h-14 rounded-xl outline-none group hover:bg-white/5 transition-colors">
+            <Menu className="w-5 h-5 mb-1 text-white/40 group-hover:text-white/70 transition-colors" />
+            <span className="text-[10px] font-semibold text-white/30">More</span>
+          </SheetTrigger>
+          <SheetContent side="bottom" className="bg-[#090a10] border-t border-white/10 rounded-t-3xl pb-10">
+            <div className="flex flex-col gap-1 mt-6">
+              <Link href={ROUTES.EMPLOYEES} className="flex items-center gap-3 p-4 rounded-xl hover:bg-white/5 transition-colors">
+                <span className="font-semibold text-sm">Employees Directory</span>
+              </Link>
+              <Link href={ROUTES.ANALYTICS} className="flex items-center gap-3 p-4 rounded-xl hover:bg-white/5 transition-colors">
+                <span className="font-semibold text-sm">Analytics Dashboard</span>
+              </Link>
+              <div className="h-px bg-white/10 my-2" />
+              <Link href={ROUTES.SETTINGS} className="flex items-center gap-3 p-4 rounded-xl hover:bg-white/5 transition-colors">
+                <span className="font-semibold text-sm">Settings</span>
+              </Link>
+              <Link href={ROUTES.HELP} className="flex items-center gap-3 p-4 rounded-xl hover:bg-white/5 transition-colors">
+                <span className="font-semibold text-sm">Help & Support</span>
+              </Link>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
-    </nav>
+    </div>
   );
 }

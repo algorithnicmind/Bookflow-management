@@ -7,6 +7,7 @@ export const easing = {
   sharp: [0.4, 0, 0.6, 1] as const,
   decelerate: [0, 0, 0.2, 1] as const,
   accelerate: [0.4, 0, 1, 1] as const,
+  spring: [0.175, 0.885, 0.32, 1.275] as const,
 };
 
 // ─── Transition Presets ────────────────────────────
@@ -14,8 +15,10 @@ export const transition = {
   fast: { duration: 0.15, ease: easing.smooth } as Transition,
   normal: { duration: 0.25, ease: easing.smooth } as Transition,
   slow: { duration: 0.4, ease: easing.smooth } as Transition,
+  slower: { duration: 0.6, ease: easing.smooth } as Transition,
   spring: { type: "spring", stiffness: 300, damping: 25 } as Transition,
   springBouncy: { type: "spring", stiffness: 400, damping: 17 } as Transition,
+  springGentle: { type: "spring", stiffness: 200, damping: 20 } as Transition,
 };
 
 // ─── Page / Section Transitions ────────────────────
@@ -26,7 +29,7 @@ export const fadeIn: Variants = {
 };
 
 export const fadeInUp: Variants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 24 },
   visible: { opacity: 1, y: 0, transition: transition.slow },
   exit: { opacity: 0, y: -10, transition: transition.fast },
 };
@@ -85,13 +88,24 @@ export const staggerContainerSlow: Variants = {
   },
 };
 
+export const staggerContainerFast: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.04,
+      delayChildren: 0.05,
+    },
+  },
+};
+
 // ─── Stagger Items ──────────────────────────────────
 export const staggerItem: Variants = {
-  hidden: { opacity: 0, y: 15 },
+  hidden: { opacity: 0, y: 16 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.35, ease: easing.smooth },
+    transition: { duration: 0.4, ease: easing.smooth },
   },
 };
 
@@ -100,7 +114,31 @@ export const staggerItemScale: Variants = {
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.3, ease: easing.smooth },
+    transition: { duration: 0.35, ease: easing.smooth },
+  },
+};
+
+export const staggerItemSlide: Variants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.35, ease: easing.smooth },
+  },
+};
+
+// ─── Page Transition (for PageTransition wrapper) ──
+export const pageTransition: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.35, ease: easing.smooth }
+  },
+  exit: { 
+    opacity: 0, 
+    y: -8,
+    transition: { duration: 0.2, ease: easing.smooth }
   },
 };
 
@@ -173,6 +211,26 @@ export const tableRow: Variants = {
   }),
 };
 
+// ─── Card List Item ────────────────────────────────
+export const cardItem: Variants = {
+  hidden: { opacity: 0, y: 20, scale: 0.97 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { 
+      delay: i * 0.05, 
+      duration: 0.4, 
+      ease: easing.smooth 
+    },
+  }),
+  exit: { 
+    opacity: 0, 
+    scale: 0.95, 
+    transition: { duration: 0.2 } 
+  },
+};
+
 // ─── Hover Lift Effect ─────────────────────────────
 export const hoverLift = {
   whileHover: { y: -4, transition: transition.fast },
@@ -182,4 +240,30 @@ export const hoverLift = {
 export const hoverScale = {
   whileHover: { scale: 1.02, transition: transition.fast },
   whileTap: { scale: 0.98 },
+};
+
+export const hoverGlow = {
+  whileHover: { 
+    boxShadow: "0 0 24px rgba(79, 70, 229, 0.3)",
+    transition: transition.fast,
+  },
+};
+
+// ─── Count Up (for AnimatedCounter) ────────────────
+export const countUp: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: easing.decelerate },
+  },
+};
+
+// ─── Skeleton Loading ──────────────────────────────
+export const skeletonPulse: Variants = {
+  initial: { opacity: 0.4 },
+  animate: {
+    opacity: [0.4, 0.7, 0.4],
+    transition: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
+  },
 };

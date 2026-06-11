@@ -4,19 +4,24 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { ColumnDef } from "@tanstack/react-table";
-import { Search, XCircle } from "lucide-react";
+import { Search, XCircle, Filter, CalendarDays, Clock, FileText } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { getLeaveHistory, cancelLeave } from "@/services/leaves.service";
 import { LeaveRequest } from "@/types/leave.types";
-import { LEAVE_TYPE_LABELS } from "@/constants/leave-types";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { LoadingSkeleton } from "@/components/shared/loading-skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import { DataTable } from "@/components/shared/data-table";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { skeletonPulse } from "@/lib/animations";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
+const STATUS_FILTERS = [
+  { id: "all", label: "All Requests" },
+  { id: "pending", label: "Pending" },
+  { id: "approved", label: "Approved" },
+  { id: "rejected", label: "Rejected" },
+  { id: "cancelled", label: "Cancelled" },
+];
 
 export function LeaveHistoryTable() {
   const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
@@ -60,32 +65,41 @@ export function LeaveHistoryTable() {
     () => [
       {
         accessorKey: "leave_type",
-        header: "Type",
+        header: "Leave Type",
         cell: ({ row }) => {
           const type = row.getValue("leave_type") as string;
           const reason = row.original.reason;
           return (
-            <div>
-              <p className="font-semibold text-[var(--text-primary)]">
-                {LEAVE_TYPE_LABELS[type as keyof typeof LEAVE_TYPE_LABELS] || type}
-              </p>
-              <p className="text-xs text-[var(--text-secondary)] font-medium mt-1 max-w-[200px] truncate" title={reason}>
-                {reason}
-              </p>
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                <FileText className="w-4 h-4 text-indigo-400" />
+              </div>
+              <div>
+                <p className="font-bold text-white capitalize">
+                  {type} Leave
+                </p>
+                <p className="text-xs text-white/40 font-medium mt-1 max-w-[200px] truncate" title={reason}>
+                  {reason}
+                </p>
+              </div>
             </div>
           );
         },
       },
       {
         id: "date_range",
-        header: "Date Range",
+        header: "Duration",
         cell: ({ row }) => {
           const start = new Date(row.original.start_date);
           const end = new Date(row.original.end_date);
           return (
-            <div className="text-[var(--text-secondary)] font-medium">
-              <div>{format(start, "MMM d, yyyy")}</div>
-              <div className="text-xs text-[var(--text-muted)]">to {format(end, "MMM d, yyyy")}</div>
+            <div className="flex items-center gap-2 text-white/60">
+              <CalendarDays className="w-4 h-4 text-white/30" />
+              <div>
+                <span className="font-semibold text-white/80">{format(start, "MMM dd")}</span>
+                <span className="mx-1.5 text-white/30">→</span>
+                <span className="font-semibold text-white/80">{format(end, "MMM dd, yyyy")}</span>
+              </div>
             </div>
           );
         },
@@ -95,7 +109,7 @@ export function LeaveHistoryTable() {
         header: "Days",
         cell: ({ row }) => (
           <div className="text-center">
-            <span className="bg-white/5 px-3 py-1 rounded-lg border border-white/5 font-bold">
+            <span className="inline-flex items-center justify-center min-w-[2rem] h-8 bg-white/5 rounded-lg border border-white/10 font-bold text-sm text-white">
               {row.getValue("days")}
             </span>
           </div>
@@ -112,18 +126,18 @@ export function LeaveHistoryTable() {
         cell: ({ row }) => {
           const leave = row.original;
           return (
-            <div className="text-right">
+            <div className="flex justify-end">
               {leave.status === "pending" ? (
                 <button
                   onClick={() => setCancelTarget(leave)}
                   disabled={isCancelling === leave.id}
-                  className="text-[var(--danger)] bg-[var(--danger)]/5 hover:bg-[var(--danger)]/15 border border-[var(--danger)]/20 px-3 py-1.5 rounded-lg transition-colors text-xs font-bold disabled:opacity-50 inline-flex items-center gap-1.5"
+                  className="group relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition-all text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <XCircle className="w-3.5 h-3.5" />
+                  <XCircle className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform duration-300" />
                   {isCancelling === leave.id ? "Cancelling..." : "Cancel"}
                 </button>
               ) : (
-                <span className="text-xs font-bold text-[var(--text-muted)] opacity-50">—</span>
+                <span className="text-xs font-bold text-white/20">—</span>
               )}
             </div>
           );
@@ -135,62 +149,93 @@ export function LeaveHistoryTable() {
 
   return (
     <div className="space-y-6">
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 glass-card p-6 border-l-4 border-[var(--primary)] hover:border-[var(--primary-hover)] transition-colors">
-        <h3 className="text-xl font-bold flex items-center gap-2">
-          <Search className="w-5 h-5 text-[var(--primary)]" />
-          <span className="text-[var(--text-primary)]">Filter Records</span>
-        </h3>
-        <Select value={statusFilter} onValueChange={(val) => setStatusFilter(val || "all")}>
-          <SelectTrigger className="w-[200px] input-field bg-white/5">
-            <SelectValue placeholder="All Requests" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Requests</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="rejected">Rejected</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
-          </SelectContent>
-        </Select>
+      {/* Filter Chips */}
+      <div className="bg-[#090a10] border border-white/[0.04] p-4 sm:p-5 rounded-2xl shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-2 text-white/50">
+          <Filter className="w-4 h-4" />
+          <span className="text-sm font-semibold uppercase tracking-widest">Filter by Status</span>
+        </div>
+        
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          {STATUS_FILTERS.map(filter => (
+            <button
+              key={filter.id}
+              onClick={() => setStatusFilter(filter.id)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                statusFilter === filter.id 
+                  ? 'bg-indigo-500 text-white shadow-[0_0_20px_rgba(99,102,241,0.3)] border border-indigo-400' 
+                  : 'bg-white/5 text-white/50 border border-white/5 hover:bg-white/10 hover:text-white/80'
+              }`}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Table Section */}
-      <Card className="glass-card-flat border-0 shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
-        <CardContent className="p-0">
+      {/* Main Table Card */}
+      <div className="glass-card-static border border-white/[0.04] overflow-hidden">
+        <AnimatePresence mode="wait">
           {isLoading ? (
-            <div className="p-8">
-              <LoadingSkeleton lines={5} />
-            </div>
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="p-6 space-y-4"
+            >
+              {[1, 2, 3, 4, 5].map(i => (
+                <motion.div 
+                  key={i} 
+                  variants={skeletonPulse} 
+                  initial="initial" 
+                  animate="animate" 
+                  className="h-16 w-full bg-white/[0.02] border border-white/[0.04] rounded-xl"
+                />
+              ))}
+            </motion.div>
           ) : leaves.length === 0 ? (
-            <div className="p-8">
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="p-12"
+            >
               <EmptyState
                 title="No records found"
                 description={statusFilter === "all" ? "You haven't applied for any leave yet." : `No ${statusFilter} leave requests found.`}
-                icon="📝"
+                icon="📭"
                 actionLabel={statusFilter === "all" ? "Apply for Leave" : undefined}
                 actionHref={statusFilter === "all" ? "/apply-leave" : undefined}
               />
-            </div>
+            </motion.div>
           ) : (
-            <div className="p-6">
+            <motion.div
+              key="table"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="p-6"
+            >
               <DataTable
                 columns={columns}
                 data={leaves}
                 searchKey="leave_type"
                 searchPlaceholder="Search leave type..."
               />
-            </div>
+            </motion.div>
           )}
-        </CardContent>
-      </Card>
+        </AnimatePresence>
+      </div>
 
+      {/* Confirmation Dialog */}
       <ConfirmDialog
         open={!!cancelTarget}
         onOpenChange={(open) => !open && setCancelTarget(null)}
         onConfirm={() => { if (cancelTarget) return handleCancel(cancelTarget.id); }}
         title="Cancel Leave Request"
-        description={`Are you sure you want to cancel your ${cancelTarget ? LEAVE_TYPE_LABELS[cancelTarget.leave_type as keyof typeof LEAVE_TYPE_LABELS] : ''} leave request? This action cannot be undone.`}
+        description={`Are you sure you want to cancel your ${cancelTarget?.leave_type || ''} leave request? This action cannot be undone.`}
         confirmLabel="Yes, Cancel Request"
         cancelLabel="Keep Request"
         variant="warning"

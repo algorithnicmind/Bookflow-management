@@ -8,17 +8,14 @@ import {
   AreaChart, Area
 } from "recharts";
 import { toast } from "sonner";
-import { Download, Users, ClipboardList, Clock, Palmtree, Calendar as CalendarIcon, Filter } from "lucide-react";
+import { Download, Users, ClipboardList, Clock, Palmtree, Filter } from "lucide-react";
 
 import { getDashboardStats } from "@/services/dashboard.service";
 import { DashboardResponse } from "@/types/dashboard.types";
-import { LoadingSkeleton } from "@/components/shared/loading-skeleton";
+import { EmptyState } from "@/components/shared/empty-state";
+import { skeletonPulse } from "@/lib/animations";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-
-const COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#F43F5E', '#8B5CF6', '#EC4899'];
+const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#f43f5e', '#8b5cf6', '#ec4899'];
 
 export function AnalyticsDashboard() {
   const [data, setData] = useState<DashboardResponse | null>(null);
@@ -44,7 +41,6 @@ export function AnalyticsDashboard() {
     if (!data?.org_stats) return;
 
     try {
-      // Create a simple CSV of the department breakdown as an example
       const deptData = data.org_stats.department_breakdown;
       const csvContent = "data:text/csv;charset=utf-8," 
         + "Department,Count\n" 
@@ -64,61 +60,77 @@ export function AnalyticsDashboard() {
   };
 
   if (isLoading) {
-    return <LoadingSkeleton lines={10} className="p-8" />;
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center mb-6">
+          <motion.div variants={skeletonPulse} initial="initial" animate="animate" className="h-10 w-48 bg-white/[0.02] rounded-xl" />
+          <motion.div variants={skeletonPulse} initial="initial" animate="animate" className="h-10 w-32 bg-white/[0.02] rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => (
+            <motion.div key={i} variants={skeletonPulse} initial="initial" animate="animate" className="h-[120px] bg-white/[0.02] rounded-2xl" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[1, 2].map(i => (
+            <motion.div key={i} variants={skeletonPulse} initial="initial" animate="animate" className="h-[400px] bg-white/[0.02] rounded-2xl" />
+          ))}
+          <motion.div variants={skeletonPulse} initial="initial" animate="animate" className="h-[400px] bg-white/[0.02] rounded-2xl lg:col-span-2" />
+        </div>
+      </div>
+    );
   }
 
   const orgStats = data?.org_stats;
 
   if (!orgStats) {
     return (
-      <Card className="glass-card-flat">
-        <CardContent className="p-12 text-center flex flex-col items-center">
-          <div className="w-16 h-16 bg-[var(--primary)]/10 rounded-2xl flex items-center justify-center mb-4">
-            <ClipboardList className="w-8 h-8 text-[var(--primary)]" />
-          </div>
-          <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">No Analytics Data</h2>
-          <p className="text-[var(--text-muted)]">Check back later once the organization has more activity.</p>
-        </CardContent>
-      </Card>
+      <div className="glass-card-static py-24 px-4">
+        <EmptyState 
+          title="No Analytics Data" 
+          description="Check back later once the organization has more activity."
+          icon="📊"
+        />
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold gradient-text">Organization Analytics</h1>
-          <p className="text-[var(--text-secondary)] mt-1">High-level overview of organization health and leave trends.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#090a10] border border-white/[0.04] p-4 rounded-2xl shadow-lg">
+        <div className="flex items-center gap-2 text-white/50 px-2">
+          <Filter className="w-4 h-4" />
+          <span className="text-sm font-semibold uppercase tracking-widest">Time Range</span>
         </div>
         
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-white/5 border border-[var(--glass-border)] rounded-lg p-1">
-            <Filter className="w-4 h-4 text-[var(--text-muted)] ml-2" />
-            <Select value={timeRange} onValueChange={(val) => setTimeRange(val || "all_time")}>
-              <SelectTrigger className="w-[140px] border-0 bg-transparent focus:ring-0 shadow-none h-8 text-sm">
-                <SelectValue placeholder="Time Range" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="this_month">This Month</SelectItem>
-                <SelectItem value="last_quarter">Last Quarter</SelectItem>
-                <SelectItem value="ytd">Year to Date</SelectItem>
-                <SelectItem value="all_time">All Time</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <select 
+            value={timeRange} 
+            onChange={(e) => setTimeRange(e.target.value)}
+            className="flex-1 sm:w-40 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-semibold text-white focus:bg-white/10 focus:border-indigo-500/50 outline-none transition-all appearance-none cursor-pointer"
+          >
+            <option value="this_month" className="bg-[#0d0e18]">This Month</option>
+            <option value="last_quarter" className="bg-[#0d0e18]">Last Quarter</option>
+            <option value="ytd" className="bg-[#0d0e18]">Year to Date</option>
+            <option value="all_time" className="bg-[#0d0e18]">All Time</option>
+          </select>
           
-          <Button onClick={handleExport} className="btn-primary h-10">
-            <Download className="w-4 h-4 mr-2" />
-            Export CSV
-          </Button>
+          <button 
+            onClick={handleExport} 
+            className="px-5 py-2.5 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl font-bold flex items-center gap-2 transition-colors shadow-lg shadow-indigo-500/25 shrink-0 text-sm"
+          >
+            <Download className="w-4 h-4" />
+            <span className="hidden sm:inline">Export CSV</span>
+            <span className="sm:hidden">Export</span>
+          </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Employees" value={orgStats.total_employees} icon={<Users className="w-6 h-6 text-blue-400" />} delay={0.1} />
-        <StatCard title="Total Requests" value={orgStats.total_requests} icon={<ClipboardList className="w-6 h-6 text-indigo-400" />} delay={0.2} />
-        <StatCard title="Pending Approvals" value={data.stats.pending} icon={<Clock className="w-6 h-6 text-[var(--warning)]" />} delay={0.3} />
-        <StatCard title="Active Leaves" value={data.team_on_leave_today?.length || 0} icon={<Palmtree className="w-6 h-6 text-emerald-400" />} delay={0.4} />
+        <StatCard title="Total Employees" value={orgStats.total_employees} icon={<Users className="w-6 h-6 text-cyan-400" />} delay={0.1} color="cyan" />
+        <StatCard title="Total Requests" value={orgStats.total_requests} icon={<ClipboardList className="w-6 h-6 text-indigo-400" />} delay={0.2} color="indigo" />
+        <StatCard title="Pending Approvals" value={data.stats.pending} icon={<Clock className="w-6 h-6 text-amber-400" />} delay={0.3} color="amber" />
+        <StatCard title="Active Leaves" value={data.team_on_leave_today?.length || 0} icon={<Palmtree className="w-6 h-6 text-emerald-400" />} delay={0.4} color="emerald" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -129,19 +141,21 @@ export function AnalyticsDashboard() {
                 data={orgStats.department_breakdown}
                 cx="50%"
                 cy="50%"
-                innerRadius={60}
+                innerRadius={70}
                 outerRadius={100}
-                paddingAngle={5}
+                paddingAngle={8}
                 dataKey="count"
                 nameKey="department"
+                stroke="transparent"
               >
                 {orgStats.department_breakdown.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip 
-                contentStyle={{ background: 'rgba(17, 19, 38, 0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
-                itemStyle={{ color: '#F1F5F9' }}
+                contentStyle={{ background: '#0d0e18', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
+                itemStyle={{ color: '#fff', fontWeight: 'bold' }}
+                cursor={false}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -149,41 +163,43 @@ export function AnalyticsDashboard() {
 
         <ChartCard title="Leave Status Breakdown" delay={0.6}>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={orgStats.status_breakdown}>
+            <BarChart data={orgStats.status_breakdown} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorBar" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#7C3AED" stopOpacity={0.8}/>
+                  <stop offset="0%" stopColor="#6366f1" stopOpacity={1}/>
+                  <stop offset="100%" stopColor="#ec4899" stopOpacity={0.8}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-              <XAxis dataKey="status" stroke="rgba(255,255,255,0.4)" tick={{fill: 'rgba(255,255,255,0.4)'}} axisLine={false} tickLine={false} />
-              <YAxis stroke="rgba(255,255,255,0.4)" tick={{fill: 'rgba(255,255,255,0.4)'}} axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+              <XAxis dataKey="status" stroke="rgba(255,255,255,0.2)" tick={{fill: 'rgba(255,255,255,0.5)', fontSize: 12}} axisLine={false} tickLine={false} dy={10} className="capitalize" />
+              <YAxis stroke="rgba(255,255,255,0.2)" tick={{fill: 'rgba(255,255,255,0.5)', fontSize: 12}} axisLine={false} tickLine={false} />
               <Tooltip 
-                contentStyle={{ background: 'rgba(11, 12, 22, 0.95)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
+                contentStyle={{ background: '#0d0e18', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
                 cursor={{ fill: 'rgba(255,255,255,0.02)' }}
+                itemStyle={{ color: '#fff', fontWeight: 'bold' }}
               />
-              <Bar dataKey="count" fill="url(#colorBar)" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="count" fill="url(#colorBar)" radius={[6, 6, 0, 0]} barSize={40} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
 
         <ChartCard title="Monthly Leave Trend" delay={0.7} className="lg:col-span-2">
           <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={orgStats.monthly_trend}>
+            <AreaChart data={orgStats.monthly_trend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorTrend" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-              <XAxis dataKey="month" stroke="rgba(255,255,255,0.4)" tick={{fill: 'rgba(255,255,255,0.4)'}} axisLine={false} tickLine={false} />
-              <YAxis stroke="rgba(255,255,255,0.4)" tick={{fill: 'rgba(255,255,255,0.4)'}} axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+              <XAxis dataKey="month" stroke="rgba(255,255,255,0.2)" tick={{fill: 'rgba(255,255,255,0.5)', fontSize: 12}} axisLine={false} tickLine={false} dy={10} />
+              <YAxis stroke="rgba(255,255,255,0.2)" tick={{fill: 'rgba(255,255,255,0.5)', fontSize: 12}} axisLine={false} tickLine={false} />
               <Tooltip 
-                contentStyle={{ background: 'rgba(11, 12, 22, 0.95)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
+                contentStyle={{ background: '#0d0e18', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
+                itemStyle={{ color: '#fff', fontWeight: 'bold' }}
               />
-              <Area type="monotone" dataKey="count" stroke="#10B981" strokeWidth={3} fillOpacity={1} fill="url(#colorTrend)" activeDot={{ r: 6, strokeWidth: 0, fill: '#10B981' }} />
+              <Area type="monotone" dataKey="count" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorTrend)" activeDot={{ r: 6, strokeWidth: 0, fill: '#10b981' }} />
             </AreaChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -192,24 +208,31 @@ export function AnalyticsDashboard() {
   );
 }
 
-function StatCard({ title, value, icon, delay }: { title: string; value: number; icon: React.ReactNode; delay: number }) {
+function StatCard({ title, value, icon, delay, color }: { title: string; value: number; icon: React.ReactNode; delay: number; color: string }) {
+  const bgColors: Record<string, string> = {
+    cyan: "bg-cyan-500/10",
+    indigo: "bg-indigo-500/10",
+    amber: "bg-amber-500/10",
+    emerald: "bg-emerald-500/10"
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
     >
-      <Card className="glass-card h-full transition-colors hover:border-[var(--primary)]/50 group hover:-translate-y-1">
-        <CardContent className="p-6 flex items-center justify-between">
+      <div className="glass-card-static h-full transition-colors hover:border-white/[0.08] group">
+        <div className="p-6 flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-[var(--text-muted)] mb-1">{title}</p>
-            <h3 className="text-3xl font-bold text-[var(--text-primary)] group-hover:text-[var(--primary)] transition-colors">{value}</h3>
+            <p className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-1.5">{title}</p>
+            <h3 className="text-3xl font-extrabold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-white/70 transition-all">{value}</h3>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-white/5 border border-[var(--glass-border)] flex items-center justify-center group-hover:bg-[var(--primary)]/10 group-hover:border-[var(--primary)]/20 transition-all">
+          <div className={`w-12 h-12 rounded-2xl ${bgColors[color]} flex items-center justify-center transition-transform group-hover:scale-110`}>
             {icon}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </motion.div>
   );
 }
@@ -222,16 +245,14 @@ function ChartCard({ title, children, delay, className = "" }: { title: string; 
       transition={{ delay }}
       className={className}
     >
-      <Card className="glass-card h-full border border-[var(--glass-border)] shadow-xl">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-bold text-[var(--text-primary)]">{title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="pt-4">
-            {children}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="glass-card-static h-full flex flex-col hover:border-white/[0.08] transition-colors">
+        <div className="p-6 pb-2 border-b border-white/[0.04]">
+          <h3 className="text-sm font-bold text-white uppercase tracking-widest">{title}</h3>
+        </div>
+        <div className="p-6 pt-8 flex-1">
+          {children}
+        </div>
+      </div>
     </motion.div>
   );
 }

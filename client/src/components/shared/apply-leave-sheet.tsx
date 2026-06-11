@@ -8,15 +8,13 @@ import * as z from "zod";
 import { format, differenceInBusinessDays, parseISO, isAfter, isBefore } from "date-fns";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { PenSquare, Clock, CalendarDays, Send, X } from "lucide-react";
+import { CalendarDays, Send, ArrowRight, Loader2, Info } from "lucide-react";
 
 import { applyLeave, getLeaveBalance } from "@/services/leaves.service";
 import { LeaveBalance } from "@/types/leave.types";
 import { LEAVE_TYPE_LABELS } from "@/constants/leave-types";
-import { ROUTES } from "@/constants/routes";
 
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -128,142 +126,160 @@ export function ApplyLeaveSheet({ open, onOpenChange }: ApplyLeaveSheetProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="sm:max-w-lg w-full p-0 overflow-y-auto bg-[var(--bg-secondary)]/95 backdrop-blur-2xl border-l border-[var(--glass-border)]">
-        <SheetHeader className="p-6 pb-0">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-indigo-600 flex items-center justify-center shadow-lg shadow-[var(--primary)]/20">
-              <PenSquare className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <SheetTitle className="text-xl font-bold gradient-text">Submit Request</SheetTitle>
-              <SheetDescription className="text-sm text-[var(--text-secondary)]">
-                Apply for a new leave of absence
-              </SheetDescription>
-            </div>
-          </div>
+      <SheetContent side="right" className="sm:max-w-[500px] w-full p-0 overflow-y-auto bg-[#0B0F19] border-l border-slate-800 shadow-2xl">
+        <SheetHeader className="p-8 pb-4">
+          <SheetTitle className="text-[26px] font-bold text-white tracking-tight">Submit Request</SheetTitle>
+          <SheetDescription className="text-[14px] text-white/50 font-light mt-1">
+            Apply for a new leave of absence.
+          </SheetDescription>
         </SheetHeader>
 
-        <div className="p-6">
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-            <div className="space-y-2">
-              <Label>Leave Type</Label>
-              <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                <Controller
-                  name="leave_type"
-                  control={form.control}
-                  render={({ field }) => (
-                    <Select disabled={isLoading} onValueChange={(val) => field.onChange(val || '')} defaultValue={field.value}>
-                      <SelectTrigger className="w-full sm:w-[200px] input-field bg-[var(--bg-tertiary)] border-[var(--glass-border)]">
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="casual">Casual Leave</SelectItem>
-                        <SelectItem value="sick">Sick Leave</SelectItem>
-                        <SelectItem value="earned">Earned Leave</SelectItem>
-                        <SelectItem value="unpaid">Unpaid Leave</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                {selectedBalance && leaveType !== "unpaid" && (
-                  <div className="text-xs px-3 py-1.5 bg-[var(--primary)]/10 rounded-lg border border-[var(--primary)]/20 flex items-center gap-1.5 shrink-0">
-                    <span className="text-[var(--text-secondary)]">Balance:</span>
-                    <span className="font-bold text-[var(--primary)]">{selectedBalance.remaining}d</span>
-                  </div>
+        <div className="px-8 pb-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            
+            {/* Leave Type */}
+            <div className="space-y-2.5">
+              <label className="block text-[11px] font-semibold text-white/40 uppercase tracking-widest">
+                Leave Type
+              </label>
+              <Controller
+                name="leave_type"
+                control={form.control}
+                render={({ field }) => (
+                  <Select disabled={isLoading} onValueChange={(val) => field.onChange(val || '')} defaultValue={field.value}>
+                    <SelectTrigger className="w-full h-12 bg-[#111827] border-slate-800 rounded-lg px-4 py-3 text-[14px] text-white focus:ring-1 focus:ring-indigo-500 transition-all outline-none">
+                      <SelectValue placeholder="Select leave type" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#111827] border-slate-800 text-white rounded-lg">
+                      {["casual", "sick", "earned", "unpaid"].map((type) => {
+                        const bal = balances.find(b => b.leave_type === type);
+                        return (
+                          <SelectItem key={type} value={type} className="focus:bg-white/5 cursor-pointer">
+                            <div className="flex items-center justify-between w-full pr-4">
+                              <span>{LEAVE_TYPE_LABELS[type as keyof typeof LEAVE_TYPE_LABELS]}</span>
+                              {type !== "unpaid" && bal !== undefined && (
+                                <span className="text-xs text-white/40 font-medium">[{bal.remaining} Days Left]</span>
+                              )}
+                            </div>
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
                 )}
-              </div>
+              />
               {form.formState.errors.leave_type && (
-                <p className="text-[var(--danger)] text-xs font-semibold">{form.formState.errors.leave_type.message}</p>
+                <p className="text-rose-400 text-xs font-medium">{form.formState.errors.leave_type.message}</p>
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="sheet-start_date">Start Date</Label>
-                <div className="relative">
-                  <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] pointer-events-none" />
+            {/* Dates (Horizontal Layout) */}
+            <div className="pt-2">
+              <div className="flex items-center justify-between mb-2.5">
+                <label className="block text-[11px] font-semibold text-white/40 uppercase tracking-widest w-[45%]">
+                  Start Date
+                </label>
+                <div className="w-[10%]"></div>
+                <label className="block text-[11px] font-semibold text-white/40 uppercase tracking-widest w-[45%]">
+                  End Date
+                </label>
+              </div>
+              
+              <div className="flex items-center justify-between gap-3">
+                {/* Start Date */}
+                <div className="relative w-full">
+                  <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-white/30 pointer-events-none" />
                   <Input
                     {...form.register("start_date")}
-                    id="sheet-start_date"
                     type="date"
-                    className="input-field pl-9 bg-[var(--bg-tertiary)] border-[var(--glass-border)]"
+                    className="w-full h-12 pl-10 bg-[#111827] border-slate-800 rounded-lg text-[14px] text-white focus:ring-1 focus:ring-indigo-500 transition-all outline-none"
                     min={format(new Date(), "yyyy-MM-dd")}
                     disabled={isLoading}
                   />
                 </div>
-                {form.formState.errors.start_date && (
-                  <p className="text-[var(--danger)] text-xs font-semibold">{form.formState.errors.start_date.message}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="sheet-end_date">End Date</Label>
-                <div className="relative">
-                  <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] pointer-events-none" />
+
+                <ArrowRight className="w-5 h-5 text-white/20 shrink-0" />
+
+                {/* End Date */}
+                <div className="relative w-full">
+                  <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-white/30 pointer-events-none" />
                   <Input
                     {...form.register("end_date")}
-                    id="sheet-end_date"
                     type="date"
-                    className="input-field pl-9 bg-[var(--bg-tertiary)] border-[var(--glass-border)]"
+                    className="w-full h-12 pl-10 bg-[#111827] border-slate-800 rounded-lg text-[14px] text-white focus:ring-1 focus:ring-indigo-500 transition-all outline-none"
                     min={startDate || format(new Date(), "yyyy-MM-dd")}
                     disabled={isLoading}
                   />
                 </div>
-                {form.formState.errors.end_date && (
-                  <p className="text-[var(--danger)] text-xs font-semibold">{form.formState.errors.end_date.message}</p>
-                )}
               </div>
+              
+              {/* Errors for dates */}
+              <div className="flex justify-between mt-1.5">
+                <div className="w-full">
+                  {form.formState.errors.start_date && (
+                    <p className="text-rose-400 text-xs font-medium">{form.formState.errors.start_date.message}</p>
+                  )}
+                </div>
+                <div className="w-full">
+                  {form.formState.errors.end_date && (
+                    <p className="text-rose-400 text-xs font-medium">{form.formState.errors.end_date.message}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Duration Live Calculation */}
+              {duration > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-3 text-[13px] font-medium text-white/50 flex items-center gap-1.5"
+                >
+                  <Info className="w-4 h-4 text-indigo-400" />
+                  Duration: <span className="text-indigo-400 font-bold">{duration} Days</span>
+                </motion.div>
+              )}
             </div>
 
-            {duration > 0 && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                className="p-3 bg-gradient-to-r from-[var(--info)]/20 to-[var(--info)]/5 rounded-xl border border-[var(--info)]/30 text-sm flex items-center gap-3"
-              >
-                <Clock className="w-4 h-4 shrink-0 text-[var(--info)]" />
-                <span className="text-[var(--text-secondary)]">
-                  Duration: <strong className="text-[var(--info)]">{duration} business day{duration !== 1 ? 's' : ''}</strong>
-                </span>
-              </motion.div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="sheet-reason">Reason</Label>
+            {/* Reason */}
+            <div className="space-y-2.5 pt-2">
+              <label className="block text-[11px] font-semibold text-white/40 uppercase tracking-widest">
+                Reason
+              </label>
               <Textarea
                 {...form.register("reason")}
-                id="sheet-reason"
-                className="input-field min-h-[120px] resize-y bg-[var(--bg-tertiary)] border-[var(--glass-border)]"
-                placeholder="Please provide a detailed reason..."
+                className="w-full min-h-[120px] bg-[#111827] border-slate-800 rounded-lg px-4 py-3 text-[14px] text-white placeholder:text-white/20 focus:ring-1 focus:ring-indigo-500 transition-all outline-none resize-none"
+                placeholder="Type your reason here..."
                 disabled={isLoading}
               />
               <div className="flex justify-between items-start mt-1">
                 {form.formState.errors.reason ? (
-                  <p className="text-[var(--danger)] text-xs font-semibold">{form.formState.errors.reason.message}</p>
+                  <p className="text-rose-400 text-xs font-medium">{form.formState.errors.reason.message}</p>
                 ) : <span />}
-                <p className="text-xs text-[var(--text-muted)]">{form.watch("reason")?.length || 0}/500</p>
+                <p className="text-xs text-white/30 font-medium">{form.watch("reason")?.length || 0}/500</p>
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-[var(--glass-border)]">
+            {/* Actions */}
+            <div className="flex justify-between items-center pt-6 border-t border-slate-800/50 mt-8">
               <button
                 type="button"
                 onClick={() => onOpenChange(false)}
                 disabled={isLoading}
-                className="btn-ghost text-sm py-2 px-4"
+                className="px-4 py-2.5 text-[14px] font-medium text-white/50 hover:text-white transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isLoading}
-                className="btn-primary min-w-[130px]"
+                className="h-[44px] px-6 bg-indigo-600 hover:bg-indigo-500 text-white text-[14px] font-semibold rounded-lg shadow-lg shadow-indigo-500/20 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
               >
                 {isLoading ? (
-                  <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <>
-                    <Send className="w-4 h-4" />
-                    Submit
+                    <span className="text-amber-300">✨</span>
+                    Submit Request
                   </>
                 )}
               </button>

@@ -1,70 +1,90 @@
-import { motion } from "framer-motion";
+"use client";
+
+import { LeaveRequest } from "@/types/leave.types";
+import { Users, Clock, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { ROUTES } from "@/constants/routes";
-import { Clock, TreePalm, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 
-export function TeamOverview({ pendingCount, onLeave }: { pendingCount: number, onLeave: string[] }) {
+interface TeamOverviewProps {
+  pendingCount: number;
+  onLeave: string[];
+}
+
+export function TeamOverview({ pendingCount, onLeave }: TeamOverviewProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-      {/* Pending Approvals Widget */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.5 }}
-        className="glass-card p-8 group hover:border-[var(--warning)]/30 transition-colors relative overflow-hidden"
-      >
-        <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--warning)]/5 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
-        <div className="flex justify-between items-start mb-6 relative z-10">
-          <div>
-            <h3 className="text-lg font-bold flex items-center gap-2">
-              <Clock className="w-5 h-5 text-[var(--warning)]" />
-              <span className="text-[var(--text-primary)]">Pending Approvals</span>
-            </h3>
-          </div>
-          <span className="bg-[var(--warning)]/10 border border-[var(--warning)]/20 text-[var(--warning)] px-3 py-1.5 rounded-lg text-sm font-black shadow-sm">
-            {pendingCount}
-          </span>
+    <div className="bg-[#0B0F19] border border-slate-800 rounded-2xl shadow-xl p-6 sm:p-8">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h3 className="text-lg font-bold text-white flex items-center gap-2">
+            <Users className="w-5 h-5 text-indigo-400" />
+            Team Overview
+          </h3>
+          <p className="text-xs text-white/40 mt-1">What&apos;s happening with your team today</p>
         </div>
-        <p className="text-[var(--text-secondary)] mb-6 font-medium relative z-10">
-          You have <strong className="text-[var(--text-primary)]">{pendingCount}</strong> leave request{pendingCount !== 1 ? 's' : ''} waiting for your review.
-        </p>
-        <Link href={ROUTES.PENDING_APPROVALS} className="inline-flex items-center gap-2 text-sm font-bold text-[var(--warning)] hover:text-yellow-400 transition-colors relative z-10">
-          <span>Review now</span>
-          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-        </Link>
-      </motion.div>
+      </div>
 
-      {/* Team on Leave Widget */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.5 }}
-        className="glass-card p-8 relative overflow-hidden"
-      >
-        <h3 className="text-lg font-bold mb-4 flex items-center gap-2 relative z-10">
-          <TreePalm className="w-5 h-5 text-emerald-400" />
-          <span className="text-[var(--text-primary)]">Team on Leave Today</span>
-        </h3>
-        
-        <div className="relative z-10">
-          {onLeave.length === 0 ? (
-            <div className="bg-white/5 rounded-xl p-4 border border-white/5 text-center">
-              <p className="text-sm font-medium text-[var(--text-muted)]">No team members are on leave today.</p>
+      <div className="flex flex-col md:flex-row gap-4">
+        {/* Pending Action Card */}
+        <div className="flex-1 bg-gradient-to-br from-amber-500/10 to-orange-600/5 border border-amber-500/20 rounded-2xl p-5 flex flex-col justify-between group relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <Clock className="w-16 h-16 text-amber-500" />
+          </div>
+          
+          <div className="relative z-10">
+            <p className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1">Action Required</p>
+            <div className="flex items-end gap-2 mb-4">
+              <span className="text-4xl font-black text-white">{pendingCount}</span>
+              <span className="text-sm font-medium text-white/50 mb-1.5">requests pending</span>
             </div>
-          ) : (
-            <ul className="space-y-3">
-              {onLeave.map((name, i) => (
-                <li key={i} className="flex items-center gap-4 text-sm bg-white/5 p-3 rounded-xl border border-white/5 hover:bg-white/10 transition-colors">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--primary)] to-purple-600 text-white flex items-center justify-center text-xs font-bold shadow-md">
-                    {name.charAt(0)}
-                  </div>
-                  <span className="font-semibold text-[var(--text-primary)]">{name}</span>
-                </li>
-              ))}
-            </ul>
-          )}
+          </div>
+          
+          <Link 
+            href={ROUTES.PENDING_APPROVALS}
+            className="relative z-10 inline-flex items-center gap-2 text-xs font-bold bg-amber-500/20 text-amber-300 py-2.5 px-4 rounded-xl hover:bg-amber-500/30 transition-colors w-fit"
+          >
+            Review Now
+            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+          </Link>
         </div>
-      </motion.div>
+
+        {/* On Leave Today Card */}
+        <div className="flex-1 bg-[#111827] border border-slate-800 rounded-2xl p-5 flex flex-col relative overflow-hidden shadow-lg">
+          <div className="relative z-10 flex-1">
+            <p className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3">On Leave Today</p>
+            
+            {onLeave.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-4">
+                <p className="text-sm text-white/30 font-medium">Everyone is working today.</p>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {onLeave.map((name, i) => (
+                  <motion.div
+                    key={name}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.06] rounded-full py-1.5 pl-1.5 pr-4 hover:bg-white/[0.08] transition-colors"
+                  >
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+                      {name?.charAt(0).toUpperCase() || "U"}
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-white leading-none">
+                        {name?.split(' ')[0] || "User"}
+                      </p>
+                      <p className="text-[9px] text-white/40 mt-0.5 leading-none">
+                        On Leave
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

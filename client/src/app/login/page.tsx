@@ -1,124 +1,168 @@
+"use client";
+
 import { LoginForm } from "@/features/auth/login-form";
+import { motion } from "framer-motion";
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[var(--bg-primary)]">
-      {/* Left side - Branding/Visuals */}
-      <div className="hidden lg:flex w-full lg:w-[55%] relative overflow-hidden bg-[#06070e] items-center justify-center p-16">
-        {/* Multi-layer animated background */}
+    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#0B0F19]">
+      {/* ─── Left Panel: Hero & Glass Widget ─── */}
+      <div className="hidden lg:flex w-[55%] relative overflow-hidden items-center justify-center p-12 xl:p-16">
+        {/* Sleek, deep neon glows */}
         <div className="absolute inset-0 z-0 pointer-events-none">
-          <div className="absolute top-[-10%] left-[-5%] w-[35rem] h-[35rem] bg-indigo-600/15 rounded-full blur-[130px] animate-pulse-glow" />
-          <div className="absolute bottom-[-5%] right-[-5%] w-[30rem] h-[30rem] bg-violet-600/12 rounded-full blur-[120px] animate-pulse-glow" style={{ animationDelay: '2s' }} />
-          <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[25rem] h-[25rem] bg-blue-600/8 rounded-full blur-[100px] animate-pulse-glow" style={{ animationDelay: '4s' }} />
-          <div className="absolute top-[20%] right-[15%] w-[15rem] h-[15rem] bg-pink-500/8 rounded-full blur-[80px] animate-pulse-glow" style={{ animationDelay: '1s' }} />
+          <div
+            className="absolute top-[-10%] left-[-10%] w-[40rem] h-[40rem] bg-indigo-600/[0.15] rounded-full blur-[150px] animate-pulse-glow"
+          />
+          <div
+            className="absolute bottom-[-20%] right-[-10%] w-[35rem] h-[35rem] bg-purple-600/[0.12] rounded-full blur-[140px] animate-pulse-glow"
+            style={{ animationDelay: "2s" }}
+          />
         </div>
 
-        {/* Dot grid texture */}
-        <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.04]"
+        {/* Minimal grid texture */}
+        <div
+          className="absolute inset-0 z-0 pointer-events-none opacity-[0.015]"
           style={{
-            backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)',
-            backgroundSize: '24px 24px',
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,.2) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.2) 1px, transparent 1px)",
+            backgroundSize: "40px 40px",
           }}
         />
 
-        {/* Content */}
-        <div className="z-10 text-left max-w-lg w-full relative">
-          {/* Logo */}
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/25 mb-10">
-            <span className="text-2xl font-bold text-white">L</span>
-          </div>
-
-          {/* Pill badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] mb-6">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[11px] font-semibold text-white/60 uppercase tracking-wider">Enterprise Ready</span>
+        {/* Content Container */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="z-10 text-left max-w-lg w-full relative"
+        >
+          {/* Logo Mark */}
+          <div className="inline-flex items-center gap-3 mb-10">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/20 flex items-center justify-center">
+              <span className="text-xl font-bold text-white tracking-tight">
+                L
+              </span>
+            </div>
+            <span className="text-xl font-bold text-white tracking-tight">LeaveFlow</span>
           </div>
 
           {/* Headline */}
-          <h1 className="text-[2.75rem] leading-[1.15] font-extrabold text-white mb-5 tracking-tight">
-            Streamline your<br />
-            team&apos;s time off<br />
-            with <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400 bg-clip-text text-transparent">LeaveFlow</span>
+          <h1 className="text-[2.75rem] xl:text-[3rem] leading-[1.1] font-extrabold text-white mb-6 tracking-tight">
+            Time off management,<br />
+            <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+              beautifully simple.
+            </span>
           </h1>
 
-          <p className="text-white/40 text-base leading-relaxed mb-10 max-w-md">
-            The modern platform to request, approve, and track employee leaves — built for teams that value clarity and speed.
+          <p className="text-white/40 text-base leading-relaxed mb-12 max-w-md font-light">
+            An ultra-modern platform to request, approve, and track employee leaves. Fast, spacious, and sophisticated.
           </p>
 
-          {/* Floating UI Preview Cards */}
-          <div className="relative w-full">
-            {/* Main notification card */}
-            <div className="w-full p-5 rounded-2xl bg-white/[0.04] backdrop-blur-md border border-white/[0.07] shadow-xl shadow-black/20">
-              <div className="flex gap-4 items-start">
-                <div className="w-11 h-11 rounded-xl bg-emerald-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+          {/* Floating Glassmorphism Dashboard Widget */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="relative w-full"
+          >
+            {/* Widget Container */}
+            <div className="w-full p-6 rounded-3xl bg-white/[0.02] backdrop-blur-2xl border border-white/[0.04] shadow-2xl shadow-indigo-900/10 overflow-hidden relative group">
+              {/* Subtle inner highlight */}
+              <div className="absolute inset-0 rounded-3xl ring-1 ring-inset ring-white/[0.02] pointer-events-none" />
+              
+              {/* Notification Header */}
+              <div className="flex gap-4 items-start mb-6">
+                <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                  <svg
+                    className="w-4 h-4 text-emerald-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2.5"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-center mb-1.5">
-                    <h3 className="text-white font-semibold text-sm">Leave Approved</h3>
-                    <span className="text-[10px] text-emerald-400/80 bg-emerald-500/10 px-2 py-0.5 rounded-full font-medium">Just now</span>
+                <div className="flex-1 min-w-0 pt-0.5">
+                  <div className="flex justify-between items-center mb-1">
+                    <h3 className="text-white font-medium text-sm">
+                      Request Approved
+                    </h3>
+                    <span className="text-[10px] text-white/30 font-medium">
+                      Just now
+                    </span>
                   </div>
-                  <p className="text-white/35 text-xs leading-relaxed">Your vacation request (Dec 24 – Jan 2) has been approved by Sarah K.</p>
+                  <p className="text-white/40 text-xs leading-relaxed">
+                    Winter vacation (Dec 24 – Jan 2) approved by Management.
+                  </p>
                 </div>
               </div>
-            </div>
 
-            {/* Stats row */}
-            <div className="grid grid-cols-3 gap-3 mt-3">
-              {[
-                { label: 'Casual', value: '8', sub: 'days left' },
-                { label: 'Sick', value: '5', sub: 'days left' },
-                { label: 'Earned', value: '12', sub: 'days left' },
-              ].map((stat) => (
-                <div key={stat.label} className="p-3.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-center">
-                  <p className="text-xl font-bold text-white mb-0.5">{stat.value}</p>
-                  <p className="text-[10px] text-white/30 uppercase tracking-wider font-medium">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Team activity bar */}
-            <div className="mt-3 p-4 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex -space-x-2">
-                  {['bg-indigo-500', 'bg-violet-500', 'bg-pink-500', 'bg-amber-500'].map((color, i) => (
-                    <div key={i} className={`w-7 h-7 rounded-full ${color} border-2 border-[#06070e] flex items-center justify-center`}>
-                      <span className="text-[9px] font-bold text-white">{['AK', 'SR', 'MJ', 'PD'][i]}</span>
-                    </div>
-                  ))}
-                </div>
-                <span className="text-xs text-white/35">+12 team members</span>
+              {/* Seamless Stats Grid */}
+              <div className="grid grid-cols-3 gap-px bg-white/[0.03] rounded-2xl overflow-hidden">
+                {[
+                  { label: "Available", value: "12", color: "text-white" },
+                  { label: "Pending", value: "1", color: "text-amber-400" },
+                  { label: "Approved", value: "5", color: "text-emerald-400" },
+                ].map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="p-4 bg-[#0B0F19]/40 backdrop-blur-sm flex flex-col items-center justify-center text-center"
+                  >
+                    <p className={`text-xl font-bold ${stat.color} mb-1`}>
+                      {stat.value}
+                    </p>
+                    <p className="text-[10px] text-white/30 font-medium">
+                      {stat.label}
+                    </p>
+                  </div>
+                ))}
               </div>
-              <span className="text-[10px] text-white/25 font-medium">Active now</span>
             </div>
-          </div>
-        </div>
+            
+            {/* Decorative background blur under widget */}
+            <div className="absolute -inset-4 bg-indigo-500/10 blur-3xl -z-10 rounded-full opacity-50" />
+          </motion.div>
+        </motion.div>
       </div>
 
-      {/* Right side - Form */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-12 relative overflow-hidden bg-[#080910]">
-         {/* Animated background orbs */}
-         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-           <div className="absolute top-[-20%] right-[-10%] w-[30rem] h-[30rem] bg-indigo-600/10 rounded-full blur-[100px] animate-pulse-glow" />
-           <div className="absolute bottom-[-15%] left-[-10%] w-[25rem] h-[25rem] bg-purple-600/10 rounded-full blur-[100px] animate-pulse-glow" style={{ animationDelay: '3s' }} />
-           <div className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[20rem] h-[20rem] bg-blue-600/5 rounded-full blur-[80px] animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
-         </div>
+      {/* ─── Right Panel: Borderless Login Form ─── */}
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-10 lg:p-12 relative overflow-hidden bg-[#0B0F19]">
+        {/* Subtle right-side ambient glow */}
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          <div
+            className="absolute top-[20%] right-[-20%] w-[30rem] h-[30rem] bg-indigo-500/[0.05] rounded-full blur-[120px]"
+          />
+        </div>
 
-         {/* Subtle grid pattern */}
-         <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.03]"
-           style={{
-             backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)',
-             backgroundSize: '60px 60px',
-           }}
-         />
-         
-         {/* Glass form container */}
-         <div className="w-full max-w-[440px] z-10 relative">
-           <div className="absolute -inset-px rounded-3xl bg-gradient-to-b from-white/20 via-white/5 to-white/10 pointer-events-none" />
-           <div className="relative bg-[#0f1117] border border-white/[0.12] rounded-3xl p-8 sm:p-10 shadow-2xl">
-             <LoginForm />
-           </div>
-         </div>
+        {/* Mobile logo */}
+        <div className="absolute top-6 left-6 lg:hidden flex items-center gap-2.5 z-20">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <span className="text-sm font-bold text-white">L</span>
+          </div>
+          <span className="text-base font-bold tracking-tight text-white">
+            LeaveFlow
+          </span>
+        </div>
+
+        {/* Borderless form container with generous whitespace */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+          className="w-full max-w-[400px] z-10 relative px-4"
+        >
+          <LoginForm />
+        </motion.div>
+
+        {/* Footer text */}
+        <p className="absolute bottom-6 text-[11px] text-white/20 z-10 font-light">
+          © 2026 LeaveFlow · Elevating team operations
+        </p>
       </div>
     </div>
   );

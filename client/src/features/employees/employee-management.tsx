@@ -3,38 +3,35 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { ColumnDef } from "@tanstack/react-table";
-import { UserX, Edit2, AlertTriangle } from "lucide-react";
+import { UserX, Edit2, AlertTriangle, Shield, CheckCircle, XCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { getEmployees, deactivateEmployee } from "@/services/employees.service";
 import { Employee } from "@/types/employee.types";
-import { LoadingSkeleton } from "@/components/shared/loading-skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import { DataTable } from "@/components/shared/data-table";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { useRole } from "@/hooks/use-role";
+import { skeletonPulse } from "@/lib/animations";
 
 import { AddEmployeeDialog } from "./add-employee-dialog";
 import { EditEmployeeDialog } from "./edit-employee-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
-// --- Role Badge ---
 function RoleBadge({ role }: { role: string }) {
   const config: Record<string, { bg: string; text: string; label: string; border: string }> = {
-    super_admin: { bg: "bg-purple-500/10", border: "border-purple-500/20", text: "text-purple-400", label: "Super Admin" },
-    admin: { bg: "bg-indigo-500/10", border: "border-indigo-500/20", text: "text-indigo-400", label: "Admin" },
-    manager: { bg: "bg-blue-500/10", border: "border-blue-500/20", text: "text-blue-400", label: "Manager" },
-    employee: { bg: "bg-emerald-500/10", border: "border-emerald-500/20", text: "text-emerald-400", label: "Employee" },
+    super_admin: { bg: "bg-purple-500/10", border: "border-purple-500/30", text: "text-purple-400", label: "Super Admin" },
+    admin: { bg: "bg-indigo-500/10", border: "border-indigo-500/30", text: "text-indigo-400", label: "Admin" },
+    manager: { bg: "bg-blue-500/10", border: "border-blue-500/30", text: "text-blue-400", label: "Manager" },
+    employee: { bg: "bg-emerald-500/10", border: "border-emerald-500/30", text: "text-emerald-400", label: "Employee" },
   };
   const c = config[role] || config.employee;
   return (
-    <Badge variant="outline" className={`${c.bg} ${c.border} ${c.text} font-bold rounded-lg px-2.5 py-0.5 border`}>
+    <span className={`inline-flex items-center justify-center px-2.5 py-1 ${c.bg} ${c.border} ${c.text} text-[10px] uppercase tracking-widest font-bold rounded-lg border`}>
       {c.label}
-    </Badge>
+    </span>
   );
 }
 
-// --- Main Component ---
 export function EmployeeManagement() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -59,7 +56,6 @@ export function EmployeeManagement() {
     fetchEmployees();
   }, [fetchEmployees]);
 
-  // --- Deactivate ---
   const handleDeactivate = async (id: number) => {
     setDeletingId(id);
     setDeactivatingEmployee(null);
@@ -82,13 +78,13 @@ export function EmployeeManagement() {
         cell: ({ row }) => {
           const emp = row.original;
           return (
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--primary)] to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-md">
+            <div className="flex items-center gap-4 py-1">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-indigo-500/20">
                 {emp.name.charAt(0).toUpperCase()}
               </div>
               <div>
-                <p className="font-semibold text-[var(--text-primary)] group-hover:text-[var(--primary)] transition-colors">{emp.name}</p>
-                <p className="text-xs text-[var(--text-muted)]">{emp.email}</p>
+                <p className="font-bold text-white leading-tight">{emp.name}</p>
+                <p className="text-[11px] text-white/40 mt-0.5">{emp.email}</p>
               </div>
             </div>
           );
@@ -102,12 +98,27 @@ export function EmployeeManagement() {
       {
         accessorKey: "department",
         header: "Department",
-        cell: ({ row }) => <span className="font-medium text-[var(--text-secondary)]">{row.getValue("department")}</span>,
+        cell: ({ row }) => (
+          <span className="text-sm font-bold text-white/60 uppercase tracking-wider text-[11px] bg-white/5 px-2.5 py-1 rounded-lg">
+            {row.getValue("department")}
+          </span>
+        ),
       },
       {
         accessorKey: "manager_name",
         header: "Manager",
-        cell: ({ row }) => <span className="text-[var(--text-secondary)]">{row.original.manager_name || "—"}</span>,
+        cell: ({ row }) => (
+          <div className="flex items-center gap-2">
+            {row.original.manager_name ? (
+              <>
+                <Shield className="w-3.5 h-3.5 text-white/30" />
+                <span className="text-sm font-medium text-white/70">{row.original.manager_name}</span>
+              </>
+            ) : (
+              <span className="text-sm font-medium text-white/20">—</span>
+            )}
+          </div>
+        ),
       },
       {
         accessorKey: "is_active",
@@ -115,13 +126,14 @@ export function EmployeeManagement() {
         cell: ({ row }) => {
           const isActive = row.getValue("is_active") as boolean;
           return (
-            <Badge variant="outline" className={`font-bold rounded-lg border px-2 py-0.5 ${
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border w-fit ${
               isActive
                 ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                 : "bg-rose-500/10 text-rose-400 border-rose-500/20"
             }`}>
-              {isActive ? "Active" : "Inactive"}
-            </Badge>
+              {isActive ? <CheckCircle className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
+              <span className="text-[11px] font-bold uppercase tracking-widest">{isActive ? "Active" : "Inactive"}</span>
+            </div>
           );
         },
       },
@@ -132,26 +144,22 @@ export function EmployeeManagement() {
           const emp = row.original;
           return (
             <div className="flex items-center justify-end gap-2">
-              <Button
-                variant="outline"
-                size="sm"
+              <button
                 onClick={() => setEditingEmployee(emp)}
-                className="h-8 text-[var(--info)] bg-[var(--info)]/5 hover:bg-[var(--info)]/20 border-[var(--info)]/20"
+                className="group relative inline-flex items-center justify-center w-8 h-8 rounded-lg text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 transition-all"
+                title="Edit Employee"
               >
-                <Edit2 className="w-3.5 h-3.5 mr-1" />
-                Edit
-              </Button>
+                <Edit2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              </button>
               {emp.is_active && (
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
                   onClick={() => setDeactivatingEmployee(emp)}
                   disabled={deletingId === emp.id}
-                  className="h-8 text-[var(--danger)] bg-[var(--danger)]/5 hover:bg-[var(--danger)]/20 border-[var(--danger)]/20 disabled:opacity-50"
+                  className="group relative inline-flex items-center justify-center w-8 h-8 rounded-lg text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition-all disabled:opacity-50"
+                  title="Deactivate Employee"
                 >
-                  <UserX className="w-3.5 h-3.5 mr-1" />
-                  {deletingId === emp.id ? "..." : "Deactivate"}
-                </Button>
+                  <UserX className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                </button>
               )}
             </div>
           );
@@ -163,12 +171,7 @@ export function EmployeeManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold gradient-text">Employee Management</h1>
-          <p className="text-[var(--text-secondary)] mt-1">Manage your organization&apos;s team members.</p>
-        </div>
+      <div className="flex justify-end">
         <AddEmployeeDialog
           employees={employees}
           onSuccess={fetchEmployees}
@@ -176,27 +179,55 @@ export function EmployeeManagement() {
         />
       </div>
 
-      {/* Table */}
-      {isLoading ? (
-        <div className="glass-card p-8 border-0">
-          <LoadingSkeleton lines={6} />
-        </div>
-      ) : employees.length === 0 ? (
-        <div className="glass-card border-0">
-          <EmptyState title="No employees found" description="No employees match your search criteria." icon="👥" />
-        </div>
-      ) : (
-        <div className="glass-card p-6 border-0 shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
-          <DataTable
-            columns={columns}
-            data={employees}
-            searchKey="name"
-            searchPlaceholder="Search employees by name..."
-          />
-        </div>
-      )}
+      <div className="bg-[#0B0F19] border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+        <AnimatePresence mode="wait">
+          {isLoading ? (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="p-6 space-y-4"
+            >
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <motion.div 
+                  key={i} 
+                  variants={skeletonPulse} 
+                  initial="initial" 
+                  animate="animate" 
+                  className="h-16 w-full bg-white/[0.02] border border-white/[0.04] rounded-xl"
+                />
+              ))}
+            </motion.div>
+          ) : employees.length === 0 ? (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="p-12"
+            >
+              <EmptyState title="No employees found" description="There are no active or inactive employees matching your criteria." icon="👥" />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="table"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="p-6"
+            >
+              <DataTable
+                columns={columns}
+                data={employees}
+                searchKey="name"
+                searchPlaceholder="Search employees by name..."
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
-      {/* Edit Employee Dialog */}
       {editingEmployee && (
         <EditEmployeeDialog
           employee={editingEmployee}
@@ -206,13 +237,12 @@ export function EmployeeManagement() {
         />
       )}
 
-      {/* Deactivate Confirmation */}
       <ConfirmDialog
         open={!!deactivatingEmployee}
         onOpenChange={(open) => !open && setDeactivatingEmployee(null)}
         onConfirm={() => { if (deactivatingEmployee) return handleDeactivate(deactivatingEmployee.id); }}
         title="Deactivate Employee"
-        description={`Are you sure you want to deactivate ${deactivatingEmployee?.name}? They will no longer be able to access the system, but their leave history will be preserved.`}
+        description={`Are you sure you want to deactivate ${deactivatingEmployee?.name}? They will lose access to the system immediately.`}
         confirmLabel="Yes, Deactivate"
         cancelLabel="Cancel"
         variant="danger"

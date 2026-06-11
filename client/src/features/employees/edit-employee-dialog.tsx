@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import { Edit2 } from "lucide-react";
+import { Edit2, User, Building, ShieldCheck, Users } from "lucide-react";
 
 import { updateEmployee } from "@/services/employees.service";
 import { Employee } from "@/types/employee.types";
@@ -15,11 +15,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const editEmployeeSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -70,72 +68,107 @@ export function EditEmployeeDialog({
 
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold gradient-text flex items-center gap-2">
-            <Edit2 className="w-5 h-5 text-[var(--primary)]" />
-            Edit Employee
-          </DialogTitle>
-          <p className="text-sm text-[var(--text-muted)] mt-1">{employee.email}</p>
-        </DialogHeader>
-        
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
-            <Input id="name" {...form.register("name")} className="input-field" disabled={isSubmitting} />
-            {form.formState.errors.name && <p className="text-[var(--danger)] text-xs font-semibold">{form.formState.errors.name.message}</p>}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+      <DialogContent className="sm:max-w-[500px] bg-[#0B0F19] border-slate-800 shadow-2xl rounded-2xl p-0 overflow-hidden">
+        <div className="h-1.5 w-full bg-indigo-500" />
+        <div className="p-6">
+          <DialogHeader className="mb-6">
+            <DialogTitle className="flex items-center gap-2.5 text-xl font-bold text-white">
+              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0">
+                <Edit2 className="w-5 h-5" />
+              </div>
+              Edit Employee
+            </DialogTitle>
+            <DialogDescription className="text-white/50 text-sm mt-2">
+              Editing profile for <strong className="text-white">{employee.email}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label>Role</Label>
-              <Select disabled={isSubmitting} onValueChange={(val) => form.setValue("role", val as any)} defaultValue={form.watch("role")}>
-                <SelectTrigger className="input-field">
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="employee">Employee</SelectItem>
-                  <SelectItem value="manager">Manager</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
-              {form.formState.errors.role && <p className="text-[var(--danger)] text-xs font-semibold">{form.formState.errors.role.message}</p>}
+              <label className="text-[11px] font-semibold text-white/40 uppercase tracking-widest flex items-center gap-1.5">
+                <User className="w-3 h-3" /> Full Name
+              </label>
+              <input 
+                {...form.register("name")} 
+                className="w-full bg-[#111827] border border-slate-800 rounded-lg px-4 py-3 text-[14px] text-white placeholder:text-white/20 focus:ring-1 focus:ring-indigo-500 outline-none transition-all" 
+                disabled={isSubmitting} 
+              />
+              {form.formState.errors.name && <p className="text-rose-400 text-xs font-semibold mt-1">{form.formState.errors.name.message}</p>}
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="department">Department</Label>
-              <Input id="department" {...form.register("department")} className="input-field" disabled={isSubmitting} />
-              {form.formState.errors.department && <p className="text-[var(--danger)] text-xs font-semibold">{form.formState.errors.department.message}</p>}
-            </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label>Manager (Optional)</Label>
-            <Select disabled={isSubmitting} onValueChange={(val) => form.setValue("manager_id", val === "none" ? null : Number(val))} defaultValue={String(form.watch("manager_id") || "none")}>
-              <SelectTrigger className="input-field">
-                <SelectValue placeholder="Select manager" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No Manager</SelectItem>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[11px] font-semibold text-white/40 uppercase tracking-widest flex items-center gap-1.5">
+                  <ShieldCheck className="w-3 h-3" /> Role
+                </label>
+                <select 
+                  disabled={isSubmitting} 
+                  {...form.register("role")}
+                  className="w-full bg-[#111827] border border-slate-800 rounded-lg px-4 py-3 text-[14px] text-white focus:ring-1 focus:ring-indigo-500 outline-none transition-all appearance-none cursor-pointer"
+                >
+                  <option value="employee" className="bg-[#0d0e18]">Employee</option>
+                  <option value="manager" className="bg-[#0d0e18]">Manager</option>
+                  <option value="admin" className="bg-[#0d0e18]">Admin</option>
+                </select>
+                {form.formState.errors.role && <p className="text-rose-400 text-xs font-semibold mt-1">{form.formState.errors.role.message}</p>}
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-[11px] font-semibold text-white/40 uppercase tracking-widest flex items-center gap-1.5">
+                  <Building className="w-3 h-3" /> Department
+                </label>
+                <input 
+                  {...form.register("department")} 
+                  className="w-full bg-[#111827] border border-slate-800 rounded-lg px-4 py-3 text-[14px] text-white placeholder:text-white/20 focus:ring-1 focus:ring-indigo-500 outline-none transition-all" 
+                  disabled={isSubmitting} 
+                />
+                {form.formState.errors.department && <p className="text-rose-400 text-xs font-semibold mt-1">{form.formState.errors.department.message}</p>}
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-2">
+              <label className="text-[11px] font-semibold text-white/40 uppercase tracking-widest flex items-center gap-1.5">
+                <Users className="w-3 h-3" /> Manager <span className="text-white/30 ml-1 normal-case tracking-normal">(Optional)</span>
+              </label>
+              <select 
+                disabled={isSubmitting} 
+                {...form.register("manager_id")}
+                className="w-full bg-[#111827] border border-slate-800 rounded-lg px-4 py-3 text-[14px] text-white focus:ring-1 focus:ring-indigo-500 outline-none transition-all appearance-none cursor-pointer"
+              >
+                <option value="none" className="bg-[#0d0e18]">No Manager</option>
                 {managers.map((m) => (
-                  <SelectItem key={m.id} value={String(m.id)}>
+                  <option key={m.id} value={String(m.id)} className="bg-[#0d0e18]">
                     {m.name} ({m.department})
-                  </SelectItem>
+                  </option>
                 ))}
-              </SelectContent>
-            </Select>
-            {form.formState.errors.manager_id && <p className="text-[var(--danger)] text-xs font-semibold">{form.formState.errors.manager_id.message}</p>}
-          </div>
+              </select>
+              {form.formState.errors.manager_id && <p className="text-rose-400 text-xs font-semibold mt-1">{form.formState.errors.manager_id.message}</p>}
+            </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--glass-border)] mt-4">
-            <Button type="button" variant="ghost" onClick={onClose} disabled={isSubmitting}>
-              Cancel
-            </Button>
-            <Button type="submit" className="btn-primary" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : "Save Changes"}
-            </Button>
-          </div>
-        </form>
+            <DialogFooter className="mt-8 gap-3 sm:gap-0 pt-6 border-t border-slate-800/50">
+              <button 
+                type="button"
+                onClick={onClose} 
+                disabled={isSubmitting}
+                className="px-4 py-2.5 rounded-xl border border-white/10 text-white/60 font-semibold hover:bg-white/5 hover:text-white transition-colors text-sm"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="px-6 py-2.5 rounded-lg font-bold text-[14px] shadow-lg transition-all bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-500/20"
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    Saving...
+                  </span>
+                ) : "Save Changes"}
+              </button>
+            </DialogFooter>
+          </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
