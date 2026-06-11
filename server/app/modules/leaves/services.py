@@ -1,14 +1,30 @@
 from datetime import datetime
 from fastapi import HTTPException
 from typing import List, Optional
+from sqlalchemy.future import select
 from app.modules.leaves.repositories import LeaveRepository
 from app.modules.leaves.models import LeaveRequest, LeaveApproval
 from app.modules.leaves.schemas import LeaveApplication, LeaveApprovalAction
 from app.modules.employees.models import Employee
+from app.modules.notifications.models import Notification
 
 class LeaveService:
     def __init__(self, repo: LeaveRepository):
         self.repo = repo
+
+    async def _get_employee(self, employee_id: int) -> Optional[Employee]:
+        result = await self.repo.db.execute(select(Employee).where(Employee.id == employee_id))
+        return result.scalar_one_or_none()
+
+    async def _create_notification(self, user_id: int, title: str, message: str, ntype: str = "info", action_url: str = None):
+        notification = Notification(
+            user_id=user_id,
+            title=title,
+            message=message,
+            type=ntype,
+            action_url=action_url,
+        )
+        self.repo.db.add(notification)
 
     def get_business_days(self, start_date, end_date) -> int:
         return (end_date - start_date).days + 1
@@ -51,6 +67,19 @@ class LeaveService:
         )
         await self.repo.create_request(new_request)
         await self.repo.commit()
+
+        employee = await self._get_employee(employee_id)
+        if employee and employee.manager_id:
+            days = self.get_business_days(request.start_date, request.end_date)
+            await self._create_notification(
+                user_id=employee.manager_id,
+                title="New Leave Application",
+                message=f"{employee.name} submitted a request for {days} day(s) of {request.leave_type}.",
+                ntype="warning",
+                action_url="/pending-requests"
+            )
+            await self.repo.commit()
+
         return {"message": "Leave application submitted successfully"}
 
     async def get_leave_history(self, employee_id: int, status: Optional[str] = "all") -> List[dict]:
@@ -113,6 +142,19 @@ class LeaveService:
                 balance.used_days -= requested_days
 
         await self.repo.commit()
+
+        employee = await self._get_employee(leave.employee_id)
+        if employee and employee.manager_id:
+            days = self.get_business_days(leave.start_date, leave.end_date)
+            await self._create_notification(
+                user_id=employee.manager_id,
+                title="Leave Request Cancelled",
+                message=f"{employee.name} cancelled their pending {leave.leave_type} request for {days} day(s).",
+                ntype="info",
+                action_url="/pending-requests"
+            )
+            await self.repo.commit()
+
         return {"message": "Leave request cancelled successfully"}
 
     async def get_pending_requests(self, manager_id: int, is_admin: bool = False) -> List[dict]:
@@ -159,6 +201,17 @@ class LeaveService:
         )
         await self.repo.add_approval(approval)
         await self.repo.commit()
+
+        days = self.get_business_days(leave.start_date, leave.end_date)
+        await self._create_notification(
+            user_id=leave.employee_id,
+            title="Leave Request Approved",
+            message=f"Your request for {days} day(s) of {leave.leave_type} has been approved.",
+            ntype="success",
+            action_url="/leave-history"
+        )
+        await self.repo.commit()
+
         return {"message": "Leave request approved"}
 
     async def reject_leave(self, leave_id: int, manager_id: int, is_admin: bool, action: LeaveApprovalAction) -> dict:
@@ -193,4 +246,15 @@ class LeaveService:
                 balance.used_days -= requested_days
 
         await self.repo.commit()
+
+        days = self.get_business_days(leave.start_date, leave.end_date)
+        await self._create_notification(
+            user_id=leave.employee_id,
+            title="Leave Request Rejected",
+            message=f"Your request for {days} day(s) of {leave.leave_type} has been rejected. Reason: {action.comments}",
+            ntype="danger",
+            action_url="/leave-history"
+        )
+        await self.repo.commit()
+
         return {"message": "Leave request rejected"}

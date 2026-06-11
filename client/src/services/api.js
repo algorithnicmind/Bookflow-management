@@ -109,3 +109,9 @@ export const settingsApi = {
 export const reportsApi = {
   organization: () => request('/api/reports/organization'),
 }
+
+export const notificationsApi = {
+  list: () => request('/api/notifications'),
+  markRead: (id) => request(`/api/notifications/${id}/read`, { method: 'PUT' }),
+  markAllRead: () => request('/api/notifications/read-all', { method: 'PUT' }),
+}
