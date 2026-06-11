@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { DashboardStats } from "@/types/dashboard.types";
 import { staggerContainer, staggerItem } from "@/lib/animations";
 import { FileText, Clock, CheckCircle2, XCircle } from "lucide-react";
+import { AnimatedCounter } from "@/components/shared/animated-counter";
 
 export function StatsCards({ stats }: { stats: DashboardStats }) {
   const cards = [
@@ -64,7 +65,7 @@ export function StatsCards({ stats }: { stats: DashboardStats }) {
                 {card.label}
               </p>
               <h3 className="text-3xl font-black text-[var(--text-primary)] tracking-tight tabular-nums">
-                {card.value}
+                <AnimatedCounter value={card.value} duration={1.2} />
               </h3>
             </div>
             <div

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { ColumnDef } from "@tanstack/react-table";
-import { Search } from "lucide-react";
+import { Search, XCircle } from "lucide-react";
 
 import { getLeaveHistory, cancelLeave } from "@/services/leaves.service";
 import { LeaveRequest } from "@/types/leave.types";
@@ -13,6 +13,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { LoadingSkeleton } from "@/components/shared/loading-skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import { DataTable } from "@/components/shared/data-table";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,6 +23,7 @@ export function LeaveHistoryTable() {
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
   const [isCancelling, setIsCancelling] = useState<number | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<LeaveRequest | null>(null);
 
   const fetchHistory = useCallback(async () => {
     setIsLoading(true);
@@ -41,13 +43,11 @@ export function LeaveHistoryTable() {
   }, [fetchHistory]);
 
   const handleCancel = async (id: number) => {
-    if (!confirm("Are you sure you want to cancel this leave request?")) return;
-
     setIsCancelling(id);
+    setCancelTarget(null);
     try {
       await cancelLeave(id);
       toast.success("Leave request cancelled successfully.");
-      // Refresh the list
       fetchHistory();
     } catch (error: any) {
       toast.error(error.response?.data?.detail || "Failed to cancel request.");
@@ -115,10 +115,11 @@ export function LeaveHistoryTable() {
             <div className="text-right">
               {leave.status === "pending" ? (
                 <button
-                  onClick={() => handleCancel(leave.id)}
+                  onClick={() => setCancelTarget(leave)}
                   disabled={isCancelling === leave.id}
-                  className="text-[var(--danger)] bg-[var(--danger)]/5 hover:bg-[var(--danger)]/15 border border-[var(--danger)]/20 px-3 py-1.5 rounded-lg transition-colors text-xs font-bold disabled:opacity-50"
+                  className="text-[var(--danger)] bg-[var(--danger)]/5 hover:bg-[var(--danger)]/15 border border-[var(--danger)]/20 px-3 py-1.5 rounded-lg transition-colors text-xs font-bold disabled:opacity-50 inline-flex items-center gap-1.5"
                 >
+                  <XCircle className="w-3.5 h-3.5" />
                   {isCancelling === leave.id ? "Cancelling..." : "Cancel"}
                 </button>
               ) : (
@@ -163,26 +164,39 @@ export function LeaveHistoryTable() {
             </div>
           ) : leaves.length === 0 ? (
             <div className="p-8">
-              <EmptyState 
-                title="No records found" 
+              <EmptyState
+                title="No records found"
                 description={statusFilter === "all" ? "You haven't applied for any leave yet." : `No ${statusFilter} leave requests found.`}
                 icon="📝"
                 actionLabel={statusFilter === "all" ? "Apply for Leave" : undefined}
-                actionHref="/apply-leave"
+                actionHref={statusFilter === "all" ? "/apply-leave" : undefined}
               />
             </div>
           ) : (
             <div className="p-6">
-              <DataTable 
-                columns={columns} 
-                data={leaves} 
-                searchKey="leave_type" 
-                searchPlaceholder="Search leave type..." 
+              <DataTable
+                columns={columns}
+                data={leaves}
+                searchKey="leave_type"
+                searchPlaceholder="Search leave type..."
               />
             </div>
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={!!cancelTarget}
+        onOpenChange={(open) => !open && setCancelTarget(null)}
+        onConfirm={() => { if (cancelTarget) return handleCancel(cancelTarget.id); }}
+        title="Cancel Leave Request"
+        description={`Are you sure you want to cancel your ${cancelTarget ? LEAVE_TYPE_LABELS[cancelTarget.leave_type as keyof typeof LEAVE_TYPE_LABELS] : ''} leave request? This action cannot be undone.`}
+        confirmLabel="Yes, Cancel Request"
+        cancelLabel="Keep Request"
+        variant="warning"
+        icon={<XCircle className="w-6 h-6" />}
+        isLoading={isCancelling !== null}
+      />
     </div>
   );
 }

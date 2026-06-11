@@ -3,13 +3,14 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { ColumnDef } from "@tanstack/react-table";
-import { UserX, Edit2 } from "lucide-react";
+import { UserX, Edit2, AlertTriangle } from "lucide-react";
 
 import { getEmployees, deactivateEmployee } from "@/services/employees.service";
 import { Employee } from "@/types/employee.types";
 import { LoadingSkeleton } from "@/components/shared/loading-skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import { DataTable } from "@/components/shared/data-table";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { useRole } from "@/hooks/use-role";
 
 import { AddEmployeeDialog } from "./add-employee-dialog";
@@ -38,13 +39,14 @@ export function EmployeeManagement() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [deactivatingEmployee, setDeactivatingEmployee] = useState<Employee | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const { isSuperAdmin } = useRole();
 
   const fetchEmployees = useCallback(async () => {
     setIsLoading(true);
     try {
-      const data = await getEmployees(); // Fetches all
+      const data = await getEmployees();
       setEmployees(data.employees);
     } catch {
       toast.error("Failed to load employees.");
@@ -58,9 +60,9 @@ export function EmployeeManagement() {
   }, [fetchEmployees]);
 
   // --- Deactivate ---
-  const handleDeactivate = async (id: number, name: string) => {
-    if (!confirm(`Are you sure you want to deactivate ${name}?`)) return;
+  const handleDeactivate = async (id: number) => {
     setDeletingId(id);
+    setDeactivatingEmployee(null);
     try {
       await deactivateEmployee(id);
       toast.success("Employee deactivated successfully.");
@@ -143,7 +145,7 @@ export function EmployeeManagement() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleDeactivate(emp.id, emp.name)}
+                  onClick={() => setDeactivatingEmployee(emp)}
                   disabled={deletingId === emp.id}
                   className="h-8 text-[var(--danger)] bg-[var(--danger)]/5 hover:bg-[var(--danger)]/20 border-[var(--danger)]/20 disabled:opacity-50"
                 >
@@ -165,12 +167,12 @@ export function EmployeeManagement() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold gradient-text">Employee Management</h1>
-          <p className="text-[var(--text-secondary)] mt-1">Manage your organization's team members.</p>
+          <p className="text-[var(--text-secondary)] mt-1">Manage your organization&apos;s team members.</p>
         </div>
-        <AddEmployeeDialog 
-          employees={employees} 
-          onSuccess={fetchEmployees} 
-          isSuperAdmin={isSuperAdmin} 
+        <AddEmployeeDialog
+          employees={employees}
+          onSuccess={fetchEmployees}
+          isSuperAdmin={isSuperAdmin}
         />
       </div>
 
@@ -185,11 +187,11 @@ export function EmployeeManagement() {
         </div>
       ) : (
         <div className="glass-card p-6 border-0 shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
-          <DataTable 
-            columns={columns} 
-            data={employees} 
-            searchKey="name" 
-            searchPlaceholder="Search employees by name..." 
+          <DataTable
+            columns={columns}
+            data={employees}
+            searchKey="name"
+            searchPlaceholder="Search employees by name..."
           />
         </div>
       )}
@@ -203,6 +205,20 @@ export function EmployeeManagement() {
           onSuccess={() => { setEditingEmployee(null); fetchEmployees(); }}
         />
       )}
+
+      {/* Deactivate Confirmation */}
+      <ConfirmDialog
+        open={!!deactivatingEmployee}
+        onOpenChange={(open) => !open && setDeactivatingEmployee(null)}
+        onConfirm={() => { if (deactivatingEmployee) return handleDeactivate(deactivatingEmployee.id); }}
+        title="Deactivate Employee"
+        description={`Are you sure you want to deactivate ${deactivatingEmployee?.name}? They will no longer be able to access the system, but their leave history will be preserved.`}
+        confirmLabel="Yes, Deactivate"
+        cancelLabel="Cancel"
+        variant="danger"
+        icon={<AlertTriangle className="w-6 h-6" />}
+        isLoading={deletingId !== null}
+      />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { Topbar } from "@/components/layout/topbar";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { AuthGuard } from "@/components/guards/auth-guard";
 import { useUIStore } from "@/store/ui-store";
+import { PageTransition } from "@/components/shared/page-transition";
 import { cn } from "@/lib/utils";
 
 export default function DashboardLayout({
@@ -27,8 +28,10 @@ export default function DashboardLayout({
           )}
         >
           <Topbar />
-          <main className="flex-1 p-4 lg:p-6 xl:p-8 pb-20 lg:pb-8 animate-fade-in">
-            {children}
+          <main className="flex-1 p-4 lg:p-6 xl:p-8 pb-20 lg:pb-8">
+            <PageTransition>
+              {children}
+            </PageTransition>
           </main>
         </div>
         <MobileNav />

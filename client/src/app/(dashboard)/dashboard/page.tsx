@@ -12,12 +12,14 @@ import { TeamOverview } from "@/features/dashboard/team-overview";
 import { useAuthStore } from "@/store/auth-store";
 import { staggerContainer, staggerItem } from "@/lib/animations";
 import { ROUTES } from "@/constants/routes";
-import { PenSquare, CalendarDays, Users, Building2 } from "lucide-react";
+import { PenSquare, CalendarDays, Users, Building2, Sparkles } from "lucide-react";
+import { ApplyLeaveSheet } from "@/components/shared/apply-leave-sheet";
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const { user } = useAuthStore();
 
   useEffect(() => {
@@ -78,11 +80,12 @@ export default function DashboardPage() {
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold gradient-text">
+          <h1 className="text-2xl lg:text-3xl font-bold gradient-text flex items-center gap-3">
             Welcome back, {user?.name}
+            <Sparkles className="w-5 h-5 text-amber-400" />
           </h1>
           <p className="text-[var(--text-secondary)] mt-1 text-sm">
-            Here's what's happening with your leaves today.
+            Here&apos;s what&apos;s happening with your leaves today.
           </p>
         </div>
 
@@ -91,10 +94,10 @@ export default function DashboardPage() {
             <CalendarDays className="w-4 h-4" />
             History
           </Link>
-          <Link href={ROUTES.APPLY_LEAVE} className="btn-primary text-sm py-2 px-4">
+          <button onClick={() => setSheetOpen(true)} className="btn-primary text-sm py-2 px-4">
             <PenSquare className="w-4 h-4" />
             Apply Leave
-          </Link>
+          </button>
         </div>
       </motion.div>
 
@@ -174,6 +177,8 @@ export default function DashboardPage() {
       <motion.div variants={staggerItem}>
         <RecentLeavesTable leaves={data.recent_leaves} />
       </motion.div>
+
+      <ApplyLeaveSheet open={sheetOpen} onOpenChange={setSheetOpen} />
     </motion.div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,7 +8,7 @@ import * as z from "zod";
 import { format, differenceInBusinessDays, parseISO, isAfter, isBefore } from "date-fns";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { PenSquare, Clock, CalendarDays, ArrowLeft, Send } from "lucide-react";
+import { PenSquare, Clock, CalendarDays, ArrowLeft, Send, AlertCircle } from "lucide-react";
 
 import { applyLeave, getLeaveBalance } from "@/services/leaves.service";
 import { LeaveBalance } from "@/types/leave.types";
@@ -44,6 +44,8 @@ export function ApplyLeaveForm() {
   const [balances, setBalances] = useState<LeaveBalance[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [duration, setDuration] = useState(0);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const form = useForm<LeaveFormValues>({
     resolver: zodResolver(leaveSchema),
@@ -58,6 +60,8 @@ export function ApplyLeaveForm() {
   const startDate = form.watch("start_date");
   const endDate = form.watch("end_date");
   const leaveType = form.watch("leave_type");
+
+  const { errors, isSubmitting } = form.formState;
 
   useEffect(() => {
     async function loadBalances() {
@@ -86,11 +90,26 @@ export function ApplyLeaveForm() {
     }
   }, [startDate, endDate]);
 
+  // Shake form on error
+  useEffect(() => {
+    if (submitError && formRef.current) {
+      formRef.current.classList.add("animate-shake");
+      const timer = setTimeout(() => {
+        formRef.current?.classList.remove("animate-shake");
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [submitError]);
+
   async function onSubmit(data: LeaveFormValues) {
+    setSubmitError(null);
+
     if (data.leave_type !== "unpaid") {
       const balance = balances.find(b => b.leave_type === data.leave_type);
       if (balance && duration > balance.remaining) {
-        toast.error(`You only have ${balance.remaining} days of ${LEAVE_TYPE_LABELS[data.leave_type]} leave remaining.`);
+        const msg = `You only have ${balance.remaining} days of ${LEAVE_TYPE_LABELS[data.leave_type]} leave remaining.`;
+        setSubmitError(msg);
+        toast.error(msg);
         return;
       }
     }
@@ -98,11 +117,14 @@ export function ApplyLeaveForm() {
     setIsLoading(true);
     try {
       await applyLeave(data);
-      toast.success("Leave request submitted successfully!");
+      toast.success("Leave request submitted successfully!", {
+        duration: 4000,
+      });
       router.push(ROUTES.LEAVE_HISTORY);
     } catch (error: any) {
-      console.error("Failed to submit leave:", error);
-      toast.error(error.response?.data?.detail || "Failed to submit leave request.");
+      const msg = error.response?.data?.detail || "Failed to submit leave request.";
+      setSubmitError(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
@@ -128,8 +150,23 @@ export function ApplyLeaveForm() {
 
       <Card className="glass-card shadow-2xl border-[var(--glass-border)]">
         <CardContent className="p-6 md:p-8">
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            
+          <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+
+            {/* Error Banner */}
+            {submitError && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-start gap-3 p-4 rounded-xl bg-[var(--danger)]/10 border border-[var(--danger)]/20 text-sm"
+              >
+                <AlertCircle className="w-5 h-5 text-[var(--danger)] shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-[var(--danger)]">Submission Error</p>
+                  <p className="text-[var(--text-secondary)] mt-0.5">{submitError}</p>
+                </div>
+              </motion.div>
+            )}
+
             {/* Leave Type */}
             <div className="space-y-3">
               <Label>Leave Type</Label>
@@ -151,7 +188,7 @@ export function ApplyLeaveForm() {
                     </Select>
                   )}
                 />
-                
+
                 {selectedBalance && leaveType !== "unpaid" && (
                   <div className="text-sm px-4 py-2 bg-[var(--primary)]/10 rounded-lg border border-[var(--primary)]/20 shadow-sm flex items-center gap-2">
                     <span className="text-[var(--text-secondary)] font-medium">Available Balance:</span>
@@ -159,9 +196,9 @@ export function ApplyLeaveForm() {
                   </div>
                 )}
               </div>
-              {form.formState.errors.leave_type && (
+              {errors.leave_type && (
                 <p className="text-[var(--danger)] text-xs mt-1 font-semibold">
-                  {form.formState.errors.leave_type.message}
+                  {errors.leave_type.message}
                 </p>
               )}
             </div>
@@ -171,47 +208,55 @@ export function ApplyLeaveForm() {
               <div className="space-y-3">
                 <Label htmlFor="start_date">Start Date</Label>
                 <div className="relative">
-                  <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
+                  <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] pointer-events-none" />
                   <Input
                     {...form.register("start_date")}
                     id="start_date"
                     type="date"
-                    className="input-field pl-9 bg-[var(--bg-tertiary)] border-[var(--glass-border)] focus:ring-[var(--primary)]/50 transition-all"
+                    className={`input-field pl-9 bg-[var(--bg-tertiary)] border-[var(--glass-border)] focus:ring-[var(--primary)]/50 transition-all ${errors.start_date ? 'border-[var(--danger)]/50 focus:border-[var(--danger)] focus:ring-[var(--danger)]/20' : ''}`}
                     min={format(new Date(), "yyyy-MM-dd")}
                     disabled={isLoading}
                   />
                 </div>
-                {form.formState.errors.start_date && (
-                  <p className="text-[var(--danger)] text-xs mt-1 font-semibold">
-                    {form.formState.errors.start_date.message}
-                  </p>
+                {errors.start_date && (
+                  <motion.p
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="text-[var(--danger)] text-xs mt-1 font-semibold"
+                  >
+                    {errors.start_date.message}
+                  </motion.p>
                 )}
               </div>
 
               <div className="space-y-3">
                 <Label htmlFor="end_date">End Date</Label>
                 <div className="relative">
-                  <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
+                  <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] pointer-events-none" />
                   <Input
                     {...form.register("end_date")}
                     id="end_date"
                     type="date"
-                    className="input-field pl-9 bg-[var(--bg-tertiary)] border-[var(--glass-border)] focus:ring-[var(--primary)]/50 transition-all"
+                    className={`input-field pl-9 bg-[var(--bg-tertiary)] border-[var(--glass-border)] focus:ring-[var(--primary)]/50 transition-all ${errors.end_date ? 'border-[var(--danger)]/50 focus:border-[var(--danger)] focus:ring-[var(--danger)]/20' : ''}`}
                     min={startDate || format(new Date(), "yyyy-MM-dd")}
                     disabled={isLoading}
                   />
                 </div>
-                {form.formState.errors.end_date && (
-                  <p className="text-[var(--danger)] text-xs mt-1 font-semibold">
-                    {form.formState.errors.end_date.message}
-                  </p>
+                {errors.end_date && (
+                  <motion.p
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="text-[var(--danger)] text-xs mt-1 font-semibold"
+                  >
+                    {errors.end_date.message}
+                  </motion.p>
                 )}
               </div>
             </div>
 
             {/* Duration Estimator */}
             {duration > 0 && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 className="p-4 bg-gradient-to-r from-[var(--info)]/20 to-[var(--info)]/5 text-[var(--info)] rounded-xl border border-[var(--info)]/30 text-sm flex items-center gap-3 shadow-sm"
@@ -227,14 +272,14 @@ export function ApplyLeaveForm() {
               <Textarea
                 {...form.register("reason")}
                 id="reason"
-                className="input-field min-h-[140px] resize-y bg-[var(--bg-tertiary)] border-[var(--glass-border)] focus:ring-[var(--primary)]/50 transition-all"
+                className={`input-field min-h-[140px] resize-y bg-[var(--bg-tertiary)] border-[var(--glass-border)] focus:ring-[var(--primary)]/50 transition-all ${errors.reason ? 'border-[var(--danger)]/50 focus:border-[var(--danger)] focus:ring-[var(--danger)]/20' : ''}`}
                 placeholder="Please provide a detailed reason for your leave request..."
                 disabled={isLoading}
               />
               <div className="flex justify-between items-start mt-1">
-                {form.formState.errors.reason ? (
+                {errors.reason ? (
                   <p className="text-[var(--danger)] text-xs font-semibold">
-                    {form.formState.errors.reason.message}
+                    {errors.reason.message}
                   </p>
                 ) : <span />}
                 <p className="text-xs text-[var(--text-muted)] font-medium">
