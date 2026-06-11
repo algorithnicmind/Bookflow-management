@@ -43,22 +43,22 @@ export default function DashboardPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row gap-4 justify-between">
           <div className="space-y-3">
-            <motion.div variants={skeletonPulse} initial="initial" animate="animate" className="h-8 w-64 rounded-xl bg-white/[0.04] border border-white/[0.02]" />
-            <motion.div variants={skeletonPulse} initial="initial" animate="animate" className="h-4 w-48 rounded-lg bg-white/[0.02]" />
+            <motion.div variants={skeletonPulse} initial="initial" animate="animate" className="h-8 w-64 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)]" />
+            <motion.div variants={skeletonPulse} initial="initial" animate="animate" className="h-4 w-48 rounded-lg bg-[var(--bg-secondary)]" />
           </div>
           <div className="flex gap-2">
-            <motion.div variants={skeletonPulse} initial="initial" animate="animate" className="h-10 w-24 rounded-xl bg-white/[0.04]" />
-            <motion.div variants={skeletonPulse} initial="initial" animate="animate" className="h-10 w-32 rounded-xl bg-indigo-500/20" />
+            <motion.div variants={skeletonPulse} initial="initial" animate="animate" className="h-10 w-24 rounded-xl bg-[var(--bg-secondary)]" />
+            <motion.div variants={skeletonPulse} initial="initial" animate="animate" className="h-10 w-32 rounded-xl bg-[var(--primary)]/20" />
           </div>
         </div>
         
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <motion.div key={i} variants={skeletonPulse} initial="initial" animate="animate" className="h-[120px] rounded-2xl bg-white/[0.03] border border-white/[0.05]" />
+            <motion.div key={i} variants={skeletonPulse} initial="initial" animate="animate" className="h-[120px] rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)]" />
           ))}
         </div>
-        <motion.div variants={skeletonPulse} initial="initial" animate="animate" className="h-[200px] rounded-2xl bg-white/[0.03] border border-white/[0.05]" />
-        <motion.div variants={skeletonPulse} initial="initial" animate="animate" className="h-[300px] rounded-2xl bg-white/[0.03] border border-white/[0.05]" />
+        <motion.div variants={skeletonPulse} initial="initial" animate="animate" className="h-[200px] rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)]" />
+        <motion.div variants={skeletonPulse} initial="initial" animate="animate" className="h-[300px] rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)]" />
       </div>
     );
   }
@@ -69,11 +69,11 @@ export default function DashboardPage() {
         variants={pageTransition} initial="hidden" animate="visible" exit="exit"
         className="flex flex-col items-center justify-center py-20 px-4 text-center"
       >
-        <div className="w-20 h-20 rounded-full bg-rose-500/10 flex items-center justify-center mb-6">
-          <AlertCircle className="w-10 h-10 text-rose-400" />
+        <div className="w-20 h-20 rounded-full bg-[var(--danger-bg)] flex items-center justify-center mb-6">
+          <AlertCircle className="w-10 h-10 text-[var(--danger)]" />
         </div>
-        <h2 className="text-2xl font-bold text-white mb-2">Unable to load dashboard</h2>
-        <p className="text-white/40 mb-8 max-w-md">{error || "We couldn't fetch your data. Please check your connection and try again."}</p>
+        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Unable to load dashboard</h2>
+        <p className="text-[var(--text-secondary)] mb-8 max-w-md">{error || "We couldn't fetch your data. Please check your connection and try again."}</p>
         <button 
           onClick={() => window.location.reload()} 
           className="btn-primary"
@@ -98,17 +98,17 @@ export default function DashboardPage() {
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6"
       >
         <div>
-          <h1 className="text-2xl lg:text-[28px] font-extrabold text-white flex items-center gap-2.5 tracking-tight mb-1.5">
+          <h1 className="text-2xl lg:text-[28px] font-extrabold text-[var(--text-primary)] flex items-center gap-2.5 tracking-tight mb-1.5">
             Welcome back, {user?.name?.split(' ')[0] || 'User'}
-            <Sparkles className="w-6 h-6 text-amber-400 animate-pulse" />
+            <Sparkles className="w-6 h-6 text-amber-500 animate-pulse" />
           </h1>
-          <p className="text-white/40 text-[15px]">
+          <p className="text-[var(--text-secondary)] text-[15px]">
             Here&apos;s what&apos;s happening with your team today.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Link href={ROUTES.LEAVE_HISTORY} className="btn-ghost flex-1 sm:flex-none justify-center">
+          <Link href={ROUTES.LEAVE_HISTORY} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-primary)] rounded-lg font-medium hover:bg-[var(--bg-tertiary)] transition-colors shadow-sm">
             <CalendarDays className="w-4 h-4" />
             History
           </Link>
@@ -134,33 +134,33 @@ export default function DashboardPage() {
           {/* Org Overview (admins only) */}
           {data.org_stats && (
             <motion.div variants={staggerItem}>
-              <div className="glass-card-accent p-6 sm:p-8">
+              <div className="glass-card p-6 sm:p-8">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-indigo-400" />
+                  <div className="w-10 h-10 rounded-xl bg-[var(--info-bg)] flex items-center justify-center">
+                    <Building2 className="w-5 h-5 text-[var(--info)]" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-white leading-tight">Organization Overview</h3>
-                    <p className="text-xs text-white/40 mt-0.5">Global company statistics</p>
+                    <h3 className="text-lg font-bold text-[var(--text-primary)] leading-tight">Organization Overview</h3>
+                    <p className="text-xs text-[var(--text-secondary)] mt-0.5">Global company statistics</p>
                   </div>
                 </div>
                 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div className="bg-[#090a10] rounded-2xl p-5 border border-white/[0.04]">
-                    <p className="text-[10px] text-white/40 uppercase tracking-[0.1em] font-semibold mb-2">Total Staff</p>
-                    <p className="text-2xl font-bold text-white">{data.org_stats.total_employees}</p>
+                  <div className="bg-[var(--bg-secondary)] rounded-xl p-5 border border-[var(--border)]">
+                    <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-[0.1em] font-bold mb-2">Total Staff</p>
+                    <p className="text-2xl font-bold text-[var(--text-primary)]">{data.org_stats.total_employees}</p>
                   </div>
-                  <div className="bg-[#090a10] rounded-2xl p-5 border border-white/[0.04]">
-                    <p className="text-[10px] text-white/40 uppercase tracking-[0.1em] font-semibold mb-2">Requests</p>
-                    <p className="text-2xl font-bold text-white">{data.org_stats.total_requests}</p>
+                  <div className="bg-[var(--bg-secondary)] rounded-xl p-5 border border-[var(--border)]">
+                    <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-[0.1em] font-bold mb-2">Requests</p>
+                    <p className="text-2xl font-bold text-[var(--text-primary)]">{data.org_stats.total_requests}</p>
                   </div>
-                  <div className="bg-[#090a10] rounded-2xl p-5 border border-white/[0.04]">
-                    <p className="text-[10px] text-white/40 uppercase tracking-[0.1em] font-semibold mb-2">Depts</p>
-                    <p className="text-2xl font-bold text-white">{data.org_stats.department_breakdown?.length || 0}</p>
+                  <div className="bg-[var(--bg-secondary)] rounded-xl p-5 border border-[var(--border)]">
+                    <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-[0.1em] font-bold mb-2">Depts</p>
+                    <p className="text-2xl font-bold text-[var(--text-primary)]">{data.org_stats.department_breakdown?.length || 0}</p>
                   </div>
-                  <div className="bg-[#090a10] rounded-2xl p-5 border border-indigo-500/20 shadow-[inset_0_0_20px_rgba(99,102,241,0.05)]">
-                    <p className="text-[10px] text-indigo-300/70 uppercase tracking-[0.1em] font-semibold mb-2">Approval Rate</p>
-                    <p className="text-2xl font-bold text-indigo-400">
+                  <div className="bg-[var(--info-bg)] rounded-xl p-5 border border-[var(--info)]/20 shadow-sm">
+                    <p className="text-[10px] text-[var(--info)] uppercase tracking-[0.1em] font-bold mb-2">Approval Rate</p>
+                    <p className="text-2xl font-bold text-[var(--info)]">
                       {data.org_stats.status_breakdown
                         ? `${Math.round(
                             ((data.org_stats.status_breakdown.find((s) => s.status === "approved")?.count || 0) /

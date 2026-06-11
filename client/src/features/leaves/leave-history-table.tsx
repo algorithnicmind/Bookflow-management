@@ -78,7 +78,7 @@ export function LeaveHistoryTable() {
                 <p className="font-bold text-white capitalize">
                   {type} Leave
                 </p>
-                <p className="text-xs text-white/40 font-medium mt-1 max-w-[200px] truncate" title={reason}>
+                <p className="text-xs text-[var(--text-secondary)] font-medium mt-1 max-w-[200px] truncate" title={reason}>
                   {reason}
                 </p>
               </div>
@@ -94,10 +94,10 @@ export function LeaveHistoryTable() {
           const end = new Date(row.original.end_date);
           return (
             <div className="flex items-center gap-2 text-white/60">
-              <CalendarDays className="w-4 h-4 text-white/30" />
+              <CalendarDays className="w-4 h-4 text-[var(--text-muted)]" />
               <div>
                 <span className="font-semibold text-white/80">{format(start, "MMM dd")}</span>
-                <span className="mx-1.5 text-white/30">→</span>
+                <span className="mx-1.5 text-[var(--text-muted)]">→</span>
                 <span className="font-semibold text-white/80">{format(end, "MMM dd, yyyy")}</span>
               </div>
             </div>
@@ -137,7 +137,7 @@ export function LeaveHistoryTable() {
                   {isCancelling === leave.id ? "Cancelling..." : "Cancel"}
                 </button>
               ) : (
-                <span className="text-xs font-bold text-white/20">—</span>
+                <span className="text-xs font-bold text-[var(--text-muted)]">—</span>
               )}
             </div>
           );
@@ -150,8 +150,8 @@ export function LeaveHistoryTable() {
   return (
     <div className="space-y-6">
       {/* Filter Chips */}
-      <div className="bg-[#090a10] border border-white/[0.04] p-4 sm:p-5 rounded-2xl shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-2 text-white/50">
+      <div className="bg-[var(--bg-secondary)] border border-[var(--border)] p-4 sm:p-5 rounded-2xl shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-2 text-[var(--text-secondary)]">
           <Filter className="w-4 h-4" />
           <span className="text-sm font-semibold uppercase tracking-widest">Filter by Status</span>
         </div>
@@ -164,7 +164,7 @@ export function LeaveHistoryTable() {
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                 statusFilter === filter.id 
                   ? 'bg-indigo-500 text-white shadow-[0_0_20px_rgba(99,102,241,0.3)] border border-indigo-400' 
-                  : 'bg-white/5 text-white/50 border border-white/5 hover:bg-white/10 hover:text-white/80'
+                  : 'bg-white/5 text-[var(--text-secondary)] border border-white/5 hover:bg-white/10 hover:text-white/80'
               }`}
             >
               {filter.label}
@@ -174,7 +174,7 @@ export function LeaveHistoryTable() {
       </div>
 
       {/* Main Table Card */}
-      <div className="glass-card-static border border-white/[0.04] overflow-hidden">
+      <div className="glass-card-static border border-[var(--border)] overflow-hidden">
         <AnimatePresence mode="wait">
           {isLoading ? (
             <motion.div
@@ -190,7 +190,7 @@ export function LeaveHistoryTable() {
                   variants={skeletonPulse} 
                   initial="initial" 
                   animate="animate" 
-                  className="h-16 w-full bg-white/[0.02] border border-white/[0.04] rounded-xl"
+                  className="h-16 w-full bg-white/[0.02] border border-[var(--border)] rounded-xl"
                 />
               ))}
             </motion.div>

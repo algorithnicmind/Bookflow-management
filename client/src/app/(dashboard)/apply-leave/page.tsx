@@ -28,7 +28,7 @@ export default function ApplyLeavePage() {
           <h1 className="text-3xl lg:text-4xl font-extrabold text-white tracking-tight mb-2">
             Apply for Leave
           </h1>
-          <p className="text-white/50 text-[15px] max-w-xl">
+          <p className="text-[var(--text-secondary)] text-[15px] max-w-xl">
             Fill out the form below to request time off. Your manager will be notified immediately upon submission.
           </p>
           
@@ -37,7 +37,7 @@ export default function ApplyLeavePage() {
               href={ROUTES.LEAVE_HISTORY}
               className="inline-flex items-center gap-2 text-sm font-semibold text-white/60 hover:text-white transition-colors group"
             >
-              <Calendar className="w-4 h-4 text-white/40 group-hover:text-indigo-400 transition-colors" />
+              <Calendar className="w-4 h-4 text-[var(--text-secondary)] group-hover:text-indigo-400 transition-colors" />
               View your leave history & balances →
             </Link>
           </div>

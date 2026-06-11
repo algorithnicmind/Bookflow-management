@@ -3,7 +3,7 @@
 import { LeaveBalance } from "@/types/leave.types";
 import { motion } from "framer-motion";
 import { staggerContainerFast, cardItem } from "@/lib/animations";
-import { Briefcase, HeartPulse, Sparkles, AlertCircle } from "lucide-react";
+import { Briefcase, HeartPulse, Sparkles, AlertCircle, Baby, HeartHandshake } from "lucide-react";
 
 interface BalanceCardsProps {
   balances: LeaveBalance[];
@@ -12,11 +12,11 @@ interface BalanceCardsProps {
 export function BalanceCards({ balances }: BalanceCardsProps) {
   if (!balances || balances.length === 0) {
     return (
-      <div className="bg-[#111827] border border-slate-800 rounded-2xl p-8 text-center flex flex-col items-center">
+      <div className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl p-8 text-center flex flex-col items-center shadow-sm">
         <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
-          <AlertCircle className="w-6 h-6 text-white/30" />
+          <AlertCircle className="w-6 h-6 text-[var(--text-muted)]" />
         </div>
-        <p className="text-white/50 text-sm">No leave balances found.</p>
+        <p className="text-[var(--text-secondary)] text-sm">No leave balances found.</p>
       </div>
     );
   }
@@ -47,6 +47,22 @@ export function BalanceCards({ balances }: BalanceCardsProps) {
           border: "border-emerald-500/20",
           progressBg: "bg-emerald-500",
         };
+      case "maternity":
+        return {
+          icon: Baby,
+          color: "text-pink-400",
+          bg: "bg-pink-500/10",
+          border: "border-pink-500/20",
+          progressBg: "bg-pink-500",
+        };
+      case "miscarriage":
+        return {
+          icon: HeartHandshake,
+          color: "text-purple-400",
+          bg: "bg-purple-500/10",
+          border: "border-purple-500/20",
+          progressBg: "bg-purple-500",
+        };
       default:
         return {
           icon: Briefcase,
@@ -59,13 +75,13 @@ export function BalanceCards({ balances }: BalanceCardsProps) {
   };
 
   return (
-    <div className="bg-[#0B0F19] border border-slate-800 rounded-2xl shadow-xl p-6 sm:p-8">
+    <div className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl shadow-sm p-6 sm:p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
             Your Time Off Balances
           </h3>
-          <p className="text-xs text-white/40 mt-1">Available leave days for current year</p>
+          <p className="text-xs text-[var(--text-secondary)] mt-1">Available leave days for current year</p>
         </div>
       </div>
 
@@ -85,7 +101,7 @@ export function BalanceCards({ balances }: BalanceCardsProps) {
               key={balance.leave_type}
               custom={i}
               variants={cardItem}
-              className={`bg-[#111827] border border-slate-800 rounded-2xl p-5 relative overflow-hidden group hover:border-slate-700 transition-colors shadow-lg`}
+              className={`bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 relative overflow-hidden group hover:border-[var(--primary)]/30 transition-colors shadow-sm`}
             >
               {/* Header */}
               <div className="flex items-center justify-between mb-5 relative z-10">
@@ -97,7 +113,7 @@ export function BalanceCards({ balances }: BalanceCardsProps) {
                     <h4 className="font-bold text-white capitalize text-sm">
                       {balance.leave_type} Leave
                     </h4>
-                    <p className="text-[10px] text-white/40 uppercase tracking-widest font-semibold mt-0.5">
+                    <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-widest font-semibold mt-0.5">
                       {balance.total_days} Days Total
                     </p>
                   </div>
@@ -110,13 +126,13 @@ export function BalanceCards({ balances }: BalanceCardsProps) {
                   <span className="text-3xl font-extrabold text-white">
                     {balance.remaining}
                   </span>
-                  <span className="text-xs text-white/30 ml-2 font-medium">remaining</span>
+                  <span className="text-xs text-[var(--text-muted)] ml-2 font-medium">remaining</span>
                 </div>
                 <div className="text-right">
                   <span className="text-sm font-bold text-white/60">
                     {balance.used_days}
                   </span>
-                  <span className="text-xs text-white/30 ml-1">used</span>
+                  <span className="text-xs text-[var(--text-muted)] ml-1">used</span>
                 </div>
               </div>
 

@@ -1,4 +1,4 @@
-export type LeaveType = "casual" | "sick" | "earned" | "unpaid";
+export type LeaveType = "casual" | "sick" | "earned" | "maternity" | "miscarriage" | "unpaid";
 export type LeaveStatus = "pending" | "approved" | "rejected" | "cancelled";
 
 export interface LeaveApplication {

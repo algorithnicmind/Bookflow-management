@@ -37,6 +37,20 @@ export const LEAVE_TYPES: LeaveTypeConfig[] = [
     color: "text-amber-400",
     bgColor: "bg-amber-500/10",
   },
+  {
+    value: "maternity",
+    label: "Maternity Leave",
+    icon: "👶",
+    color: "text-pink-400",
+    bgColor: "bg-pink-500/10",
+  },
+  {
+    value: "miscarriage",
+    label: "Miscarriage Leave",
+    icon: "❤️‍🩹",
+    color: "text-purple-400",
+    bgColor: "bg-purple-500/10",
+  },
 ];
 
 export const LEAVE_STATUS_CONFIG = {
@@ -54,6 +68,8 @@ export const LEAVE_TYPE_LABELS: Record<string, string> = {
   casual: "Casual Leave",
   sick: "Sick Leave",
   earned: "Earned Leave",
+  maternity: "Maternity Leave",
+  miscarriage: "Miscarriage Leave",
   unpaid: "Unpaid Leave"
 };
 

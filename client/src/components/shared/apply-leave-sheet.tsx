@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/sheet";
 
 const leaveSchema = z.object({
-  leave_type: z.enum(["casual", "sick", "earned", "unpaid"] as const, {
+  leave_type: z.enum(["casual", "sick", "earned", "maternity", "miscarriage", "unpaid"] as const, {
     message: "Please select a leave type.",
   }),
   start_date: z.string().min(1, "Start date is required."),
@@ -126,10 +126,10 @@ export function ApplyLeaveSheet({ open, onOpenChange }: ApplyLeaveSheetProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="sm:max-w-[500px] w-full p-0 overflow-y-auto bg-[#0B0F19] border-l border-slate-800 shadow-2xl">
+      <SheetContent side="right" className="sm:max-w-[500px] w-full p-0 overflow-y-auto bg-[var(--bg-primary)] border-l border-[var(--border)] shadow-lg">
         <SheetHeader className="p-8 pb-4">
           <SheetTitle className="text-[26px] font-bold text-white tracking-tight">Submit Request</SheetTitle>
-          <SheetDescription className="text-[14px] text-white/50 font-light mt-1">
+          <SheetDescription className="text-[14px] text-[var(--text-secondary)] font-light mt-1">
             Apply for a new leave of absence.
           </SheetDescription>
         </SheetHeader>
@@ -139,7 +139,7 @@ export function ApplyLeaveSheet({ open, onOpenChange }: ApplyLeaveSheetProps) {
             
             {/* Leave Type */}
             <div className="space-y-2.5">
-              <label className="block text-[11px] font-semibold text-white/40 uppercase tracking-widest">
+              <label className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-widest">
                 Leave Type
               </label>
               <Controller
@@ -147,18 +147,18 @@ export function ApplyLeaveSheet({ open, onOpenChange }: ApplyLeaveSheetProps) {
                 control={form.control}
                 render={({ field }) => (
                   <Select disabled={isLoading} onValueChange={(val) => field.onChange(val || '')} defaultValue={field.value}>
-                    <SelectTrigger className="w-full h-12 bg-[#111827] border-slate-800 rounded-lg px-4 py-3 text-[14px] text-white focus:ring-1 focus:ring-indigo-500 transition-all outline-none">
+                    <SelectTrigger className="w-full h-12 bg-[var(--bg-secondary)] border-[var(--border)] rounded-lg px-4 py-3 text-[14px] text-white focus:ring-1 focus:ring-indigo-500 transition-all outline-none">
                       <SelectValue placeholder="Select leave type" />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#111827] border-slate-800 text-white rounded-lg">
-                      {["casual", "sick", "earned", "unpaid"].map((type) => {
+                    <SelectContent className="bg-[var(--bg-secondary)] border-[var(--border)] text-white rounded-lg">
+                      {["casual", "sick", "earned", "maternity", "miscarriage", "unpaid"].map((type) => {
                         const bal = balances.find(b => b.leave_type === type);
                         return (
                           <SelectItem key={type} value={type} className="focus:bg-white/5 cursor-pointer">
                             <div className="flex items-center justify-between w-full pr-4">
                               <span>{LEAVE_TYPE_LABELS[type as keyof typeof LEAVE_TYPE_LABELS]}</span>
                               {type !== "unpaid" && bal !== undefined && (
-                                <span className="text-xs text-white/40 font-medium">[{bal.remaining} Days Left]</span>
+                                <span className="text-xs text-[var(--text-secondary)] font-medium">[{bal.remaining} Days Left]</span>
                               )}
                             </div>
                           </SelectItem>
@@ -176,11 +176,11 @@ export function ApplyLeaveSheet({ open, onOpenChange }: ApplyLeaveSheetProps) {
             {/* Dates (Horizontal Layout) */}
             <div className="pt-2">
               <div className="flex items-center justify-between mb-2.5">
-                <label className="block text-[11px] font-semibold text-white/40 uppercase tracking-widest w-[45%]">
+                <label className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-widest w-[45%]">
                   Start Date
                 </label>
                 <div className="w-[10%]"></div>
-                <label className="block text-[11px] font-semibold text-white/40 uppercase tracking-widest w-[45%]">
+                <label className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-widest w-[45%]">
                   End Date
                 </label>
               </div>
@@ -188,25 +188,25 @@ export function ApplyLeaveSheet({ open, onOpenChange }: ApplyLeaveSheetProps) {
               <div className="flex items-center justify-between gap-3">
                 {/* Start Date */}
                 <div className="relative w-full">
-                  <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-white/30 pointer-events-none" />
+                  <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[var(--text-muted)] pointer-events-none" />
                   <Input
                     {...form.register("start_date")}
                     type="date"
-                    className="w-full h-12 pl-10 bg-[#111827] border-slate-800 rounded-lg text-[14px] text-white focus:ring-1 focus:ring-indigo-500 transition-all outline-none"
+                    className="w-full h-12 pl-10 bg-[var(--bg-secondary)] border-[var(--border)] rounded-lg text-[14px] text-white focus:ring-1 focus:ring-indigo-500 transition-all outline-none"
                     min={format(new Date(), "yyyy-MM-dd")}
                     disabled={isLoading}
                   />
                 </div>
 
-                <ArrowRight className="w-5 h-5 text-white/20 shrink-0" />
+                <ArrowRight className="w-5 h-5 text-[var(--text-muted)] shrink-0" />
 
                 {/* End Date */}
                 <div className="relative w-full">
-                  <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-white/30 pointer-events-none" />
+                  <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[var(--text-muted)] pointer-events-none" />
                   <Input
                     {...form.register("end_date")}
                     type="date"
-                    className="w-full h-12 pl-10 bg-[#111827] border-slate-800 rounded-lg text-[14px] text-white focus:ring-1 focus:ring-indigo-500 transition-all outline-none"
+                    className="w-full h-12 pl-10 bg-[var(--bg-secondary)] border-[var(--border)] rounded-lg text-[14px] text-white focus:ring-1 focus:ring-indigo-500 transition-all outline-none"
                     min={startDate || format(new Date(), "yyyy-MM-dd")}
                     disabled={isLoading}
                   />
@@ -232,7 +232,7 @@ export function ApplyLeaveSheet({ open, onOpenChange }: ApplyLeaveSheetProps) {
                 <motion.div
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-3 text-[13px] font-medium text-white/50 flex items-center gap-1.5"
+                  className="mt-3 text-[13px] font-medium text-[var(--text-secondary)] flex items-center gap-1.5"
                 >
                   <Info className="w-4 h-4 text-indigo-400" />
                   Duration: <span className="text-indigo-400 font-bold">{duration} Days</span>
@@ -242,12 +242,12 @@ export function ApplyLeaveSheet({ open, onOpenChange }: ApplyLeaveSheetProps) {
 
             {/* Reason */}
             <div className="space-y-2.5 pt-2">
-              <label className="block text-[11px] font-semibold text-white/40 uppercase tracking-widest">
+              <label className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-widest">
                 Reason
               </label>
               <Textarea
                 {...form.register("reason")}
-                className="w-full min-h-[120px] bg-[#111827] border-slate-800 rounded-lg px-4 py-3 text-[14px] text-white placeholder:text-white/20 focus:ring-1 focus:ring-indigo-500 transition-all outline-none resize-none"
+                className="w-full min-h-[120px] bg-[var(--bg-secondary)] border-[var(--border)] rounded-lg px-4 py-3 text-[14px] text-white placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-indigo-500 transition-all outline-none resize-none"
                 placeholder="Type your reason here..."
                 disabled={isLoading}
               />
@@ -255,17 +255,17 @@ export function ApplyLeaveSheet({ open, onOpenChange }: ApplyLeaveSheetProps) {
                 {form.formState.errors.reason ? (
                   <p className="text-rose-400 text-xs font-medium">{form.formState.errors.reason.message}</p>
                 ) : <span />}
-                <p className="text-xs text-white/30 font-medium">{form.watch("reason")?.length || 0}/500</p>
+                <p className="text-xs text-[var(--text-muted)] font-medium">{form.watch("reason")?.length || 0}/500</p>
               </div>
             </div>
 
             {/* Actions */}
-            <div className="flex justify-between items-center pt-6 border-t border-slate-800/50 mt-8">
+            <div className="flex justify-between items-center pt-6 border-t border-[var(--border)]/50 mt-8">
               <button
                 type="button"
                 onClick={() => onOpenChange(false)}
                 disabled={isLoading}
-                className="px-4 py-2.5 text-[14px] font-medium text-white/50 hover:text-white transition-colors"
+                className="px-4 py-2.5 text-[14px] font-medium text-[var(--text-secondary)] hover:text-white transition-colors"
               >
                 Cancel
               </button>

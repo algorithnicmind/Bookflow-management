@@ -69,7 +69,7 @@ export default function HelpPage() {
             </div>
             Help & Resources
           </h1>
-          <p className="text-white/40 text-sm mt-1.5 ml-14">
+          <p className="text-[var(--text-secondary)] text-sm mt-1.5 ml-14">
             Find answers to common questions and access support
           </p>
         </div>
@@ -78,8 +78,8 @@ export default function HelpPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
         {/* Main FAQ Section */}
         <motion.div variants={staggerItem} className="lg:col-span-2 space-y-6">
-          <div className="glass-card-static border border-white/[0.04] overflow-hidden">
-            <div className="p-6 border-b border-white/[0.04]">
+          <div className="glass-card-static border border-[var(--border)] overflow-hidden">
+            <div className="p-6 border-b border-[var(--border)]">
               <h2 className="text-lg font-bold text-white flex items-center gap-2">
                 Frequently Asked Questions
               </h2>
@@ -89,12 +89,12 @@ export default function HelpPage() {
               {faqs.map((faq, i) => (
                 <div key={i} className="p-4 hover:bg-white/[0.02] transition-colors rounded-xl group cursor-default">
                   <h3 className="text-sm font-bold text-white flex items-start gap-3">
-                    <span className="w-6 h-6 rounded-full bg-white/5 text-white/40 flex items-center justify-center text-xs shrink-0 mt-0.5">
+                    <span className="w-6 h-6 rounded-full bg-white/5 text-[var(--text-secondary)] flex items-center justify-center text-xs shrink-0 mt-0.5">
                       {i + 1}
                     </span>
                     {faq.q}
                   </h3>
-                  <p className="text-[13px] text-white/50 leading-relaxed mt-2 ml-9">
+                  <p className="text-[13px] text-[var(--text-secondary)] leading-relaxed mt-2 ml-9">
                     {faq.a}
                   </p>
                 </div>
@@ -105,8 +105,8 @@ export default function HelpPage() {
 
         {/* Sidebar Resources */}
         <motion.div variants={staggerItem} className="space-y-6">
-          <div className="glass-card-static border border-white/[0.04] overflow-hidden">
-            <div className="p-6 border-b border-white/[0.04]">
+          <div className="glass-card-static border border-[var(--border)] overflow-hidden">
+            <div className="p-6 border-b border-[var(--border)]">
               <h2 className="text-lg font-bold text-white flex items-center gap-2">
                 Quick Links
               </h2>
@@ -120,9 +120,9 @@ export default function HelpPage() {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-bold text-white">{res.title}</p>
-                    <p className="text-[11px] text-white/40 mt-0.5">{res.desc}</p>
+                    <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">{res.desc}</p>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-white/20 group-hover:text-white/60 transition-colors" />
+                  <ExternalLink className="w-4 h-4 text-[var(--text-muted)] group-hover:text-white/60 transition-colors" />
                 </button>
               ))}
             </div>

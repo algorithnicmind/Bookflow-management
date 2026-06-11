@@ -25,7 +25,7 @@ export default function AnalyticsPage() {
             </div>
             Analytics Dashboard
           </h1>
-          <p className="text-white/40 text-sm mt-1.5 ml-14">
+          <p className="text-[var(--text-secondary)] text-sm mt-1.5 ml-14">
             Gain insights into organizational leave trends and statistics
           </p>
         </div>

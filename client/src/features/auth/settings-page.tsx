@@ -48,7 +48,7 @@ export function SettingsPage() {
     <div className="flex flex-col lg:flex-row gap-8 max-w-6xl">
       {/* Sidebar Navigation */}
       <div className="w-full lg:w-64 shrink-0">
-        <div className="glass-card-static p-2 flex flex-row lg:flex-col gap-1 overflow-x-auto no-scrollbar">
+        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-md p-2 flex flex-row lg:flex-col gap-1 overflow-x-auto no-scrollbar">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -78,18 +78,18 @@ export function SettingsPage() {
               exit={{ opacity: 0, y: -10 }}
               className="space-y-6"
             >
-              <div className="glass-card-static border border-white/[0.04] overflow-hidden">
-                <div className="p-6 border-b border-white/[0.04]">
+              <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-md overflow-hidden">
+                <div className="p-6 border-b border-[var(--border)]/50">
                   <h2 className="text-lg font-bold text-white flex items-center gap-2">
                     <User className="w-5 h-5 text-indigo-400" />
                     Profile Information
                   </h2>
-                  <p className="text-white/50 text-sm mt-1">Update your personal details and public profile.</p>
+                  <p className="text-[var(--text-secondary)] text-sm mt-1">Update your personal details and public profile.</p>
                 </div>
                 
                 <div className="p-6 space-y-8">
                   <div className="flex items-center gap-6">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-3xl font-extrabold text-white shadow-xl shadow-indigo-500/20">
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-3xl font-extrabold text-white shadow-md shadow-indigo-500/20">
                       {user.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
@@ -110,7 +110,7 @@ export function SettingsPage() {
                       <label className="text-[11px] font-bold text-white/60 uppercase tracking-widest">Full Name</label>
                       <input 
                         defaultValue={user.name} 
-                        className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm text-white focus:bg-white/[0.04] focus:border-indigo-500/50 outline-none transition-all" 
+                        className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg px-4 py-3 text-[14px] text-white focus:ring-1 focus:ring-indigo-500 outline-none transition-all" 
                       />
                     </div>
                     <div className="space-y-2">
@@ -118,14 +118,14 @@ export function SettingsPage() {
                       <input 
                         defaultValue={user.email} 
                         disabled 
-                        className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm text-white/50 cursor-not-allowed" 
+                        className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg px-4 py-3 text-[14px] text-[var(--text-secondary)] cursor-not-allowed" 
                       />
                     </div>
                   </div>
 
                   <div className="pt-4 flex justify-end">
                     <button
-                      className="px-6 py-2.5 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-500/25 text-sm"
+                      className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold transition-all shadow-lg shadow-indigo-500/25 text-[14px]"
                       onClick={() => toast.info("Profile update will be available when the backend API supports it.")}
                     >
                       Save Changes
@@ -144,13 +144,13 @@ export function SettingsPage() {
               exit={{ opacity: 0, y: -10 }}
               className="space-y-6"
             >
-              <div className="glass-card-static border border-white/[0.04] overflow-hidden">
-                <div className="p-6 border-b border-white/[0.04]">
+              <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-md overflow-hidden">
+                <div className="p-6 border-b border-[var(--border)]/50">
                   <h2 className="text-lg font-bold text-white flex items-center gap-2">
                     <Lock className="w-5 h-5 text-indigo-400" />
                     Password & Security
                   </h2>
-                  <p className="text-white/50 text-sm mt-1">Manage your password and authentication settings.</p>
+                  <p className="text-[var(--text-secondary)] text-sm mt-1">Manage your password and authentication settings.</p>
                 </div>
                 
                 <div className="p-6 space-y-6 max-w-md">
@@ -200,40 +200,40 @@ export function SettingsPage() {
               exit={{ opacity: 0, y: -10 }}
               className="space-y-6"
             >
-              <div className="glass-card-static border border-white/[0.04] overflow-hidden">
-                <div className="p-6 border-b border-white/[0.04]">
+              <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-md overflow-hidden">
+                <div className="p-6 border-b border-[var(--border)]/50">
                   <h2 className="text-lg font-bold text-white flex items-center gap-2">
                     <Bell className="w-5 h-5 text-indigo-400" />
                     Notification Preferences
                   </h2>
-                  <p className="text-white/50 text-sm mt-1">Control how and when you receive alerts.</p>
+                  <p className="text-[var(--text-secondary)] text-sm mt-1">Control how and when you receive alerts.</p>
                 </div>
                 
                 <div className="p-6 space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/[0.04] rounded-xl hover:border-white/[0.08] transition-colors cursor-pointer" onClick={() => setEmailNotifications(!emailNotifications)}>
+                  <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl hover:border-slate-700 transition-colors cursor-pointer" onClick={() => setEmailNotifications(!emailNotifications)}>
                     <div>
                       <p className="font-bold text-white text-sm">Email Notifications</p>
-                      <p className="text-xs text-white/50 mt-1">Receive email for important platform updates.</p>
+                      <p className="text-xs text-[var(--text-secondary)] mt-1">Receive email for important platform updates.</p>
                     </div>
                     <div className={`w-12 h-6 rounded-full transition-colors relative ${emailNotifications ? 'bg-indigo-500' : 'bg-white/10'}`}>
                       <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${emailNotifications ? 'translate-x-6' : 'translate-x-0'}`} />
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/[0.04] rounded-xl hover:border-white/[0.08] transition-colors cursor-pointer" onClick={() => setApprovalNotifications(!approvalNotifications)}>
+                  <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl hover:border-slate-700 transition-colors cursor-pointer" onClick={() => setApprovalNotifications(!approvalNotifications)}>
                     <div>
                       <p className="font-bold text-white text-sm">Approval Alerts</p>
-                      <p className="text-xs text-white/50 mt-1">Get notified when a leave is approved or rejected.</p>
+                      <p className="text-xs text-[var(--text-secondary)] mt-1">Get notified when a leave is approved or rejected.</p>
                     </div>
                     <div className={`w-12 h-6 rounded-full transition-colors relative ${approvalNotifications ? 'bg-indigo-500' : 'bg-white/10'}`}>
                       <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${approvalNotifications ? 'translate-x-6' : 'translate-x-0'}`} />
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/[0.04] rounded-xl hover:border-white/[0.08] transition-colors cursor-pointer" onClick={() => setWeeklyDigest(!weeklyDigest)}>
+                  <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl hover:border-slate-700 transition-colors cursor-pointer" onClick={() => setWeeklyDigest(!weeklyDigest)}>
                     <div>
                       <p className="font-bold text-white text-sm">Weekly Digest</p>
-                      <p className="text-xs text-white/50 mt-1">Receive a weekly summary of team leave activity.</p>
+                      <p className="text-xs text-[var(--text-secondary)] mt-1">Receive a weekly summary of team leave activity.</p>
                     </div>
                     <div className={`w-12 h-6 rounded-full transition-colors relative ${weeklyDigest ? 'bg-indigo-500' : 'bg-white/10'}`}>
                       <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${weeklyDigest ? 'translate-x-6' : 'translate-x-0'}`} />
@@ -252,20 +252,20 @@ export function SettingsPage() {
               exit={{ opacity: 0, y: -10 }}
               className="space-y-6"
             >
-              <div className="glass-card-static border border-white/[0.04] overflow-hidden">
-                <div className="p-6 border-b border-white/[0.04]">
+              <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-md overflow-hidden">
+                <div className="p-6 border-b border-[var(--border)]/50">
                   <h2 className="text-lg font-bold text-white flex items-center gap-2">
                     <Palette className="w-5 h-5 text-indigo-400" />
                     Appearance
                   </h2>
-                  <p className="text-white/50 text-sm mt-1">Customize the interface theme.</p>
+                  <p className="text-[var(--text-secondary)] text-sm mt-1">Customize the interface theme.</p>
                 </div>
                 
                 <div className="p-6">
-                  <div className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/[0.04] rounded-xl hover:border-white/[0.08] transition-colors cursor-pointer" onClick={toggleTheme}>
+                  <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl hover:border-slate-700 transition-colors cursor-pointer" onClick={toggleTheme}>
                     <div>
                       <p className="font-bold text-white text-sm">Dark Mode</p>
-                      <p className="text-xs text-white/50 mt-1">Toggle between light and dark UI themes.</p>
+                      <p className="text-xs text-[var(--text-secondary)] mt-1">Toggle between light and dark UI themes.</p>
                     </div>
                     <div className={`w-12 h-6 rounded-full transition-colors relative ${theme === 'dark' ? 'bg-indigo-500' : 'bg-white/10'}`}>
                       <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${theme === 'dark' ? 'translate-x-6' : 'translate-x-0'}`} />
@@ -284,38 +284,38 @@ export function SettingsPage() {
               exit={{ opacity: 0, y: -10 }}
               className="space-y-6"
             >
-              <div className="glass-card-static border border-white/[0.04] overflow-hidden">
-                <div className="p-6 border-b border-white/[0.04]">
+              <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-md overflow-hidden">
+                <div className="p-6 border-b border-[var(--border)]/50">
                   <h2 className="text-lg font-bold text-white flex items-center gap-2">
                     <Building2 className="w-5 h-5 text-indigo-400" />
                     Organization Settings
                   </h2>
-                  <p className="text-white/50 text-sm mt-1">Manage global configuration for your organization.</p>
+                  <p className="text-[var(--text-secondary)] text-sm mt-1">Manage global configuration for your organization.</p>
                 </div>
                 
                 <div className="p-8">
-                  <div className="p-8 text-center bg-white/[0.02] rounded-2xl border border-dashed border-white/[0.06] flex flex-col items-center justify-center">
-                    <Building2 className="w-10 h-10 text-white/20 mb-4" />
+                  <div className="p-8 text-center bg-[var(--bg-secondary)] rounded-2xl border border-dashed border-[var(--border)] flex flex-col items-center justify-center">
+                    <Building2 className="w-10 h-10 text-[var(--text-muted)] mb-4" />
                     <p className="font-bold text-white">Department & Policy Management</p>
-                    <p className="text-sm text-white/40 mt-2 max-w-sm">Coming soon — will allow configuring leave policies, departments, and organization rules.</p>
+                    <p className="text-sm text-[var(--text-secondary)] mt-2 max-w-sm">Coming soon — will allow configuring leave policies, departments, and organization rules.</p>
                   </div>
                 </div>
               </div>
 
-              <div className="glass-card-static border border-white/[0.04] overflow-hidden">
-                <div className="p-6 border-b border-white/[0.04]">
+              <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-md overflow-hidden">
+                <div className="p-6 border-b border-[var(--border)]/50">
                   <h2 className="text-lg font-bold text-white flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-indigo-400" />
                     Holiday Calendar
                   </h2>
-                  <p className="text-white/50 text-sm mt-1">Manage public holidays and company events.</p>
+                  <p className="text-[var(--text-secondary)] text-sm mt-1">Manage public holidays and company events.</p>
                 </div>
                 
                 <div className="p-8">
-                  <div className="p-8 text-center bg-white/[0.02] rounded-2xl border border-dashed border-white/[0.06] flex flex-col items-center justify-center">
-                    <Calendar className="w-10 h-10 text-white/20 mb-4" />
+                  <div className="p-8 text-center bg-[var(--bg-secondary)] rounded-2xl border border-dashed border-[var(--border)] flex flex-col items-center justify-center">
+                    <Calendar className="w-10 h-10 text-[var(--text-muted)] mb-4" />
                     <p className="font-bold text-white">Global Holiday Calendar</p>
-                    <p className="text-sm text-white/40 mt-2 max-w-sm">Coming soon — will allow adding and managing company holidays that affect leave balance calculations.</p>
+                    <p className="text-sm text-[var(--text-secondary)] mt-2 max-w-sm">Coming soon — will allow adding and managing company holidays that affect leave balance calculations.</p>
                   </div>
                 </div>
               </div>

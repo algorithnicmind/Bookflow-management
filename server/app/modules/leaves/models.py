@@ -17,7 +17,7 @@ class LeaveRequest(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     __table_args__ = (
-        CheckConstraint(leave_type.in_(['casual', 'sick', 'earned', 'unpaid']), name="check_leave_type"),
+        CheckConstraint(leave_type.in_(['casual', 'sick', 'earned', 'maternity', 'miscarriage', 'unpaid']), name="check_leave_type"),
         CheckConstraint(status.in_(['pending', 'approved', 'rejected', 'cancelled']), name="check_leave_status"),
     )
 
@@ -54,7 +54,7 @@ class LeaveBalance(Base):
     year = Column(Integer, nullable=False)
 
     __table_args__ = (
-        CheckConstraint(leave_type.in_(['casual', 'sick', 'earned']), name="check_balance_leave_type"),
+        CheckConstraint(leave_type.in_(['casual', 'sick', 'earned', 'maternity', 'miscarriage']), name="check_balance_leave_type"),
         UniqueConstraint('employee_id', 'leave_type', 'year', name='uq_employee_leave_year'),
     )
 

@@ -25,7 +25,7 @@ export default function PendingApprovalsPage() {
             </div>
             Pending Approvals
           </h1>
-          <p className="text-white/40 text-sm mt-1.5 ml-14">
+          <p className="text-[var(--text-secondary)] text-sm mt-1.5 ml-14">
             Review and manage time off requests from your team
           </p>
         </div>

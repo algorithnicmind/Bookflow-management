@@ -68,15 +68,15 @@ export function Topbar() {
 
   return (
     <header className="sticky top-0 z-30 px-4 lg:px-8 py-4 transition-all duration-300">
-      <div className="flex items-center justify-between bg-[#0B0F19]/60 backdrop-blur-2xl rounded-2xl px-4 py-2.5 border border-slate-800 shadow-lg shadow-black/20">
+      <div className="flex items-center justify-between glass-card px-4 py-2.5">
         {/* ─── Left: Mobile Logo & Breadcrumbs ─── */}
         <div className="flex items-center gap-4">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg">
-              <span className="text-xs font-bold text-white">L</span>
+            <div className="w-8 h-8 rounded-lg bg-[var(--primary)] flex items-center justify-center shadow-sm">
+              <span className="text-[13px] font-bold text-white">L</span>
             </div>
-            <span className="text-[15px] font-black tracking-tight text-white">LeaveFlow</span>
+            <span className="text-[15px] font-bold tracking-tight text-[var(--text-primary)]">LeaveFlow</span>
           </div>
 
           {/* Breadcrumbs (Desktop) */}
@@ -84,16 +84,16 @@ export function Topbar() {
             {breadcrumbs.map((crumb, i) => (
               <div key={`${crumb.href}-${i}`} className="flex items-center gap-1.5">
                 {i > 0 && (
-                  <ChevronRight className="w-3.5 h-3.5 text-white/30" />
+                  <ChevronRight className="w-3.5 h-3.5 text-[var(--text-muted)]" />
                 )}
                 {i === breadcrumbs.length - 1 ? (
-                  <span className="font-bold text-white tracking-wide">
+                  <span className="font-semibold text-[var(--text-primary)] tracking-wide">
                     {crumb.label}
                   </span>
                 ) : (
                   <Link
                     href={crumb.href}
-                    className="text-white/50 hover:text-white transition-colors font-medium"
+                    className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors font-medium"
                   >
                     {crumb.label}
                   </Link>
@@ -107,12 +107,12 @@ export function Topbar() {
         <div className="flex items-center justify-end gap-2 sm:gap-3 lg:gap-5">
           {/* Command Palette Trigger */}
           <button 
-            className="hidden sm:flex items-center gap-2 px-3.5 py-2 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] rounded-xl text-white/50 hover:text-white transition-all w-[200px] lg:w-[260px] group"
+            className="hidden sm:flex items-center gap-2 px-3.5 py-2 bg-[var(--bg-primary)] hover:bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all w-[200px] lg:w-[260px] group shadow-sm"
             onClick={() => setCmdOpen(true)}
           >
-            <Search className="w-[15px] h-[15px] text-white/30 group-hover:text-indigo-400 transition-colors" />
+            <Search className="w-[15px] h-[15px] text-[var(--text-muted)] group-hover:text-[var(--primary)] transition-colors" />
             <span className="text-[13px] font-medium flex-1 text-left">Quick search...</span>
-            <kbd className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-[10px] font-bold text-white/50 group-hover:text-white/80 transition-colors">
+            <kbd className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-[var(--border)] bg-[var(--bg-tertiary)] text-[10px] font-bold text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors">
               <span className="text-[11px]">⌘</span>K
             </kbd>
           </button>
@@ -122,7 +122,7 @@ export function Topbar() {
             <Tooltip>
               <TooltipTrigger
                 onClick={toggleTheme}
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-white/50 hover:text-indigo-400 hover:bg-indigo-500/10 transition-all border border-transparent hover:border-indigo-500/20"
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--primary)] hover:bg-[var(--bg-secondary)] transition-all border border-transparent hover:border-[var(--border)]"
                 aria-label="Toggle theme"
               >
                 {theme === "dark" ? (
@@ -131,7 +131,7 @@ export function Topbar() {
                   <Moon className="w-4 h-4" />
                 )}
               </TooltipTrigger>
-              <TooltipContent className="bg-[#1a1d2e] border-white/10">
+              <TooltipContent>
                 <p className="text-xs font-semibold">Switch to {theme === "dark" ? "Light" : "Dark"} Mode</p>
               </TooltipContent>
             </Tooltip>
@@ -141,46 +141,46 @@ export function Topbar() {
 
             {/* User Dropdown */}
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-2.5 pl-1.5 sm:pl-3 pr-1.5 py-1.5 rounded-xl hover:bg-white/[0.04] transition-all group outline-none border border-transparent hover:border-white/[0.06]">
+              <DropdownMenuTrigger className="flex items-center gap-2.5 pl-1.5 sm:pl-3 pr-1.5 py-1.5 rounded-xl hover:bg-[var(--bg-secondary)] transition-all group outline-none border border-transparent hover:border-[var(--border)]">
                 <div className="text-right hidden sm:block">
-                  <p className="text-[13px] font-bold text-white leading-tight">
+                  <p className="text-[13px] font-bold text-[var(--text-primary)] leading-tight">
                     {user.name}
                   </p>
-                  <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-widest mt-0.5">
+                  <p className="text-[10px] font-semibold text-[var(--primary)] uppercase tracking-widest mt-0.5">
                     {ROLE_LABELS[user.role]}
                   </p>
                 </div>
-                <Avatar className="w-[34px] h-[34px] ring-2 ring-white/10 group-hover:ring-indigo-500/50 transition-all shadow-md">
-                  <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-pink-500 text-white text-sm font-bold">
+                <Avatar className="w-[34px] h-[34px] ring-2 ring-[var(--border)] group-hover:ring-[var(--primary)] transition-all shadow-sm">
+                  <AvatarFallback className="bg-[var(--primary)] text-white text-sm font-bold">
                     {user.name.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent align="end" className="w-56 mt-2 bg-[#0d0e18] border-white/10 shadow-2xl rounded-xl p-1.5">
+              <DropdownMenuContent align="end" className="w-56 mt-2 bg-[var(--bg-primary)] border-[var(--border)] shadow-lg rounded-xl p-1.5">
                 <DropdownMenuLabel className="pb-3 pt-2 px-3">
-                  <p className="text-sm font-bold text-white">{user.name}</p>
-                  <p className="text-xs text-white/50 mt-0.5 truncate">{user.email}</p>
-                  <Badge className="mt-2 text-[10px] bg-indigo-500/20 text-indigo-300 border-indigo-500/30 font-semibold tracking-wider hover:bg-indigo-500/20">
+                  <p className="text-sm font-bold text-[var(--text-primary)]">{user.name}</p>
+                  <p className="text-xs text-[var(--text-secondary)] mt-0.5 truncate">{user.email}</p>
+                  <Badge className="mt-2 text-[10px] bg-[var(--bg-secondary)] text-[var(--primary)] border-[var(--border)] font-semibold tracking-wider">
                     {user.department}
                   </Badge>
                 </DropdownMenuLabel>
 
-                <DropdownMenuSeparator className="bg-white/5" />
+                <DropdownMenuSeparator className="bg-[var(--border)]" />
 
                 <DropdownMenuItem 
                   onClick={() => router.push(ROUTES.SETTINGS)}
-                  className="focus:bg-white/5 cursor-pointer rounded-lg px-3 py-2.5 my-0.5 flex items-center"
+                  className="cursor-pointer rounded-lg px-3 py-2.5 my-0.5 flex items-center"
                 >
-                  <User className="w-4 h-4 mr-2.5 text-white/50" />
+                  <User className="w-4 h-4 mr-2.5 text-[var(--text-muted)]" />
                   <span className="font-medium text-[13px]">Profile & Settings</span>
                 </DropdownMenuItem>
 
-                <DropdownMenuSeparator className="bg-white/5" />
+                <DropdownMenuSeparator className="bg-[var(--border)]" />
 
                 <DropdownMenuItem
                   onClick={handleLogout}
-                  className="text-rose-400 focus:bg-rose-500/10 focus:text-rose-400 cursor-pointer rounded-lg px-3 py-2.5 my-0.5"
+                  className="text-[var(--danger)] focus:text-[var(--danger)] cursor-pointer rounded-lg px-3 py-2.5 my-0.5"
                 >
                   <LogOut className="w-4 h-4 mr-2.5" />
                   <span className="font-semibold text-[13px]">Sign Out</span>

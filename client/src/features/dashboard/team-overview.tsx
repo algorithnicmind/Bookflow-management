@@ -13,14 +13,14 @@ interface TeamOverviewProps {
 
 export function TeamOverview({ pendingCount, onLeave }: TeamOverviewProps) {
   return (
-    <div className="bg-[#0B0F19] border border-slate-800 rounded-2xl shadow-xl p-6 sm:p-8">
+    <div className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl shadow-sm p-6 sm:p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
             <Users className="w-5 h-5 text-indigo-400" />
             Team Overview
           </h3>
-          <p className="text-xs text-white/40 mt-1">What&apos;s happening with your team today</p>
+          <p className="text-xs text-[var(--text-secondary)] mt-1">What&apos;s happening with your team today</p>
         </div>
       </div>
 
@@ -35,7 +35,7 @@ export function TeamOverview({ pendingCount, onLeave }: TeamOverviewProps) {
             <p className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1">Action Required</p>
             <div className="flex items-end gap-2 mb-4">
               <span className="text-4xl font-black text-white">{pendingCount}</span>
-              <span className="text-sm font-medium text-white/50 mb-1.5">requests pending</span>
+              <span className="text-sm font-medium text-[var(--text-secondary)] mb-1.5">requests pending</span>
             </div>
           </div>
           
@@ -49,13 +49,13 @@ export function TeamOverview({ pendingCount, onLeave }: TeamOverviewProps) {
         </div>
 
         {/* On Leave Today Card */}
-        <div className="flex-1 bg-[#111827] border border-slate-800 rounded-2xl p-5 flex flex-col relative overflow-hidden shadow-lg">
+        <div className="flex-1 bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 flex flex-col relative overflow-hidden shadow-sm">
           <div className="relative z-10 flex-1">
-            <p className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3">On Leave Today</p>
+            <p className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-3">On Leave Today</p>
             
             {onLeave.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-4">
-                <p className="text-sm text-white/30 font-medium">Everyone is working today.</p>
+                <p className="text-sm text-[var(--text-muted)] font-medium">Everyone is working today.</p>
               </div>
             ) : (
               <div className="flex flex-wrap gap-2 mt-2">
@@ -74,7 +74,7 @@ export function TeamOverview({ pendingCount, onLeave }: TeamOverviewProps) {
                       <p className="text-xs font-semibold text-white leading-none">
                         {name?.split(' ')[0] || "User"}
                       </p>
-                      <p className="text-[9px] text-white/40 mt-0.5 leading-none">
+                      <p className="text-[9px] text-[var(--text-secondary)] mt-0.5 leading-none">
                         On Leave
                       </p>
                     </div>

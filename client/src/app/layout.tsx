@@ -30,7 +30,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground overflow-x-hidden relative">
+      <body suppressHydrationWarning className="min-h-full flex flex-col bg-background text-foreground overflow-x-hidden relative">
         {/* Ambient background orbs (dark mode only) */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none -z-50 dark:block hidden">
           <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-indigo-600/5 blur-[120px] animate-pulse opacity-50" />

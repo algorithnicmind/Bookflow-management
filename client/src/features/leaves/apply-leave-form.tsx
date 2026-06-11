@@ -8,7 +8,7 @@ import * as z from "zod";
 import { format, differenceInBusinessDays, parseISO, isAfter, isBefore } from "date-fns";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, CalendarDays, ArrowLeft, Send, AlertCircle, Briefcase, HeartPulse, Sparkles, CheckCircle2 } from "lucide-react";
+import { Clock, CalendarDays, ArrowLeft, Send, AlertCircle, Briefcase, HeartPulse, Sparkles, CheckCircle2, Baby, HeartHandshake } from "lucide-react";
 
 import { applyLeave, getLeaveBalance } from "@/services/leaves.service";
 import { LeaveBalance } from "@/types/leave.types";
@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 const leaveSchema = z.object({
-  leave_type: z.enum(["casual", "sick", "earned", "unpaid"] as const, {
+  leave_type: z.enum(["casual", "sick", "earned", "maternity", "miscarriage", "unpaid"] as const, {
     message: "Please select a leave type."
   }),
   start_date: z.string().min(1, "Start date is required."),
@@ -40,6 +40,8 @@ const LEAVE_TYPES = [
   { id: "casual", label: "Casual Leave", icon: Sparkles, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/30", activeBg: "bg-blue-500/20" },
   { id: "sick", label: "Sick Leave", icon: HeartPulse, color: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/30", activeBg: "bg-rose-500/20" },
   { id: "earned", label: "Earned Leave", icon: Briefcase, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/30", activeBg: "bg-emerald-500/20" },
+  { id: "maternity", label: "Maternity", icon: Baby, color: "text-pink-400", bg: "bg-pink-500/10", border: "border-pink-500/30", activeBg: "bg-pink-500/20" },
+  { id: "miscarriage", label: "Miscarriage", icon: HeartHandshake, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/30", activeBg: "bg-purple-500/20" },
   { id: "unpaid", label: "Unpaid Leave", icon: AlertCircle, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30", activeBg: "bg-amber-500/20" },
 ];
 
@@ -155,7 +157,7 @@ export function ApplyLeaveForm() {
           <CheckCircle2 className="w-12 h-12 text-emerald-400" />
         </motion.div>
         <h3 className="text-2xl font-bold text-white mb-2">Request Submitted!</h3>
-        <p className="text-white/50 max-w-sm">
+        <p className="text-[var(--text-secondary)] max-w-sm">
           Your leave request has been successfully sent to your manager for approval.
         </p>
       </motion.div>
@@ -206,11 +208,11 @@ export function ApplyLeaveForm() {
                           className={`flex flex-col items-start p-4 rounded-2xl border transition-all duration-200 text-left ${
                             isActive 
                               ? `${type.activeBg} ${type.border} ring-2 ring-white/10` 
-                              : `bg-white/[0.02] border-white/[0.04] hover:bg-white/[0.04]`
+                              : `bg-white/[0.02] border-[var(--border)] hover:bg-white/[0.04]`
                           }`}
                         >
                           <div className={`w-8 h-8 rounded-lg ${isActive ? type.bg : 'bg-white/5'} flex items-center justify-center mb-3 transition-colors`}>
-                            <Icon className={`w-4 h-4 ${isActive ? type.color : 'text-white/40'}`} />
+                            <Icon className={`w-4 h-4 ${isActive ? type.color : 'text-[var(--text-secondary)]'}`} />
                           </div>
                           <p className={`font-semibold text-sm ${isActive ? 'text-white' : 'text-white/60'}`}>
                             {type.label}
@@ -235,7 +237,7 @@ export function ApplyLeaveForm() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <div className="relative group">
-                  <CalendarDays className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 group-focus-within:text-indigo-400 transition-colors pointer-events-none" />
+                  <CalendarDays className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-indigo-400 transition-colors pointer-events-none" />
                   <Input
                     {...form.register("start_date")}
                     id="start_date"
@@ -254,7 +256,7 @@ export function ApplyLeaveForm() {
 
               <div className="space-y-1.5">
                 <div className="relative group">
-                  <CalendarDays className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 group-focus-within:text-indigo-400 transition-colors pointer-events-none" />
+                  <CalendarDays className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-indigo-400 transition-colors pointer-events-none" />
                   <Input
                     {...form.register("end_date")}
                     id="end_date"
@@ -298,8 +300,8 @@ export function ApplyLeaveForm() {
         <div className="lg:col-span-5 space-y-8 flex flex-col h-full">
           
           {/* Balance Widget */}
-          <div className="bg-[#090a10] border border-white/[0.04] rounded-2xl p-5 shadow-inner">
-            <h4 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-4">Available Balance</h4>
+          <div className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl p-5 shadow-sm">
+            <h4 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-4">Available Balance</h4>
             
             {leaveType === "unpaid" ? (
               <div className="flex items-center gap-3 py-2">
@@ -312,7 +314,7 @@ export function ApplyLeaveForm() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-4xl font-black text-white">{selectedBalance.remaining}</p>
-                  <p className="text-xs text-white/40 mt-1">Days remaining out of {selectedBalance.total_days}</p>
+                  <p className="text-xs text-[var(--text-secondary)] mt-1">Days remaining out of {selectedBalance.total_days}</p>
                 </div>
                 {/* Mini chart */}
                 <div className="w-16 h-16 rounded-full border-[6px] border-white/5 flex items-center justify-center relative">
@@ -335,7 +337,7 @@ export function ApplyLeaveForm() {
             <Textarea
               {...form.register("reason")}
               id="reason"
-              className={`flex-1 min-h-[140px] resize-y bg-white/[0.02] border-white/[0.06] rounded-xl text-white placeholder:text-white/20 focus:bg-white/[0.04] focus:border-indigo-500/50 transition-all ${errors.reason ? 'border-rose-500/50 focus:border-rose-500 focus:ring-rose-500/20' : ''}`}
+              className={`flex-1 min-h-[140px] resize-y bg-white/[0.02] border-white/[0.06] rounded-xl text-white placeholder:text-[var(--text-muted)] focus:bg-white/[0.04] focus:border-indigo-500/50 transition-all ${errors.reason ? 'border-rose-500/50 focus:border-rose-500 focus:ring-rose-500/20' : ''}`}
               placeholder="Provide details about why you need this time off..."
               disabled={isLoading}
             />
@@ -345,7 +347,7 @@ export function ApplyLeaveForm() {
                   <AlertCircle className="w-3 h-3" /> {errors.reason.message}
                 </p>
               ) : <span />}
-              <p className="text-[10px] text-white/30 font-medium tracking-widest">
+              <p className="text-[10px] text-[var(--text-muted)] font-medium tracking-widest">
                 {form.watch("reason")?.length || 0} / 500
               </p>
             </div>

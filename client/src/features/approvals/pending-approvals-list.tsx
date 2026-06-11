@@ -55,7 +55,7 @@ function ActionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[425px] bg-[#0B0F19] border-slate-800 shadow-2xl rounded-2xl p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-[425px] bg-[var(--bg-primary)] border-[var(--border)] shadow-lg rounded-2xl p-0 overflow-hidden">
         <div className={`h-1.5 w-full ${action === 'approve' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
         <div className="p-6">
           <DialogHeader className="mb-6">
@@ -65,26 +65,26 @@ function ActionModal({
               </div>
               {action === 'approve' ? "Approve Request" : "Reject Request"}
             </DialogTitle>
-            <DialogDescription className="text-white/50 text-sm mt-2">
+            <DialogDescription className="text-[var(--text-secondary)] text-sm mt-2">
               You are about to {action} <strong className="text-white">{leave.employee_name}</strong>&apos;s leave request.
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-5">
-            <div className="bg-[#111827] border border-slate-800 rounded-xl p-4 text-sm space-y-3">
+            <div className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl p-4 text-sm space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-white/40 flex items-center gap-2 uppercase tracking-widest text-[10px] font-bold"><User className="w-3.5 h-3.5"/> Employee</span>
+                <span className="text-[var(--text-secondary)] flex items-center gap-2 uppercase tracking-widest text-[10px] font-bold"><User className="w-3.5 h-3.5"/> Employee</span>
                 <span className="font-semibold text-white">{leave.employee_name}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-white/40 flex items-center gap-2 uppercase tracking-widest text-[10px] font-bold"><Clock className="w-3.5 h-3.5"/> Type</span>
+                <span className="text-[var(--text-secondary)] flex items-center gap-2 uppercase tracking-widest text-[10px] font-bold"><Clock className="w-3.5 h-3.5"/> Type</span>
                 <span className="font-semibold text-white capitalize">{leave.leave_type} Leave</span>
               </div>
               <div className="flex items-center justify-between border-t border-white/[0.06] pt-3 mt-3">
-                <span className="text-white/40 flex items-center gap-2 uppercase tracking-widest text-[10px] font-bold"><Calendar className="w-3.5 h-3.5"/> Duration</span>
+                <span className="text-[var(--text-secondary)] flex items-center gap-2 uppercase tracking-widest text-[10px] font-bold"><Calendar className="w-3.5 h-3.5"/> Duration</span>
                 <span className="font-semibold text-white">
                   {leave.days} {leave.days === 1 ? 'day' : 'days'} 
-                  <span className="text-white/40 ml-2 font-normal text-xs">({format(new Date(leave.start_date), "MMM d")} - {format(new Date(leave.end_date), "MMM d")})</span>
+                  <span className="text-[var(--text-secondary)] ml-2 font-normal text-xs">({format(new Date(leave.start_date), "MMM d")} - {format(new Date(leave.end_date), "MMM d")})</span>
                 </span>
               </div>
             </div>
@@ -95,13 +95,13 @@ function ActionModal({
                 {action === 'reject' ? (
                   <span className="text-rose-400">*</span>
                 ) : (
-                  <span className="text-white/20 font-medium normal-case tracking-normal">(Optional)</span>
+                  <span className="text-[var(--text-muted)] font-medium normal-case tracking-normal">(Optional)</span>
                 )}
               </label>
               <Textarea
                 value={comments}
                 onChange={(e) => setComments(e.target.value)}
-                className="resize-none min-h-[100px] bg-[#111827] border-slate-800 rounded-xl text-white placeholder:text-white/20 focus:ring-1 focus:ring-indigo-500"
+                className="resize-none min-h-[100px] bg-[var(--bg-secondary)] border-[var(--border)] rounded-xl text-white placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-indigo-500"
                 placeholder={action === 'approve' ? "Have a great time off!" : "Please provide a reason for rejection..."}
               />
             </div>
@@ -186,7 +186,7 @@ export function PendingApprovalsList() {
             variants={skeletonPulse} 
             initial="initial" 
             animate="animate" 
-            className="h-[300px] w-full bg-white/[0.02] border border-white/[0.04] rounded-2xl"
+            className="h-[300px] w-full bg-white/[0.02] border border-[var(--border)] rounded-2xl"
           />
         ))}
       </div>
@@ -195,7 +195,7 @@ export function PendingApprovalsList() {
 
   if (requests.length === 0) {
     return (
-      <div className="bg-[#0B0F19] border border-slate-800 shadow-xl rounded-2xl py-20 px-4">
+      <div className="bg-[var(--bg-primary)] border border-[var(--border)] shadow-md rounded-2xl py-20 px-4">
         <EmptyState 
           title="All caught up!" 
           description="There are no pending leave requests waiting for your approval."
@@ -216,7 +216,7 @@ export function PendingApprovalsList() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: -10 }}
               transition={{ delay: i * 0.05 }}
-              className="bg-[#111827] border border-slate-800 rounded-2xl p-5 sm:p-6 flex flex-col h-full hover:border-slate-700 transition-colors shadow-xl"
+              className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl p-5 sm:p-6 flex flex-col h-full hover:border-slate-700 transition-colors shadow-md"
             >
               <div className="flex justify-between items-start mb-6">
                 <div className="flex items-center gap-3">
@@ -226,8 +226,8 @@ export function PendingApprovalsList() {
                   <div>
                     <h3 className="font-bold text-white text-base leading-tight mb-0.5">{leave.employee_name || 'Unknown'}</h3>
                     <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/5 rounded-md w-fit">
-                      <ShieldCheck className="w-3 h-3 text-white/40" />
-                      <p className="text-[10px] text-white/50 font-bold uppercase tracking-widest">{leave.department}</p>
+                      <ShieldCheck className="w-3 h-3 text-[var(--text-secondary)]" />
+                      <p className="text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-widest">{leave.department}</p>
                     </div>
                   </div>
                 </div>
@@ -235,24 +235,24 @@ export function PendingApprovalsList() {
 
               <div className="space-y-4 mb-6 flex-1">
                 <div className="flex items-center gap-4">
-                  <div className="flex-1 bg-white/[0.02] border border-white/[0.04] rounded-xl p-3">
-                    <p className="text-[10px] text-white/30 uppercase font-bold tracking-widest mb-1">Type</p>
+                  <div className="flex-1 bg-white/[0.02] border border-[var(--border)] rounded-xl p-3">
+                    <p className="text-[10px] text-[var(--text-muted)] uppercase font-bold tracking-widest mb-1">Type</p>
                     <p className="text-sm font-semibold text-white capitalize">{leave.leave_type}</p>
                   </div>
-                  <div className="flex-1 bg-white/[0.02] border border-white/[0.04] rounded-xl p-3">
-                    <p className="text-[10px] text-white/30 uppercase font-bold tracking-widest mb-1">Duration</p>
-                    <p className="text-sm font-bold text-white">{leave.days} <span className="font-medium text-white/50 text-xs">days</span></p>
+                  <div className="flex-1 bg-white/[0.02] border border-[var(--border)] rounded-xl p-3">
+                    <p className="text-[10px] text-[var(--text-muted)] uppercase font-bold tracking-widest mb-1">Duration</p>
+                    <p className="text-sm font-bold text-white">{leave.days} <span className="font-medium text-[var(--text-secondary)] text-xs">days</span></p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 text-[13px] font-medium text-white/60">
-                  <Calendar className="w-4 h-4 text-white/30 shrink-0" />
+                  <Calendar className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
                   <span>{format(new Date(leave.start_date), "MMM d")} - {format(new Date(leave.end_date), "MMM d, yyyy")}</span>
                 </div>
                 
-                <div className="p-3 bg-white/[0.02] rounded-xl border border-white/[0.04] mt-2 relative overflow-hidden group">
+                <div className="p-3 bg-white/[0.02] rounded-xl border border-[var(--border)] mt-2 relative overflow-hidden group">
                   <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500/30" />
-                  <p className="text-white/30 text-[10px] uppercase font-bold tracking-widest mb-1.5 flex items-center gap-1.5">
+                  <p className="text-[var(--text-muted)] text-[10px] uppercase font-bold tracking-widest mb-1.5 flex items-center gap-1.5">
                     <AlertCircle className="w-3 h-3" /> Reason
                   </p>
                   <p className="text-[13px] text-white/80 leading-relaxed line-clamp-2 group-hover:line-clamp-none transition-all" title={leave.reason}>

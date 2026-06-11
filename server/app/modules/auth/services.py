@@ -44,7 +44,7 @@ async def register_admin_user(request: AdminCreateRequest, db: AsyncSession) -> 
     await db.flush()  # flush to get new_employee.id
     
     current_year = datetime.now().year
-    for leave_type, days in [("casual", 12), ("sick", 10), ("earned", 15)]:
+    for leave_type, days in [("casual", 12), ("sick", 12), ("earned", 18), ("maternity", 182), ("miscarriage", 42)]:
         balance = LeaveBalance(employee_id=new_employee.id, leave_type=leave_type, total_days=days, year=current_year)
         db.add(balance)
         

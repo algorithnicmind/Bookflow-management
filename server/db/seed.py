@@ -86,7 +86,7 @@ async def seed_data():
         # Initialize Leave Balances for 2026 for all users
         all_users = [super_admin, admin, manager_alice, manager_bob, employee_john, employee_jane]
         for user in all_users:
-            for leave_type, days in [("casual", 12), ("sick", 10), ("earned", 15)]:
+            for leave_type, days in [("casual", 12), ("sick", 12), ("earned", 18), ("maternity", 182), ("miscarriage", 42)]:
                 balance = LeaveBalance(
                     employee_id=user.id,
                     leave_type=leave_type,

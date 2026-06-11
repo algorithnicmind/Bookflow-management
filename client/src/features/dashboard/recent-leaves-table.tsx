@@ -12,19 +12,19 @@ interface RecentLeavesTableProps {
 export function RecentLeavesTable({ leaves }: RecentLeavesTableProps) {
   if (!leaves || leaves.length === 0) {
     return (
-      <div className="bg-[#0B0F19] border border-slate-800 rounded-2xl shadow-xl p-6 sm:p-8">
+      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-md p-6 sm:p-8">
         <h3 className="text-lg font-bold mb-4 text-white">Recent Leaves</h3>
-        <div className="py-8 text-center bg-white/[0.02] border border-white/[0.04] rounded-2xl">
-          <Clock className="w-10 h-10 text-white/20 mx-auto mb-3" />
-          <p className="text-sm font-medium text-white/40">No recent leaves found</p>
+        <div className="py-8 text-center bg-white/[0.02] border border-[var(--border)] rounded-2xl">
+          <Clock className="w-10 h-10 text-[var(--text-muted)] mx-auto mb-3" />
+          <p className="text-sm font-medium text-[var(--text-secondary)]">No recent leaves found</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-[#0B0F19] border border-slate-800 rounded-2xl shadow-xl p-0 overflow-hidden">
-      <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+    <div className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl shadow-sm p-0 overflow-hidden">
+      <div className="p-6 border-b border-[var(--border)] flex items-center justify-between">
         <h3 className="text-lg font-bold text-white">Recent Leave Requests</h3>
       </div>
       
@@ -35,21 +35,21 @@ export function RecentLeavesTable({ leaves }: RecentLeavesTableProps) {
             <div className="flex justify-between items-start mb-2">
               <div>
                 <p className="text-sm font-bold text-white capitalize">{leave.leave_type} Leave</p>
-                <p className="text-[11px] text-white/40 mt-0.5">
+                <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">
                   Applied on {format(new Date(leave.created_at), "MMM d, yyyy")}
                 </p>
               </div>
               <StatusBadge status={leave.status} />
             </div>
             
-            <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-3 mt-3 flex items-center justify-between">
+            <div className="bg-white/[0.02] border border-[var(--border)] rounded-xl p-3 mt-3 flex items-center justify-between">
               <div>
-                <p className="text-[10px] text-white/30 uppercase tracking-widest font-semibold mb-1">From</p>
+                <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-semibold mb-1">From</p>
                 <p className="text-xs font-semibold text-white/80">{format(new Date(leave.start_date), "MMM dd, yyyy")}</p>
               </div>
               <div className="h-8 w-px bg-white/10" />
               <div className="text-right">
-                <p className="text-[10px] text-white/30 uppercase tracking-widest font-semibold mb-1">To</p>
+                <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-semibold mb-1">To</p>
                 <p className="text-xs font-semibold text-white/80">{format(new Date(leave.end_date), "MMM dd, yyyy")}</p>
               </div>
             </div>
@@ -60,7 +60,7 @@ export function RecentLeavesTable({ leaves }: RecentLeavesTableProps) {
       {/* Desktop Table View (>= 640px) */}
       <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="text-[11px] uppercase tracking-widest text-white/40 bg-[#0B0F19] border-b border-slate-800">
+          <thead className="text-[11px] uppercase tracking-widest text-[var(--text-muted)] bg-[var(--bg-tertiary)] border-b border-[var(--border)]">
             <tr>
               <th className="px-6 py-4 font-semibold">Type</th>
               <th className="px-6 py-4 font-semibold">Duration</th>
@@ -82,7 +82,7 @@ export function RecentLeavesTable({ leaves }: RecentLeavesTableProps) {
                 <td className="px-6 py-4 text-white/70">
                   {format(new Date(leave.start_date), "MMM d")} - {format(new Date(leave.end_date), "MMM d, yyyy")}
                 </td>
-                <td className="px-6 py-4 text-white/50">
+                <td className="px-6 py-4 text-[var(--text-secondary)]">
                   {format(new Date(leave.created_at), "MMM d, yyyy")}
                 </td>
                 <td className="px-6 py-4 text-right">

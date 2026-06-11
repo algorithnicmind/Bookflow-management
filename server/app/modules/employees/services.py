@@ -56,7 +56,7 @@ class EmployeeService:
         await self.repo.create(new_employee)
         
         current_year = datetime.now().year
-        for leave_type, days in [("casual", 12), ("sick", 10), ("earned", 15)]:
+        for leave_type, days in [("casual", 12), ("sick", 12), ("earned", 18), ("maternity", 182), ("miscarriage", 42)]:
             balance = LeaveBalance(
                 employee_id=new_employee.id,
                 leave_type=leave_type,

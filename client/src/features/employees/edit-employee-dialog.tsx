@@ -68,7 +68,7 @@ export function EditEmployeeDialog({
 
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[500px] bg-[#0B0F19] border-slate-800 shadow-2xl rounded-2xl p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-[500px] bg-[var(--bg-primary)] border-[var(--border)] shadow-lg rounded-2xl p-0 overflow-hidden">
         <div className="h-1.5 w-full bg-indigo-500" />
         <div className="p-6">
           <DialogHeader className="mb-6">
@@ -78,19 +78,19 @@ export function EditEmployeeDialog({
               </div>
               Edit Employee
             </DialogTitle>
-            <DialogDescription className="text-white/50 text-sm mt-2">
+            <DialogDescription className="text-[var(--text-secondary)] text-sm mt-2">
               Editing profile for <strong className="text-white">{employee.email}</strong>.
             </DialogDescription>
           </DialogHeader>
           
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <label className="text-[11px] font-semibold text-white/40 uppercase tracking-widest flex items-center gap-1.5">
+              <label className="text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-widest flex items-center gap-1.5">
                 <User className="w-3 h-3" /> Full Name
               </label>
               <input 
                 {...form.register("name")} 
-                className="w-full bg-[#111827] border border-slate-800 rounded-lg px-4 py-3 text-[14px] text-white placeholder:text-white/20 focus:ring-1 focus:ring-indigo-500 outline-none transition-all" 
+                className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg px-4 py-3 text-[14px] text-white placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-indigo-500 outline-none transition-all" 
                 disabled={isSubmitting} 
               />
               {form.formState.errors.name && <p className="text-rose-400 text-xs font-semibold mt-1">{form.formState.errors.name.message}</p>}
@@ -98,13 +98,13 @@ export function EditEmployeeDialog({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[11px] font-semibold text-white/40 uppercase tracking-widest flex items-center gap-1.5">
+                <label className="text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-widest flex items-center gap-1.5">
                   <ShieldCheck className="w-3 h-3" /> Role
                 </label>
                 <select 
                   disabled={isSubmitting} 
                   {...form.register("role")}
-                  className="w-full bg-[#111827] border border-slate-800 rounded-lg px-4 py-3 text-[14px] text-white focus:ring-1 focus:ring-indigo-500 outline-none transition-all appearance-none cursor-pointer"
+                  className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg px-4 py-3 text-[14px] text-white focus:ring-1 focus:ring-indigo-500 outline-none transition-all appearance-none cursor-pointer"
                 >
                   <option value="employee" className="bg-[#0d0e18]">Employee</option>
                   <option value="manager" className="bg-[#0d0e18]">Manager</option>
@@ -114,12 +114,12 @@ export function EditEmployeeDialog({
               </div>
               
               <div className="space-y-2">
-                <label className="text-[11px] font-semibold text-white/40 uppercase tracking-widest flex items-center gap-1.5">
+                <label className="text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-widest flex items-center gap-1.5">
                   <Building className="w-3 h-3" /> Department
                 </label>
                 <input 
                   {...form.register("department")} 
-                  className="w-full bg-[#111827] border border-slate-800 rounded-lg px-4 py-3 text-[14px] text-white placeholder:text-white/20 focus:ring-1 focus:ring-indigo-500 outline-none transition-all" 
+                  className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg px-4 py-3 text-[14px] text-white placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-indigo-500 outline-none transition-all" 
                   disabled={isSubmitting} 
                 />
                 {form.formState.errors.department && <p className="text-rose-400 text-xs font-semibold mt-1">{form.formState.errors.department.message}</p>}
@@ -127,13 +127,13 @@ export function EditEmployeeDialog({
             </div>
 
             <div className="space-y-2 pt-2">
-              <label className="text-[11px] font-semibold text-white/40 uppercase tracking-widest flex items-center gap-1.5">
-                <Users className="w-3 h-3" /> Manager <span className="text-white/30 ml-1 normal-case tracking-normal">(Optional)</span>
+              <label className="text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-widest flex items-center gap-1.5">
+                <Users className="w-3 h-3" /> Manager <span className="text-[var(--text-muted)] ml-1 normal-case tracking-normal">(Optional)</span>
               </label>
               <select 
                 disabled={isSubmitting} 
                 {...form.register("manager_id")}
-                className="w-full bg-[#111827] border border-slate-800 rounded-lg px-4 py-3 text-[14px] text-white focus:ring-1 focus:ring-indigo-500 outline-none transition-all appearance-none cursor-pointer"
+                className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg px-4 py-3 text-[14px] text-white focus:ring-1 focus:ring-indigo-500 outline-none transition-all appearance-none cursor-pointer"
               >
                 <option value="none" className="bg-[#0d0e18]">No Manager</option>
                 {managers.map((m) => (
@@ -145,7 +145,7 @@ export function EditEmployeeDialog({
               {form.formState.errors.manager_id && <p className="text-rose-400 text-xs font-semibold mt-1">{form.formState.errors.manager_id.message}</p>}
             </div>
 
-            <DialogFooter className="mt-8 gap-3 sm:gap-0 pt-6 border-t border-slate-800/50">
+            <DialogFooter className="mt-8 gap-3 sm:gap-0 pt-6 border-t border-[var(--border)]/50">
               <button 
                 type="button"
                 onClick={onClose} 

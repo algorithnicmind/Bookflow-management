@@ -84,7 +84,7 @@ export function EmployeeManagement() {
               </div>
               <div>
                 <p className="font-bold text-white leading-tight">{emp.name}</p>
-                <p className="text-[11px] text-white/40 mt-0.5">{emp.email}</p>
+                <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">{emp.email}</p>
               </div>
             </div>
           );
@@ -111,11 +111,11 @@ export function EmployeeManagement() {
           <div className="flex items-center gap-2">
             {row.original.manager_name ? (
               <>
-                <Shield className="w-3.5 h-3.5 text-white/30" />
+                <Shield className="w-3.5 h-3.5 text-[var(--text-muted)]" />
                 <span className="text-sm font-medium text-white/70">{row.original.manager_name}</span>
               </>
             ) : (
-              <span className="text-sm font-medium text-white/20">—</span>
+              <span className="text-sm font-medium text-[var(--text-muted)]">—</span>
             )}
           </div>
         ),
@@ -179,7 +179,7 @@ export function EmployeeManagement() {
         />
       </div>
 
-      <div className="bg-[#0B0F19] border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+      <div className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl shadow-sm overflow-hidden">
         <AnimatePresence mode="wait">
           {isLoading ? (
             <motion.div
@@ -195,7 +195,7 @@ export function EmployeeManagement() {
                   variants={skeletonPulse} 
                   initial="initial" 
                   animate="animate" 
-                  className="h-16 w-full bg-white/[0.02] border border-white/[0.04] rounded-xl"
+                  className="h-16 w-full bg-white/[0.02] border border-[var(--border)] rounded-xl"
                 />
               ))}
             </motion.div>

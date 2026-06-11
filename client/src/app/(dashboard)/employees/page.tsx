@@ -25,7 +25,7 @@ export default function EmployeesPage() {
             </div>
             Employee Directory
           </h1>
-          <p className="text-white/40 text-sm mt-1.5 ml-14">
+          <p className="text-[var(--text-secondary)] text-sm mt-1.5 ml-14">
             Manage your team, assign roles, and review access levels
           </p>
         </div>

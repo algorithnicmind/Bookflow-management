@@ -31,7 +31,7 @@ export function CommandPalette({ open, setOpen }: { open: boolean, setOpen: (ope
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="overflow-hidden p-0 max-w-xl glass-card bg-[var(--glass-bg)] border-[var(--glass-border)] shadow-2xl backdrop-blur-2xl">
+      <DialogContent className="overflow-hidden p-0 max-w-xl glass-card bg-[var(--glass-bg)] border-[var(--glass-border)] shadow-lg backdrop-blur-2xl">
         <DialogTitle className="sr-only">Command Palette</DialogTitle>
         <Command className="flex w-full flex-col overflow-hidden rounded-xl bg-transparent text-[var(--text-primary)]">
           <div className="flex items-center border-b border-[var(--glass-border)] px-4">

@@ -97,8 +97,8 @@ export function AnalyticsDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#090a10] border border-white/[0.04] p-4 rounded-2xl shadow-lg">
-        <div className="flex items-center gap-2 text-white/50 px-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--bg-secondary)] border border-[var(--border)] p-4 rounded-2xl shadow-lg">
+        <div className="flex items-center gap-2 text-[var(--text-secondary)] px-2">
           <Filter className="w-4 h-4" />
           <span className="text-sm font-semibold uppercase tracking-widest">Time Range</span>
         </div>
@@ -225,7 +225,7 @@ function StatCard({ title, value, icon, delay, color }: { title: string; value: 
       <div className="glass-card-static h-full transition-colors hover:border-white/[0.08] group">
         <div className="p-6 flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-1.5">{title}</p>
+            <p className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-widest mb-1.5">{title}</p>
             <h3 className="text-3xl font-extrabold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-white/70 transition-all">{value}</h3>
           </div>
           <div className={`w-12 h-12 rounded-2xl ${bgColors[color]} flex items-center justify-center transition-transform group-hover:scale-110`}>
@@ -246,7 +246,7 @@ function ChartCard({ title, children, delay, className = "" }: { title: string; 
       className={className}
     >
       <div className="glass-card-static h-full flex flex-col hover:border-white/[0.08] transition-colors">
-        <div className="p-6 pb-2 border-b border-white/[0.04]">
+        <div className="p-6 pb-2 border-b border-[var(--border)]">
           <h3 className="text-sm font-bold text-white uppercase tracking-widest">{title}</h3>
         </div>
         <div className="p-6 pt-8 flex-1">

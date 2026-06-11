@@ -92,14 +92,14 @@ export function StatsCards({ stats }: StatsCardsProps) {
             variants={cardItem}
             whileHover={hoverLift.whileHover}
             whileTap={hoverLift.whileTap}
-            className={`relative overflow-hidden rounded-2xl bg-[#111827] border border-slate-800 p-5 sm:p-6 shadow-xl group`}
+            className={`relative overflow-hidden rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)] p-5 sm:p-6 shadow-sm group`}
           >
             {/* Background Gradient Splash */}
             <div className={`absolute -right-8 -top-8 w-32 h-32 bg-gradient-to-br ${stat.gradient} rounded-full blur-[40px] opacity-50 group-hover:opacity-100 transition-opacity duration-500`} />
             
             <div className="relative z-10 flex items-start justify-between">
               <div>
-                <p className="text-[11px] sm:text-xs font-semibold text-white/40 uppercase tracking-[0.1em] mb-2">
+                <p className="text-[11px] sm:text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-[0.1em] mb-2">
                   {stat.label}
                 </p>
                 <div className="flex items-baseline gap-2">

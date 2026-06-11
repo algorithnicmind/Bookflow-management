@@ -83,7 +83,7 @@ export function ConfirmDialog({
             exit={{ opacity: 0, scale: 0.96, y: 10 }}
             transition={{ type: "spring", stiffness: 350, damping: 25 }}
             className={cn(
-              "relative z-10 w-full max-w-sm rounded-2xl border p-6 shadow-2xl",
+              "relative z-10 w-full max-w-sm rounded-2xl border p-6 shadow-lg",
               "bg-[var(--bg-secondary)]/80 backdrop-blur-2xl border-[var(--glass-border)]"
             )}
           >

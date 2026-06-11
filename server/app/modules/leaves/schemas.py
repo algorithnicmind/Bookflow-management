@@ -3,7 +3,7 @@ from typing import Optional
 from datetime import date, datetime
 
 class LeaveApplication(BaseModel):
-    leave_type: str = Field(..., pattern="^(casual|sick|earned|unpaid)$")
+    leave_type: str = Field(..., pattern="^(casual|sick|earned|maternity|miscarriage|unpaid)$")
     start_date: date
     end_date: date
     reason: str

@@ -34,7 +34,7 @@ export default function DashboardLayout({
   if (!isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] relative overflow-x-hidden text-foreground">
+    <div className="min-h-screen bg-[var(--bg-tertiary)] relative overflow-x-hidden text-foreground">
       <Sidebar />
       
       <div 

@@ -25,7 +25,7 @@ export default function LeaveHistoryPage() {
             </div>
             Leave History
           </h1>
-          <p className="text-white/40 text-sm mt-1.5 ml-14">
+          <p className="text-[var(--text-secondary)] text-sm mt-1.5 ml-14">
             View your past requests and track your remaining balance
           </p>
         </div>
