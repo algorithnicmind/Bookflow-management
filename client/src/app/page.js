@@ -50,6 +50,8 @@ export default function LandingPage() {
         alignItems: 'center',
         justifyContent: 'space-between',
         borderBottom: '1px solid var(--border)',
+        position: 'relative',
+        zIndex: 10,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{
@@ -80,7 +82,7 @@ export default function LandingPage() {
         </button>
       </header>
 
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 10 }}>
         <section style={{
           flex: 1,
           display: 'flex',

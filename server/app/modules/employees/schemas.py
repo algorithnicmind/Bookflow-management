@@ -8,6 +8,7 @@ class EmployeeBase(BaseModel):
     role: str
     department: str
     manager_id: Optional[int] = None
+    gender: Optional[str] = None
 
 class EmployeeCreate(EmployeeBase):
     password: str
@@ -17,6 +18,7 @@ class EmployeeUpdate(BaseModel):
     role: Optional[str] = None
     department: Optional[str] = None
     manager_id: Optional[int] = None
+    gender: Optional[str] = None
 
 class EmployeeResponse(EmployeeBase):
     id: int

@@ -12,7 +12,8 @@ class Employee(Base):
     password_hash = Column(String(255), nullable=False)
     role = Column(String(20), nullable=False, index=True)
     manager_id = Column(Integer, ForeignKey("employees.id", ondelete="SET NULL"), nullable=True, index=True)
-    department = Column(String(100), nullable=False, default="General")
+    department = Column(String(100), nullable=True, default="General")
+    gender = Column(String(20), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 

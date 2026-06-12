@@ -20,7 +20,7 @@ export default function EmployeesPage() {
   const [editModal, setEditModal] = useState(null)
   const [deleteModal, setDeleteModal] = useState(null)
   const [form, setForm] = useState({
-    name: '', email: '', password: '', role: 'employee', department: 'General', manager_id: null,
+    name: '', email: '', password: '', role: 'employee', department: 'General', manager_id: null, gender: 'male',
   })
   const [submitting, setSubmitting] = useState(false)
 
@@ -47,7 +47,7 @@ export default function EmployeesPage() {
     try {
       await employeesApi.create(form)
       setAddModal(false)
-      setForm({ name: '', email: '', password: '', role: 'employee', department: 'General', manager_id: null })
+      setForm({ name: '', email: '', password: '', role: 'employee', department: 'General', manager_id: null, gender: 'male' })
       fetchEmployees()
     } catch (err) {
       alert(err.message)
@@ -66,6 +66,7 @@ export default function EmployeesPage() {
         role: form.role,
         department: form.department,
         manager_id: form.manager_id,
+        gender: form.gender,
       })
       setEditModal(null)
       fetchEmployees()
@@ -98,6 +99,7 @@ export default function EmployeesPage() {
       role: emp.role,
       department: emp.department,
       manager_id: emp.manager_id,
+      gender: emp.gender || 'male',
     })
     setEditModal(emp)
   }
@@ -109,7 +111,7 @@ export default function EmployeesPage() {
           <h1 className="page-title">Employees</h1>
           <p className="page-subtitle">Manage all employees in the system</p>
         </div>
-        <Button onClick={() => { setForm({ name: '', email: '', password: '', role: 'employee', department: 'General', manager_id: null }); setAddModal(true) }}>
+        <Button onClick={() => { setForm({ name: '', email: '', password: '', role: 'employee', department: 'General', manager_id: null, gender: 'male' }); setAddModal(true) }}>
           + Add Employee
         </Button>
       </div>
@@ -150,6 +152,7 @@ export default function EmployeesPage() {
                   <th style={{ textAlign: 'left', padding: '12px', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Name</th>
                   <th style={{ textAlign: 'left', padding: '12px', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Email</th>
                   <th style={{ textAlign: 'left', padding: '12px', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Role</th>
+                  <th style={{ textAlign: 'left', padding: '12px', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Gender</th>
                   <th style={{ textAlign: 'left', padding: '12px', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Department</th>
                   <th style={{ textAlign: 'left', padding: '12px', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Manager</th>
                   <th style={{ textAlign: 'left', padding: '12px', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</th>
@@ -176,7 +179,8 @@ export default function EmployeesPage() {
                         {emp.role.replace('_', ' ')}
                       </span>
                     </td>
-                    <td style={{ padding: '12px', color: 'var(--text-muted)' }}>{emp.department}</td>
+                    <td style={{ padding: '12px', color: 'var(--text-muted)', textTransform: 'capitalize' }}>{emp.gender || '-'}</td>
+                    <td style={{ padding: '12px', color: 'var(--text-muted)' }}>{emp.department || '-'}</td>
                     <td style={{ padding: '12px', color: 'var(--text-muted)' }}>{emp.manager_name || '-'}</td>
                     <td style={{ padding: '12px' }}>
                       <span style={{
@@ -237,6 +241,14 @@ export default function EmployeesPage() {
                 {departments.map((d) => <option key={d} value={d}>{d}</option>)}
               </select>
             </div>
+            <div className="form-group">
+              <label>Gender</label>
+              <select value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })}>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
           </div>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 8 }}>
             <Button type="button" variant="secondary" onClick={() => setAddModal(false)}>Cancel</Button>
@@ -266,6 +278,14 @@ export default function EmployeesPage() {
               <label>Department</label>
               <select value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })}>
                 {departments.map((d) => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Gender</label>
+              <select value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })}>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
               </select>
             </div>
           </div>

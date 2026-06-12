@@ -146,9 +146,9 @@ export default function LoginPage() {
             Demo Credentials
           </div>
           <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.8 }}>
-            <div><span style={{ color: 'var(--text-main)' }}>Admin:</span> admin@leaveflow.com / admin123</div>
-            <div><span style={{ color: 'var(--text-main)' }}>Manager:</span> manager@leaveflow.com / pass123</div>
-            <div><span style={{ color: 'var(--text-main)' }}>Employee:</span> employee1@leaveflow.com / pass123</div>
+            <div><span style={{ color: 'var(--text-main)' }}>Admin:</span> admin@company.com / password123</div>
+            <div><span style={{ color: 'var(--text-main)' }}>Manager:</span> alice@company.com / password123</div>
+            <div><span style={{ color: 'var(--text-main)' }}>Employee:</span> john@company.com / password123</div>
           </div>
         </div>
       </div>

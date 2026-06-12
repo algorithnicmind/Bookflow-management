@@ -34,7 +34,8 @@ class EmployeeService:
                 "manager_id": emp.manager_id,
                 "is_active": emp.is_active,
                 "created_at": emp.created_at,
-                "manager_name": manager_name
+                "manager_name": manager_name,
+                "gender": emp.gender
             })
         return emp_responses
 
@@ -50,7 +51,8 @@ class EmployeeService:
             password_hash=hashed_password,
             role=data.role,
             department=data.department,
-            manager_id=data.manager_id
+            manager_id=data.manager_id,
+            gender=data.gender
         )
         
         await self.repo.create(new_employee)
@@ -77,6 +79,7 @@ class EmployeeService:
         if data.role is not None: emp.role = data.role
         if data.department is not None: emp.department = data.department
         if data.manager_id is not None: emp.manager_id = data.manager_id
+        if data.gender is not None: emp.gender = data.gender
         
         await self.repo.commit()
         return emp

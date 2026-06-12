@@ -48,33 +48,36 @@ from app.core.security import pwd_context
 
 async def seed_demo_users():
     async with AsyncSessionLocal() as db:
-        admin_res = await db.execute(select(Employee).where(Employee.email == "admin@leaveflow.com"))
+        admin_res = await db.execute(select(Employee).where(Employee.email == "admin@company.com"))
         if not admin_res.scalar_one_or_none():
             db.add(Employee(
-                name="Admin Demo",
-                email="admin@leaveflow.com",
-                password_hash=pwd_context.hash("admin123"),
+                name="Admin User",
+                email="admin@company.com",
+                password_hash=pwd_context.hash("password123"),
                 role="admin",
-                department="Management",
+                department=None,
+                gender="male",
                 is_active=True
             ))
             manager_demo = Employee(
-                name="Manager Demo",
-                email="manager@leaveflow.com",
-                password_hash=pwd_context.hash("pass123"),
+                name="Alice Manager",
+                email="alice@company.com",
+                password_hash=pwd_context.hash("password123"),
                 role="manager",
                 department="Engineering",
+                gender="female",
                 is_active=True
             )
             db.add(manager_demo)
             await db.flush()
 
             emp_demo = Employee(
-                name="Employee Demo",
-                email="employee1@leaveflow.com",
-                password_hash=pwd_context.hash("pass123"),
+                name="John Doe",
+                email="john@company.com",
+                password_hash=pwd_context.hash("password123"),
                 role="employee",
                 department="Engineering",
+                gender="male",
                 is_active=True,
                 manager_id=manager_demo.id
             )
@@ -83,7 +86,7 @@ async def seed_demo_users():
 
             # Also create leave balances for demo users
             current_year = datetime.today().year
-            for user_email in ["admin@leaveflow.com", "manager@leaveflow.com", "employee1@leaveflow.com"]:
+            for user_email in ["admin@company.com", "alice@company.com", "john@company.com"]:
                 user_result = await db.execute(select(Employee).where(Employee.email == user_email))
                 user = user_result.scalar_one_or_none()
                 if user:

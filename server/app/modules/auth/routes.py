@@ -38,7 +38,7 @@ async def login(request: OAuth2PasswordRequestForm = Depends(), db: AsyncSession
 async def register(
     request: AdminCreateRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))
+    current_user: Employee = Depends(RoleChecker(["super_admin"]))
 ):
     new_employee = await register_admin_user(request, db)
     

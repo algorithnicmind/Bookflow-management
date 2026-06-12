@@ -37,7 +37,8 @@ async def register_admin_user(request: AdminCreateRequest, db: AsyncSession) -> 
         email=request.email,
         password_hash=hashed_password,
         role="admin",  # Simplified for /register per API docs
-        department="Management"
+        department=None,
+        gender=request.gender
     )
     
     db.add(new_employee)
