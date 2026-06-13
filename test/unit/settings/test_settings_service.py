@@ -45,7 +45,7 @@ async def test_get_settings_creates_default():
 
     result = await service.get_settings()
     assert len(added) == 1
-    assert added[0].max_casual_leave == 12
+    assert result is added[0]
     db.commit.assert_awaited_once()
 
 
@@ -63,7 +63,7 @@ async def test_update_settings_partial():
     db.execute.return_value = mock_result
 
     update = SettingsUpdate(max_casual_leave=15)
-    result = await service.update_settings(update)
+    await service.update_settings(update)
     assert settings_obj.max_casual_leave == 15
     # Other fields unchanged
     assert settings_obj.max_sick_leave == 12

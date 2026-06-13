@@ -3,7 +3,7 @@ Unit tests for the notification creation helper in leaves/services.py
 """
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 from app.modules.notifications.models import Notification
 

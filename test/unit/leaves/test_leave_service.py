@@ -4,7 +4,7 @@ The most critical service with the most business rules.
 """
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch, PropertyMock
+from unittest.mock import AsyncMock, MagicMock
 from datetime import date, timedelta
 from fastapi import HTTPException
 
@@ -218,7 +218,7 @@ async def test_cancel_leave_success():
     mock_result.scalar_one_or_none.return_value = mock_emp
     repo.db.execute.return_value = mock_result
 
-    result = await service.cancel_leave(1, employee_id=1)
+    await service.cancel_leave(1, employee_id=1)
     assert leave.status == "cancelled"
     assert balance.used_days == 3  # 5 - 2 days
 
@@ -353,7 +353,7 @@ async def test_approve_leave_admin_bypass():
     repo.db.add = MagicMock()
 
     action = LeaveApprovalAction(comments="Admin approved")
-    result = await service.approve_leave(1, manager_id=1, is_admin=True, action=action)
+    await service.approve_leave(1, manager_id=1, is_admin=True, action=action)
     assert leave.status == "approved"
 
 

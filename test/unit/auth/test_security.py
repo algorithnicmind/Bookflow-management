@@ -2,8 +2,8 @@
 Unit tests for app.core.security — JWT token creation and password hashing.
 """
 
-import pytest
-from datetime import timedelta, datetime
+
+from datetime import timedelta, datetime, timezone
 from jose import jwt
 
 from app.core.security import create_access_token, pwd_context
@@ -39,7 +39,7 @@ def test_create_access_token_has_expiration():
     token = create_access_token(data={"sub": "john@company.com"})
     payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
     assert "exp" in payload
-    assert payload["exp"] > datetime.utcnow().timestamp() - 10
+    assert payload["exp"] > datetime.now(timezone.utc).timestamp() - 10
 
 
 def test_create_access_token_custom_expiry():
@@ -49,7 +49,7 @@ def test_create_access_token_custom_expiry():
         expires_delta=timedelta(hours=2),
     )
     payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
-    expected = datetime.utcnow() + timedelta(hours=2)
+    expected = datetime.now(timezone.utc) + timedelta(hours=2)
     # Allow 10 second tolerance
     assert abs(payload["exp"] - expected.timestamp()) < 10
 
@@ -58,7 +58,7 @@ def test_create_access_token_default_expiry():
     """No expires_delta should default to 15 minutes."""
     token = create_access_token(data={"sub": "john@company.com"})
     payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
-    expected = datetime.utcnow() + timedelta(minutes=15)
+    expected = datetime.now(timezone.utc) + timedelta(minutes=15)
     assert abs(payload["exp"] - expected.timestamp()) < 10
 
 

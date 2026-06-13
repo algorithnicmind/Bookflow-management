@@ -3,7 +3,7 @@ Unit tests for app.modules.employees.services — EmployeeService
 """
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 from fastapi import HTTPException
 
 from app.modules.employees.services import EmployeeService
@@ -25,12 +25,14 @@ def _make_service(repo_mock=None):
 async def test_list_employees_returns_all():
     """Should return a list of employee dicts."""
     service, repo = _make_service()
-    emp1 = MagicMock(id=1, name="John", email="john@co.com", role="employee",
+    emp1 = MagicMock(id=1, email="john@co.com", role="employee",
                      department="Eng", manager_id=None, is_active=True,
                      created_at="2026-01-01", gender="male")
-    emp2 = MagicMock(id=2, name="Jane", email="jane@co.com", role="employee",
+    emp1.name = "John"
+    emp2 = MagicMock(id=2, email="jane@co.com", role="employee",
                      department="Design", manager_id=None, is_active=True,
                      created_at="2026-01-02", gender="female")
+    emp2.name = "Jane"
     repo.list_employees.return_value = [emp1, emp2]
 
     result = await service.list_employees()
@@ -43,10 +45,12 @@ async def test_list_employees_returns_all():
 async def test_list_employees_with_manager_name():
     """Should resolve manager_name when manager_id is set."""
     service, repo = _make_service()
-    manager = MagicMock(id=1, name="Alice Manager")
-    emp = MagicMock(id=2, name="John", email="john@co.com", role="employee",
+    manager = MagicMock(id=1)
+    manager.name = "Alice Manager"
+    emp = MagicMock(id=2, email="john@co.com", role="employee",
                     department="Eng", manager_id=1, is_active=True,
                     created_at="2026-01-01", gender="male")
+    emp.name = "John"
     repo.list_employees.return_value = [emp]
     repo.get_by_id.return_value = manager
 
@@ -107,7 +111,6 @@ async def test_create_employee_hashes_password():
     repo.get_by_email.return_value = None
 
     created_employee = None
-    original_create = repo.create
 
     async def capture_create(emp):
         nonlocal created_employee
@@ -140,7 +143,7 @@ async def test_update_employee_success():
     repo.get_by_id.return_value = emp
 
     data = EmployeeUpdate(name="New Name")
-    result = await service.update_employee(1, data)
+    await service.update_employee(1, data)
     assert emp.name == "New Name"
     repo.commit.assert_awaited_once()
 
@@ -160,8 +163,9 @@ async def test_update_employee_not_found():
 async def test_update_employee_partial_fields():
     """Only specified fields change; others remain untouched."""
     service, repo = _make_service()
-    emp = MagicMock(id=1, name="Old", role="employee", department="Eng",
+    emp = MagicMock(id=1, role="employee", department="Eng",
                     manager_id=None, gender="male")
+    emp.configure_mock(name="Old")
     repo.get_by_id.return_value = emp
 
     data = EmployeeUpdate(department="Design")
