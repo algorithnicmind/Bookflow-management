@@ -16,12 +16,14 @@ from datetime import datetime, timedelta
 
 # Ensure the server directory is on the Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'server'))
+os.environ["BCRYPT_ROUNDS"] = "4"
 
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from app.core.database import Base, get_db
 from app.core.security import pwd_context, create_access_token
+from app.core.config import settings
 from app.modules.employees.models import Employee
 from app.modules.leaves.models import LeaveRequest, LeaveBalance, LeaveApproval
 from app.modules.settings.models import SystemSetting
@@ -29,11 +31,11 @@ from app.modules.notifications.models import Notification
 from main import app
 
 
-# ─── Test Database (SQLite in-memory) ─────────────────────────────────
+# ─── Test Database (PostgreSQL) ───────────────────────────────────────
 
 TEST_DATABASE_URL = os.environ.get(
     "TEST_DATABASE_URL",
-    "sqlite+aiosqlite:///:memory:"
+    settings.async_database_url
 )
 
 test_engine = create_async_engine(TEST_DATABASE_URL, echo=False)

@@ -68,12 +68,11 @@ from main import app
 from datetime import timedelta
 
 # ─── Test Database ───────────────────────────────────────────────────
-# Uses SQLite in-memory for speed. For Postgres-specific tests, use a
-# separate test Postgres DB and set TEST_DATABASE_URL env var.
+# Uses PostgreSQL for tests. Set TEST_DATABASE_URL env var if running in CI/CD.
 
 TEST_DATABASE_URL = os.environ.get(
     "TEST_DATABASE_URL",
-    "sqlite+aiosqlite:///./test.db"
+    settings.async_database_url
 )
 
 test_engine = create_async_engine(TEST_DATABASE_URL, echo=False)
@@ -490,10 +489,9 @@ def build_system_setting(
 
 ## 🚀 Running Tests
 
-### Install Test Dependencies
+### Install Test **Dependencies needed:**
 ```bash
-cd server
-pip install pytest pytest-asyncio httpx aiosqlite
+pip install pytest pytest-asyncio httpx asyncpg pytest-cov
 ```
 
 ### Run All Tests

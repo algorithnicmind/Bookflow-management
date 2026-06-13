@@ -27,10 +27,21 @@ from app.modules.settings.routes import router as settings_router
 from app.modules.reports.routes import router as reports_router
 from app.modules.notifications.routes import router as notifications_router
 
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialize DB (Creates tables automatically if they don't exist)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    await seed_demo_users()
+    yield
+
 app = FastAPI(
     title="Leave Management System API",
     version="1.0",
-    description="API for managing employee leaves, approvals, and balances."
+    description="API for managing employee leaves, approvals, and balances.",
+    lifespan=lifespan
 )
 
 # Configure CORS (from TRD)
@@ -95,12 +106,7 @@ async def seed_demo_users():
                         db.add(balance)
             await db.commit()
 
-@app.on_event("startup")
-async def startup_event():
-    # Initialize DB (Creates tables automatically if they don't exist)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    await seed_demo_users()
+# Startup event replaced by lifespan
 
 app.include_router(auth_router)
 app.include_router(employees_router)

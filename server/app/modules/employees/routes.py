@@ -29,8 +29,8 @@ async def create_employee(
     service: EmployeeService = Depends(get_employee_service),
     current_user: Employee = Depends(RoleChecker(["admin", "super_admin"]))
 ):
-    await service.create_employee(request)
-    return {"message": "Employee created successfully"}
+    employee = await service.create_employee(request)
+    return {"message": "Employee created successfully", "employee": EmployeeResponse.model_validate(employee)}
 
 @router.put("/{employee_id}")
 async def update_employee(
