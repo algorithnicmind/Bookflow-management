@@ -26,6 +26,7 @@ from app.modules.dashboard.routes import router as dashboard_router
 from app.modules.settings.routes import router as settings_router
 from app.modules.reports.routes import router as reports_router
 from app.modules.notifications.routes import router as notifications_router
+from bot.router import router as bot_router
 
 from contextlib import asynccontextmanager
 
@@ -115,6 +116,7 @@ app.include_router(dashboard_router)
 app.include_router(settings_router)
 app.include_router(reports_router)
 app.include_router(notifications_router)
+app.include_router(bot_router)
 
 @app.get("/")
 def root():

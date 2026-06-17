@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext'
 import { NotificationProvider } from '@/context/NotificationContext'
 import Sidebar from '@/components/Layout/Sidebar'
 import Header from '@/components/Layout/Header'
+import Chatbot from '@/components/Chatbot/Chatbot'
 
 export default function DashboardLayout({ children }) {
   const { user, loading } = useAuth()
@@ -54,6 +55,7 @@ export default function DashboardLayout({ children }) {
             {children}
           </main>
         </div>
+        <Chatbot />
         <style jsx global>{`
           @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }

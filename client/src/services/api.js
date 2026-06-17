@@ -112,3 +112,12 @@ export const notificationsApi = {
   markRead: (id) => request(`/api/notifications/${id}/read`, { method: 'PUT' }),
   markAllRead: () => request('/api/notifications/read-all', { method: 'PUT' }),
 }
+
+export const botApi = {
+  chat: (message, sessionState) =>
+    request('/api/bot/chat', {
+      method: 'POST',
+      body: { message, session_state: sessionState },
+    }),
+}
+
