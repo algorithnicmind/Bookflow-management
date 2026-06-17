@@ -7,6 +7,7 @@ from app.modules.leaves.models import LeaveRequest, LeaveApproval
 from app.modules.leaves.schemas import LeaveApplication, LeaveApprovalAction
 from app.modules.employees.models import Employee
 from app.modules.notifications.models import Notification
+from app.modules.audit.services import AuditLogService
 
 class LeaveService:
     def __init__(self, repo: LeaveRepository):
@@ -66,6 +67,22 @@ class LeaveService:
             status="pending"
         )
         await self.repo.create_request(new_request)
+        
+        # Log audit trail
+        await AuditLogService.log_action(
+            db=self.repo.db,
+            actor_id=employee_id,
+            action="leave_apply",
+            target_type="leave_request",
+            target_id=new_request.id,
+            details={
+                "leave_type": request.leave_type,
+                "start_date": request.start_date.isoformat(),
+                "end_date": request.end_date.isoformat(),
+                "requested_days": requested_days
+            }
+        )
+        
         await self.repo.commit()
 
         employee = await self._get_employee(employee_id)
@@ -141,6 +158,20 @@ class LeaveService:
             if balance:
                 balance.used_days -= requested_days
 
+        # Log audit trail
+        await AuditLogService.log_action(
+            db=self.repo.db,
+            actor_id=employee_id,
+            action="leave_cancel",
+            target_type="leave_request",
+            target_id=leave.id,
+            details={
+                "leave_type": leave.leave_type,
+                "start_date": leave.start_date.isoformat(),
+                "end_date": leave.end_date.isoformat()
+            }
+        )
+
         await self.repo.commit()
 
         employee = await self._get_employee(leave.employee_id)
@@ -200,6 +231,22 @@ class LeaveService:
             comments=action.comments
         )
         await self.repo.add_approval(approval)
+        
+        # Log audit trail
+        await AuditLogService.log_action(
+            db=self.repo.db,
+            actor_id=manager_id,
+            action="leave_approve",
+            target_type="leave_request",
+            target_id=leave.id,
+            details={
+                "comments": action.comments,
+                "leave_type": leave.leave_type,
+                "employee_name": emp.name,
+                "employee_id": emp.id
+            }
+        )
+
         await self.repo.commit()
 
         days = self.get_business_days(leave.start_date, leave.end_date)
@@ -244,6 +291,21 @@ class LeaveService:
             balance = await self.repo.get_balance(leave.employee_id, leave.leave_type, current_year)
             if balance:
                 balance.used_days -= requested_days
+
+        # Log audit trail
+        await AuditLogService.log_action(
+            db=self.repo.db,
+            actor_id=manager_id,
+            action="leave_reject",
+            target_type="leave_request",
+            target_id=leave.id,
+            details={
+                "comments": action.comments,
+                "leave_type": leave.leave_type,
+                "employee_name": emp.name,
+                "employee_id": emp.id
+            }
+        )
 
         await self.repo.commit()
 

@@ -29,7 +29,7 @@ async def create_employee(
     service: EmployeeService = Depends(get_employee_service),
     current_user: Employee = Depends(RoleChecker(["admin", "super_admin"]))
 ):
-    employee = await service.create_employee(request)
+    employee = await service.create_employee(request, current_user.id)
     return {"message": "Employee created successfully", "employee": EmployeeResponse.model_validate(employee)}
 
 @router.put("/{employee_id}")
@@ -39,7 +39,7 @@ async def update_employee(
     service: EmployeeService = Depends(get_employee_service),
     current_user: Employee = Depends(RoleChecker(["admin", "super_admin"]))
 ):
-    await service.update_employee(employee_id, request)
+    await service.update_employee(employee_id, request, current_user.id)
     return {"message": "Employee updated successfully"}
 
 @router.delete("/{employee_id}")

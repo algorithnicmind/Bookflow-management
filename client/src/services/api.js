@@ -110,6 +110,10 @@ export const reportsApi = {
   organization: () => request('/api/reports/organization'),
 }
 
+export const auditApi = {
+  list: (params) => request('/api/audit-logs', { params }),
+}
+
 export const notificationsApi = {
   list: () => request('/api/notifications'),
   markRead: (id) => request(`/api/notifications/${id}/read`, { method: 'PUT' }),

@@ -20,6 +20,7 @@ from app.modules.employees.models import Employee
 from app.modules.leaves.models import LeaveRequest, LeaveApproval, LeaveBalance
 from app.modules.settings.models import SystemSetting
 from app.modules.notifications.models import Notification
+from app.modules.audit.models import AuditLog
 from app.core.database import Base
 from app.core.config import settings
 

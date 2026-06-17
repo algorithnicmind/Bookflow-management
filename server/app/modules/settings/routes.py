@@ -15,7 +15,7 @@ async def update_settings(
     current_user: Employee = Depends(RoleChecker(["super_admin"]))
 ):
     service = SettingsService(db)
-    return await service.update_settings(request)
+    return await service.update_settings(request, current_user.id)
 
 @router.get("")
 async def get_settings(
