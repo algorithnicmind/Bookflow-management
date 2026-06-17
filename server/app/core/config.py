@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
@@ -7,6 +8,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     
     DATABASE_URL: str = "postgresql+asyncpg://localhost:5432/leave_management"
+    GEMINI_API_KEY: Optional[str] = None
     
     JWT_SECRET: str = "your-super-cryptographically-secure-key-phrase-12345"
     JWT_ALGORITHM: str = "HS256"

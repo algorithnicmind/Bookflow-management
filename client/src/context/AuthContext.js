@@ -32,9 +32,6 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     setUser(null)
-    if (typeof window !== 'undefined') {
-      window.location.href = '/login'
-    }
   }, [])
 
   const updateUser = useCallback((data) => {

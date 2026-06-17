@@ -41,9 +41,6 @@ export async function request(endpoint, options = {}) {
   if (response.status === 401) {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
-    if (typeof window !== 'undefined') {
-      window.location.href = '/login'
-    }
     throw new Error('Session expired. Please log in again.')
   }
 
@@ -119,3 +116,12 @@ export const notificationsApi = {
   markRead: (id) => request(`/api/notifications/${id}/read`, { method: 'PUT' }),
   markAllRead: () => request('/api/notifications/read-all', { method: 'PUT' }),
 }
+
+export const botApi = {
+  chat: (message, sessionState) =>
+    request('/api/bot/chat', {
+      method: 'POST',
+      body: { message, session_state: sessionState },
+    }),
+}
+
