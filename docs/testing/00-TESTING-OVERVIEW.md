@@ -123,7 +123,7 @@ test/
 ### 1. Install Test Dependencies
 ```bash
 cd server
-pip install pytest pytest-asyncio httpx aiosqlite
+pip install pytest pytest-asyncio httpx asyncpg
 ```
 
 ### 2. Run All Tests

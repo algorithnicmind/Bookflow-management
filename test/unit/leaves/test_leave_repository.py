@@ -10,6 +10,7 @@ from app.modules.leaves.repositories import LeaveRepository
 
 def _make_repo():
     mock_db = AsyncMock()
+    mock_db.add = MagicMock()
     return LeaveRepository(mock_db), mock_db
 
 

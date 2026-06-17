@@ -3,7 +3,9 @@ from datetime import datetime, timedelta, timezone
 from jose import jwt
 from app.core.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+import os
+rounds = int(os.environ.get("BCRYPT_ROUNDS", 12))
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=rounds)
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     to_encode = data.copy()

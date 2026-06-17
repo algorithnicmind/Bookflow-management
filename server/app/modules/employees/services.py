@@ -1,4 +1,5 @@
 from datetime import datetime
+import asyncio
 from fastapi import HTTPException
 from typing import List, Optional
 from app.core.security import pwd_context
@@ -44,7 +45,7 @@ class EmployeeService:
         if existing:
             raise HTTPException(status_code=409, detail="Email already registered")
             
-        hashed_password = pwd_context.hash(data.password)
+        hashed_password = await asyncio.to_thread(pwd_context.hash, data.password)
         new_employee = Employee(
             name=data.name,
             email=data.email,

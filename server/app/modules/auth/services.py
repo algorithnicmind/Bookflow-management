@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import asyncio
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -11,8 +12,14 @@ from app.modules.auth.schemas import AdminCreateRequest
 async def authenticate_user(username: str, password_plain: str, db: AsyncSession) -> Employee:
     result = await db.execute(select(Employee).where(Employee.email == username))
     user = result.scalar_one_or_none()
-    
-    if not user or not pwd_context.verify(password_plain, user.password_hash):
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+        
+    is_valid = await asyncio.to_thread(pwd_context.verify, password_plain, user.password_hash)
+    if not is_valid:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
@@ -31,7 +38,7 @@ async def register_admin_user(request: AdminCreateRequest, db: AsyncSession) -> 
     if result.scalar_one_or_none():
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
         
-    hashed_password = pwd_context.hash(request.password)
+    hashed_password = await asyncio.to_thread(pwd_context.hash, request.password)
     new_employee = Employee(
         name=request.name,
         email=request.email,

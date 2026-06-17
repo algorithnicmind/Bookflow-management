@@ -11,6 +11,7 @@ from app.modules.employees.repositories import EmployeeRepository
 def _make_repo():
     """Create an EmployeeRepository with a mocked DB session."""
     mock_db = AsyncMock()
+    mock_db.add = MagicMock()
     return EmployeeRepository(mock_db), mock_db
 
 

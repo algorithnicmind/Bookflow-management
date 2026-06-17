@@ -15,6 +15,7 @@ def _make_service(repo_mock=None):
     if repo_mock is None:
         repo_mock = AsyncMock()
         repo_mock.db = AsyncMock()
+        repo_mock.db.add = MagicMock()
     return EmployeeService(repo_mock), repo_mock
 
 
