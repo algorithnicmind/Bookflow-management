@@ -1,0 +1,108 @@
+import logging
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from datetime import datetime
+from app.core.database import AsyncSessionLocal
+from app.modules.settings.models import LeavePolicy
+from app.modules.leaves.models import LeaveBalance
+from app.modules.employees.models import Employee
+
+logger = logging.getLogger(__name__)
+
+scheduler = AsyncIOScheduler()
+
+async def run_monthly_accruals():
+    """Runs monthly to add earned leave days based on policy accrual rates."""
+    logger.info("Starting monthly accruals job...")
+    async with AsyncSessionLocal() as db:
+        policies_res = await db.execute(select(LeavePolicy).where(LeavePolicy.accrual_rate > 0))
+        policies = policies_res.scalars().all()
+        
+        employees_res = await db.execute(select(Employee).where(Employee.is_active == True))
+        employees = employees_res.scalars().all()
+        
+        current_year = datetime.now().year
+        
+        # We need balances for current year
+        balances_res = await db.execute(select(LeaveBalance).where(LeaveBalance.year == current_year))
+        balances = balances_res.scalars().all()
+        
+        emp_balance_map = {}
+        for b in balances:
+            if b.employee_id not in emp_balance_map:
+                emp_balance_map[b.employee_id] = {}
+            emp_balance_map[b.employee_id][b.leave_type] = b
+            
+        for emp in employees:
+            # Find applicable policy
+            for p in policies:
+                if (p.department is None or p.department == emp.department) and \
+                   (p.role is None or p.role == emp.role):
+                    
+                    b = emp_balance_map.get(emp.id, {}).get(p.leave_type)
+                    if b:
+                        b.total_days += p.accrual_rate
+                        
+        from app.modules.settings.models import AccrualLog
+        log = AccrualLog(job_type="monthly_accrual", status="success", details="Processed monthly accruals")
+        db.add(log)
+        await db.commit()
+    logger.info("Finished monthly accruals job.")
+
+async def run_yearly_carry_forward():
+    """Runs yearly on Jan 1st to carry forward balances."""
+    logger.info("Starting yearly carry forward job...")
+    async with AsyncSessionLocal() as db:
+        current_year = datetime.now().year
+        prev_year = current_year - 1
+        
+        policies_res = await db.execute(select(LeavePolicy))
+        policies = policies_res.scalars().all()
+        
+        employees_res = await db.execute(select(Employee).where(Employee.is_active == True))
+        employees = employees_res.scalars().all()
+        
+        balances_res = await db.execute(select(LeaveBalance).where(LeaveBalance.year == prev_year))
+        prev_balances = balances_res.scalars().all()
+        
+        emp_balance_map = {}
+        for b in prev_balances:
+            if b.employee_id not in emp_balance_map:
+                emp_balance_map[b.employee_id] = {}
+            emp_balance_map[b.employee_id][b.leave_type] = b
+            
+        for emp in employees:
+            for p in policies:
+                if (p.department is None or p.department == emp.department) and \
+                   (p.role is None or p.role == emp.role):
+                    
+                    prev_b = emp_balance_map.get(emp.id, {}).get(p.leave_type)
+                    carry_forward = 0
+                    if prev_b:
+                        remaining = prev_b.total_days - prev_b.used_days
+                        if remaining > 0:
+                            carry_forward = min(remaining, p.max_carry_forward)
+                            
+                    # Create new balance for current year
+                    new_balance = LeaveBalance(
+                        employee_id=emp.id,
+                        leave_type=p.leave_type,
+                        total_days=p.base_days + carry_forward,
+                        used_days=0,
+                        year=current_year
+                    )
+                    db.add(new_balance)
+                    
+        from app.modules.settings.models import AccrualLog
+        log = AccrualLog(job_type="yearly_carry_forward", status="success", details=f"Processed carry forwards for {current_year}")
+        db.add(log)
+        await db.commit()
+    logger.info("Finished yearly carry forward job.")
+
+def start_scheduler():
+    scheduler.add_job(run_monthly_accruals, CronTrigger(day=1, hour=0, minute=0))
+    scheduler.add_job(run_yearly_carry_forward, CronTrigger(month=1, day=1, hour=0, minute=5))
+    scheduler.start()
+    logger.info("APScheduler started.")

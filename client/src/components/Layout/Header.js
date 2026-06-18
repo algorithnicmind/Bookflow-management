@@ -313,7 +313,7 @@ export default function Header({ onToggleSidebar }) {
               </div>
 
               <button
-                onClick={() => { setShowProfileMenu(false); router.push('/system-settings'); }}
+                onClick={() => { setShowProfileMenu(false); router.push('/account-settings'); }}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -335,28 +335,6 @@ export default function Header({ onToggleSidebar }) {
                 ⚙️ Account Settings
               </button>
 
-              <button
-                onClick={() => { setShowProfileMenu(false); logout(); }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  width: '100%',
-                  padding: '8px 12px',
-                  borderRadius: 'var(--radius-sm)',
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--danger)',
-                  fontSize: '0.82rem',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'var(--transition)',
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(244, 63, 94, 0.08)' }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'none' }}
-              >
-                🚪 Sign Out
-              </button>
             </div>
           )}
         </div>

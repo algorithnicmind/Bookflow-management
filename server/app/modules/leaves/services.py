@@ -42,7 +42,17 @@ class LeaveService:
         if overlaps:
             raise HTTPException(status_code=400, detail="You have an overlapping leave request for these dates")
 
+        # Fetch holidays
+        from app.modules.settings.models import PublicHoliday
+        holiday_rows = await self.repo.db.execute(select(PublicHoliday.date).where(PublicHoliday.date >= request.start_date, PublicHoliday.date <= request.end_date))
+        holidays = [row[0] for row in holiday_rows.all()]
+        
         requested_days = self.get_business_days(request.start_date, request.end_date)
+        # Exclude holidays
+        requested_days -= len(holidays)
+        
+        if requested_days <= 0:
+            raise HTTPException(status_code=400, detail="The requested dates consist only of public holidays or invalid days.")
 
         # Check balance for paid leaves
         if request.leave_type != "unpaid":
@@ -189,12 +199,43 @@ class LeaveService:
         return {"message": "Leave request cancelled successfully"}
 
     async def get_pending_requests(self, manager_id: int, is_admin: bool = False) -> List[dict]:
-        if is_admin:
-            rows = await self.repo.list_all_pending_requests()
-        else:
-            rows = await self.repo.list_pending_requests_for_manager(manager_id)
-        res = []
+        rows = await self.repo.list_all_pending_requests()
+        approver = await self._get_employee(manager_id)
+
+        from app.modules.settings.models import ApprovalChain, ApprovalStep
+        chains_res = await self.repo.db.execute(select(ApprovalChain))
+        chains = chains_res.scalars().all()
+        steps_res = await self.repo.db.execute(select(ApprovalStep).order_by(ApprovalStep.step_order))
+        all_steps = steps_res.scalars().all()
+
+        chain_map = {c.department: c.id for c in chains}
+        global_chain_id = chain_map.get(None)
+
+        filtered_rows = []
         for leave, emp in rows:
+            chain_id = chain_map.get(emp.department, global_chain_id)
+            steps = [s for s in all_steps if s.chain_id == chain_id] if chain_id else []
+            
+            current_step_idx = leave.current_approval_step - 1
+            
+            can_approve = False
+            if steps and current_step_idx < len(steps):
+                required_role = steps[current_step_idx].role_required
+                if required_role == "manager":
+                    if emp.manager_id == manager_id or is_admin:
+                        can_approve = True
+                else:
+                    if approver.role == required_role or is_admin:
+                        can_approve = True
+            else:
+                if emp.manager_id == manager_id or is_admin:
+                    can_approve = True
+                    
+            if can_approve:
+                filtered_rows.append((leave, emp))
+
+        res = []
+        for leave, emp in filtered_rows:
             res.append({
                 "id": leave.id,
                 "employee_id": leave.employee_id,
@@ -207,7 +248,8 @@ class LeaveService:
                 "updated_at": leave.updated_at,
                 "days": self.get_business_days(leave.start_date, leave.end_date),
                 "employee_name": emp.name,
-                "department": emp.department
+                "department": emp.department,
+                "current_approval_step": getattr(leave, "current_approval_step", 1)
             })
         return res
 
@@ -220,10 +262,33 @@ class LeaveService:
         leave, emp = row
         if leave.status != "pending":
             raise HTTPException(status_code=400, detail="Only pending leaves can be approved")
-        if emp.manager_id != manager_id and not is_admin:
-            raise HTTPException(status_code=403, detail="You can only approve requests from your direct reports")
+        from app.modules.settings.models import ApprovalChain, ApprovalStep
+        chain_res = await self.repo.db.execute(select(ApprovalChain).where(ApprovalChain.department == emp.department))
+        chain = chain_res.scalar_one_or_none()
+        if not chain:
+            chain_res = await self.repo.db.execute(select(ApprovalChain).where(ApprovalChain.department == None))
+            chain = chain_res.scalar_one_or_none()
 
-        leave.status = "approved"
+        steps = []
+        if chain:
+            steps_res = await self.repo.db.execute(select(ApprovalStep).where(ApprovalStep.chain_id == chain.id).order_by(ApprovalStep.step_order))
+            steps = steps_res.scalars().all()
+
+        current_step_idx = leave.current_approval_step - 1
+
+        approver = await self._get_employee(manager_id)
+        if steps and current_step_idx < len(steps):
+            required_role = steps[current_step_idx].role_required
+            if required_role == "manager":
+                if emp.manager_id != manager_id and not is_admin:
+                    raise HTTPException(status_code=403, detail="You can only approve requests from your direct reports for this step")
+            else:
+                if approver.role != required_role and not is_admin:
+                    raise HTTPException(status_code=403, detail=f"This step requires {required_role} role")
+        else:
+            if emp.manager_id != manager_id and not is_admin:
+                raise HTTPException(status_code=403, detail="You can only approve requests from your direct reports")
+
         approval = LeaveApproval(
             leave_request_id=leave.id,
             manager_id=manager_id,
@@ -231,6 +296,13 @@ class LeaveService:
             comments=action.comments
         )
         await self.repo.add_approval(approval)
+        
+        is_final = True
+        if steps and leave.current_approval_step < len(steps):
+            leave.current_approval_step += 1
+            is_final = False
+        else:
+            leave.status = "approved"
         
         # Log audit trail
         await AuditLogService.log_action(
@@ -249,15 +321,25 @@ class LeaveService:
 
         await self.repo.commit()
 
-        days = self.get_business_days(leave.start_date, leave.end_date)
-        await self._create_notification(
-            user_id=leave.employee_id,
-            title="Leave Request Approved",
-            message=f"Your request for {days} day(s) of {leave.leave_type} has been approved.",
-            ntype="success",
-            action_url="/leave-history"
-        )
-        await self.repo.commit()
+        if is_final:
+            days = self.get_business_days(leave.start_date, leave.end_date)
+            await self._create_notification(
+                user_id=leave.employee_id,
+                title="Leave Request Approved",
+                message=f"Your request for {days} day(s) of {leave.leave_type} has been fully approved.",
+                ntype="success",
+                action_url="/leave-history"
+            )
+            await self.repo.commit()
+        else:
+            await self._create_notification(
+                user_id=leave.employee_id,
+                title="Leave Request Step Approved",
+                message=f"Your request for {leave.leave_type} has been approved and moved to step {leave.current_approval_step}.",
+                ntype="info",
+                action_url="/leave-history"
+            )
+            await self.repo.commit()
 
         return {"message": "Leave request approved"}
 
@@ -272,8 +354,32 @@ class LeaveService:
         leave, emp = row
         if leave.status != "pending":
             raise HTTPException(status_code=400, detail="Only pending leaves can be rejected")
-        if emp.manager_id != manager_id and not is_admin:
-            raise HTTPException(status_code=403, detail="You can only reject requests from your direct reports")
+        from app.modules.settings.models import ApprovalChain, ApprovalStep
+        chain_res = await self.repo.db.execute(select(ApprovalChain).where(ApprovalChain.department == emp.department))
+        chain = chain_res.scalar_one_or_none()
+        if not chain:
+            chain_res = await self.repo.db.execute(select(ApprovalChain).where(ApprovalChain.department == None))
+            chain = chain_res.scalar_one_or_none()
+
+        steps = []
+        if chain:
+            steps_res = await self.repo.db.execute(select(ApprovalStep).where(ApprovalStep.chain_id == chain.id).order_by(ApprovalStep.step_order))
+            steps = steps_res.scalars().all()
+
+        current_step_idx = leave.current_approval_step - 1
+
+        approver = await self._get_employee(manager_id)
+        if steps and current_step_idx < len(steps):
+            required_role = steps[current_step_idx].role_required
+            if required_role == "manager":
+                if emp.manager_id != manager_id and not is_admin:
+                    raise HTTPException(status_code=403, detail="You can only reject requests from your direct reports for this step")
+            else:
+                if approver.role != required_role and not is_admin:
+                    raise HTTPException(status_code=403, detail=f"This step requires {required_role} role")
+        else:
+            if emp.manager_id != manager_id and not is_admin:
+                raise HTTPException(status_code=403, detail="You can only reject requests from your direct reports")
 
         leave.status = "rejected"
         approval = LeaveApproval(

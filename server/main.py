@@ -38,6 +38,10 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     await seed_demo_users()
+    
+    from app.modules.leaves.cron import start_scheduler
+    start_scheduler()
+    
     yield
 
 app = FastAPI(

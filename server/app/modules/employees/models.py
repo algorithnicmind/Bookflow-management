@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, CheckConstraint, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Date, CheckConstraint, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -14,6 +14,9 @@ class Employee(Base):
     manager_id = Column(Integer, ForeignKey("employees.id", ondelete="SET NULL"), nullable=True, index=True)
     department = Column(String(100), nullable=True, default="General")
     gender = Column(String(20), nullable=True)
+    location = Column(String(255), nullable=True)
+    date_of_birth = Column(Date, nullable=True)
+    phone_number = Column(String(50), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 

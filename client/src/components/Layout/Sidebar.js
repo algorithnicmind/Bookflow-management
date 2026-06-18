@@ -22,6 +22,7 @@ const navItems = {
     { href: '/dashboard', label: 'Dashboard', icon: '📊' },
     { href: '/employees', label: 'Employees', icon: '👥' },
     { href: '/pending-requests', label: 'Requests', icon: '⏳' },
+    { href: '/system-settings', label: 'Settings', icon: '⚙️' },
     { href: '/audit-logs', label: 'Audit Logs', icon: '🔍' },
     { href: '/apply-leave', label: 'Apply Leave', icon: '✏️' },
     { href: '/leave-history', label: 'Leave History', icon: '📋' },

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, date
 
 class EmployeeBase(BaseModel):
     name: str
@@ -25,5 +25,18 @@ class EmployeeResponse(EmployeeBase):
     is_active: bool
     created_at: datetime
     manager_name: Optional[str] = None
+    
+    # New profile fields
+    location: Optional[str] = None
+    date_of_birth: Optional[date] = None
+    phone_number: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+class EmployeeProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    password: Optional[str] = None
+    location: Optional[str] = None
+    date_of_birth: Optional[date] = None
+    phone_number: Optional[str] = None

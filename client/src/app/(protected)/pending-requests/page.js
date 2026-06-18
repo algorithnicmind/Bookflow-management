@@ -101,7 +101,14 @@ export default function PendingRequestsPage() {
                     onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
-                    <td style={{ padding: '12px', fontWeight: 600 }}>{req.employee_name || `Employee #${req.employee_id}`}</td>
+                    <td style={{ padding: '12px', fontWeight: 600 }}>
+                      {req.employee_name || `Employee #${req.employee_id}`}
+                      {req.current_approval_step > 1 && (
+                        <span style={{display: 'inline-block', marginLeft: 8, padding: '2px 6px', background: 'var(--primary)', color: 'white', borderRadius: 12, fontSize: '0.7rem'}}>
+                          Step {req.current_approval_step}
+                        </span>
+                      )}
+                    </td>
                     <td style={{ padding: '12px', color: 'var(--text-muted)' }}>{req.department || '-'}</td>
                     <td style={{ padding: '12px', textTransform: 'capitalize' }}>
                       {getLeaveTypeIcon(req.leave_type)} {req.leave_type}

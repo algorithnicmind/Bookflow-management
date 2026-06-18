@@ -70,6 +70,8 @@ export const authApi = {
     return data
   },
   register: (body) => request('/api/auth/register', { method: 'POST', body }),
+  getProfile: () => request('/api/employees/me'),
+  updateProfile: (body) => request('/api/employees/me', { method: 'PUT', body }),
 }
 
 export const leavesApi = {
@@ -101,6 +103,17 @@ export const adminsApi = {
 
 export const settingsApi = {
   update: (body) => request('/api/settings', { method: 'PUT', body }),
+  getHolidays: () => request('/api/settings/holidays'),
+  createHoliday: (body) => request('/api/settings/holidays', { method: 'POST', body }),
+  deleteHoliday: (id) => request(`/api/settings/holidays/${id}`, { method: 'DELETE' }),
+  getApprovalChains: () => request('/api/settings/approval-chains'),
+  createApprovalChain: (body) => request('/api/settings/approval-chains', { method: 'POST', body }),
+  deleteApprovalChain: (id) => request(`/api/settings/approval-chains/${id}`, { method: 'DELETE' }),
+  getLeavePolicies: () => request('/api/settings/leave-policies'),
+  createLeavePolicy: (body) => request('/api/settings/leave-policies', { method: 'POST', body }),
+  deleteLeavePolicy: (id) => request(`/api/settings/leave-policies/${id}`, { method: 'DELETE' }),
+  triggerMonthlyAccrual: () => request('/api/settings/debug/trigger-monthly-accrual', { method: 'POST' }),
+  triggerYearlyCarryForward: () => request('/api/settings/debug/trigger-yearly-carry-forward', { method: 'POST' }),
 }
 
 export const reportsApi = {

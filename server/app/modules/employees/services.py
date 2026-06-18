@@ -5,7 +5,7 @@ from typing import List, Optional
 from app.core.security import pwd_context
 from app.modules.employees.repositories import EmployeeRepository
 from app.modules.employees.models import Employee
-from app.modules.employees.schemas import EmployeeCreate, EmployeeUpdate
+from app.modules.employees.schemas import EmployeeCreate, EmployeeUpdate, EmployeeProfileUpdate
 from app.modules.leaves.models import LeaveBalance
 from app.modules.audit.services import AuditLogService
 
@@ -60,7 +60,33 @@ class EmployeeService:
         await self.repo.create(new_employee)
         
         current_year = datetime.now().year
-        for leave_type, days in [("casual", 12), ("sick", 12), ("earned", 18), ("maternity", 182), ("miscarriage", 42)]:
+        
+        # Load defaults from global settings
+        from app.core.config import settings
+        default_balances = {
+            "casual": settings.max_casual_leave,
+            "sick": settings.max_sick_leave,
+            "earned": settings.max_earned_leave,
+            "maternity": settings.max_maternity_leave,
+            "miscarriage": settings.max_miscarriage_leave
+        }
+        
+        # Load custom policies
+        from sqlalchemy.future import select
+        from app.modules.settings.models import LeavePolicy
+        policies_res = await self.repo.db.execute(select(LeavePolicy))
+        policies = policies_res.scalars().all()
+        
+        # Apply policies (department-specific or role-specific overrides)
+        for p in policies:
+            if (p.department is None or p.department == new_employee.department) and \
+               (p.role is None or p.role == new_employee.role):
+                if p.leave_type in default_balances:
+                    default_balances[p.leave_type] = p.base_days
+                else:
+                    default_balances[p.leave_type] = p.base_days
+
+        for leave_type, days in default_balances.items():
             balance = LeaveBalance(
                 employee_id=new_employee.id,
                 leave_type=leave_type,
@@ -121,6 +147,38 @@ class EmployeeService:
             target_type="employee",
             target_id=employee_id,
             details={"old": old_data, "new": new_data}
+        )
+        
+        await self.repo.commit()
+        return emp
+
+    async def update_profile(self, employee_id: int, data: "EmployeeProfileUpdate") -> Employee:
+        emp = await self.repo.get_by_id(employee_id)
+        if not emp:
+            raise HTTPException(status_code=404, detail="Employee not found")
+            
+        if data.name is not None: emp.name = data.name
+        if data.email is not None:
+            existing = await self.repo.get_by_email(data.email)
+            if existing and existing.id != employee_id:
+                raise HTTPException(status_code=409, detail="Email already in use")
+            emp.email = data.email
+            
+        if data.password is not None and data.password.strip():
+            hashed_password = await asyncio.to_thread(pwd_context.hash, data.password)
+            emp.password_hash = hashed_password
+            
+        if data.location is not None: emp.location = data.location
+        if data.date_of_birth is not None: emp.date_of_birth = data.date_of_birth
+        if data.phone_number is not None: emp.phone_number = data.phone_number
+        
+        await AuditLogService.log_action(
+            db=self.repo.db,
+            actor_id=employee_id,
+            action="profile_update",
+            target_type="employee",
+            target_id=employee_id,
+            details={"email": emp.email}
         )
         
         await self.repo.commit()
