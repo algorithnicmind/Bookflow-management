@@ -4,10 +4,17 @@ import { useState, useEffect } from 'react'
 import { reportsApi } from '@/services/api'
 import Card from '@/components/ui/Card'
 import StatCard from '@/components/ui/StatCard'
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts'
+import Papa from 'papaparse'
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D']
 
 export default function OrganizationReportsPage() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [exporting, setExporting] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => { fetchReports() }, [])
@@ -21,6 +28,68 @@ export default function OrganizationReportsPage() {
       setError(err.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleExportCSV = async () => {
+    try {
+      setExporting(true)
+      const res = await reportsApi.exportLeaves()
+      const csvData = Papa.unparse(res.leaves)
+      
+      const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+      link.setAttribute('href', url)
+      link.setAttribute('download', `leave_reports_${new Date().toISOString().split('T')[0]}.csv`)
+      link.style.visibility = 'hidden'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (err) {
+      alert('Failed to export CSV: ' + err.message)
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  const handleExportPDF = async () => {
+    try {
+      setExporting(true)
+      const res = await reportsApi.exportLeaves()
+      
+      const doc = new jsPDF()
+      doc.text("Organization Leave Reports", 14, 15)
+      
+      const tableColumn = ["ID", "Employee", "Dept", "Type", "Start", "End", "Status", "Reason"]
+      const tableRows = []
+      
+      res.leaves.forEach(leave => {
+        const rowData = [
+          leave.id,
+          leave.employee_name,
+          leave.department,
+          leave.leave_type,
+          leave.start_date,
+          leave.end_date,
+          leave.status,
+          leave.reason?.substring(0, 20) || ''
+        ]
+        tableRows.push(rowData)
+      })
+
+      doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 20,
+        styles: { fontSize: 8 }
+      })
+      
+      doc.save(`leave_reports_${new Date().toISOString().split('T')[0]}.pdf`)
+    } catch (err) {
+      alert('Failed to export PDF: ' + err.message)
+    } finally {
+      setExporting(false)
     }
   }
 
@@ -45,12 +114,39 @@ export default function OrganizationReportsPage() {
 
   if (!data) return null
 
+  // Format data for charts
+  const deptData = data.department_breakdown?.map(d => ({
+    name: d.department,
+    value: d.employees || d.count || 0
+  })) || []
+
+  const roleData = data.role_breakdown?.map(r => ({
+    name: r.role,
+    value: r.count || 0
+  })) || []
+
   return (
     <div className="page-container">
-      <div className="page-header animate-in">
+      <div className="page-header animate-in" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 className="page-title">Organization Reports</h1>
-          <p className="page-subtitle">Organization-wide metrics and employee distribution</p>
+          <h1 className="page-title">Reporting & Analytics Dashboard</h1>
+          <p className="page-subtitle">Organization-wide metrics and visual charts</p>
+        </div>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button 
+            onClick={handleExportCSV} 
+            disabled={exporting}
+            style={{ padding: '8px 16px', background: 'var(--success)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}
+          >
+            {exporting ? 'Exporting...' : '📄 Export CSV'}
+          </button>
+          <button 
+            onClick={handleExportPDF} 
+            disabled={exporting}
+            style={{ padding: '8px 16px', background: 'var(--accent)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}
+          >
+            {exporting ? 'Exporting...' : '📕 Export PDF'}
+          </button>
         </div>
       </div>
 
@@ -63,35 +159,47 @@ export default function OrganizationReportsPage() {
         <StatCard label="Approved / Rejected" value={`${data.approved_leaves || 0} / ${data.rejected_leaves || 0}`} icon="📊" color="var(--success)" />
       </div>
 
-      {data.department_breakdown && data.department_breakdown.length > 0 && (
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '24px' }}>
         <Card>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: 16 }}>Department Breakdown</h3>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                  <th style={{ textAlign: 'left', padding: '12px', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Department</th>
-                  <th style={{ textAlign: 'left', padding: '12px', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Employees</th>
-                  {data.department_breakdown[0].leaves !== undefined && (
-                    <th style={{ textAlign: 'left', padding: '12px', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Leaves</th>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {data.department_breakdown.map((dept, i) => (
-                  <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '12px', fontWeight: 600 }}>{dept.department}</td>
-                    <td style={{ padding: '12px' }}>{dept.employees || dept.count || 0}</td>
-                    {dept.leaves !== undefined && (
-                      <td style={{ padding: '12px', color: 'var(--text-muted)' }}>{dept.leaves}</td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 16 }}>Department Breakdown</h3>
+          <div style={{ width: '100%', height: 300 }}>
+            {deptData.length > 0 ? (
+              <ResponsiveContainer>
+                <PieChart>
+                  <Pie data={deptData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} fill="#8884d8" label>
+                    {deptData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <p>No department data available.</p>
+            )}
           </div>
         </Card>
-      )}
+
+        <Card>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 16 }}>Role Distribution</h3>
+          <div style={{ width: '100%', height: 300 }}>
+            {roleData.length > 0 ? (
+              <ResponsiveContainer>
+                <BarChart data={roleData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="value" fill="var(--primary)" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p>No role data available.</p>
+            )}
+          </div>
+        </Card>
+      </div>
     </div>
   )
 }

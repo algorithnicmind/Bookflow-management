@@ -62,3 +62,32 @@ async def get_organization_report(
             "role_breakdown": role_breakdown,
         }
     }
+
+@router.get("/leaves-export")
+async def export_leaves_report(
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(RoleChecker(["admin", "super_admin"]))
+):
+    from app.modules.leaves.models import LeaveRequest
+    
+    # Query all leaves and join with Employee to get names and departments
+    stmt = select(LeaveRequest, Employee).join(Employee, LeaveRequest.employee_id == Employee.id).order_by(LeaveRequest.created_at.desc())
+    result = await db.execute(stmt)
+    rows = result.all()
+    
+    export_data = []
+    for leave, emp in rows:
+        export_data.append({
+            "id": leave.id,
+            "employee_name": emp.name,
+            "department": emp.department,
+            "leave_type": leave.leave_type,
+            "start_date": leave.start_date.isoformat(),
+            "end_date": leave.end_date.isoformat(),
+            "status": leave.status,
+            "reason": leave.reason,
+            "applied_on": leave.created_at.isoformat() if leave.created_at else None
+        })
+        
+    return {"leaves": export_data}
+

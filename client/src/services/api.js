@@ -105,6 +105,7 @@ export const settingsApi = {
 
 export const reportsApi = {
   organization: () => request('/api/reports/organization'),
+  exportLeaves: () => request('/api/reports/leaves-export'),
 }
 
 export const auditApi = {
