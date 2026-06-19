@@ -252,16 +252,20 @@ async def get_calendar_status(
 @router.get("/calendar/connect/{provider}")
 async def connect_calendar(
     provider: str,
+    request: Request,
     current_user: Employee = Depends(get_current_user)
 ):
     """Initiates calendar connection redirection URL."""
     if provider not in ["google", "outlook"]:
         raise HTTPException(status_code=400, detail="Invalid provider")
 
+    # Get dynamically generated base URL to support both localhost and Render
+    base_url = str(request.base_url).rstrip('/')
+    redirect_uri = f"{base_url}/api/integrations/calendar/callback/{provider}"
+
     # Construct OAuth URLs
     if provider == "google":
         client_id = os.environ.get("GOOGLE_CLIENT_ID", "mock-google-client-id")
-        redirect_uri = "http://localhost:8000/api/integrations/calendar/callback/google"
         scope = "https://www.googleapis.com/auth/calendar.events"
         auth_url = (
             f"https://accounts.google.com/o/oauth2/v2/auth?"
@@ -270,7 +274,6 @@ async def connect_calendar(
         )
     else:
         client_id = os.environ.get("OUTLOOK_CLIENT_ID", "mock-outlook-client-id")
-        redirect_uri = "http://localhost:8000/api/integrations/calendar/callback/outlook"
         scope = "https://graph.microsoft.com/Calendars.ReadWrite"
         auth_url = (
             f"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?"
@@ -279,6 +282,7 @@ async def connect_calendar(
         )
 
     return {"auth_url": auth_url}
+
 
 @router.get("/calendar/callback/{provider}")
 async def calendar_callback(
