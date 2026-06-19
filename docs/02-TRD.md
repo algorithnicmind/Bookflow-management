@@ -8,7 +8,7 @@
 
 ## 1. Technology Stack Overview
 
-The Leave Management System utilizes a modern, highly performant, and secure stack featuring a **Next.js App Router** frontend, a **FastAPI (Python)** REST API backend, and a robust **PostgreSQL** database, configured for clean host-level execution and security.
+The Leave Management System utilizes a modern, highly performant, and secure stack featuring a **Next.js App Router** frontend (with a premium public B2B landing page), a **FastAPI (Python)** REST API backend, and a robust **PostgreSQL** database configured for strict **multi-tenant data segregation** via `organization_id` architecture.
 
 ```mermaid
 graph TB
@@ -61,8 +61,9 @@ graph TB
 | **Next.js** | 14/15+ | React Framework | Modern React standard, hybrid Server/Client rendering, native routing, optimized builds, out-of-the-box SEO |
 | **App Router** | — | Routing & Layouts | Declarative folder-based routing, server components for static pages, layout inheritance |
 | **Fetch API** | Native | HTTP Client | Native browser support, robust caching, no extra dependencies, seamless integration with Next.js caching |
-| **CSS3 (Vanilla)** | — | UI Styling | Premium aesthetics (dark mode, glassmorphism), no CSS framework overhead, absolute styling control |
-| **React Context** | — | State Management | Lightweight, built-in, perfect for global session (JWT) storage and current user context |
+| **CSS3 (Vanilla)** | — | UI Styling | Premium aesthetics (dark mode, glassmorphism), no CSS framework overhead, absolute styling control for landing page and dashboard |
+| **Framer Motion** | — | Animations | Smooth, premium micro-animations for the B2B landing page and floating dock navigation |
+| **React Context** | — | State Management | Lightweight, built-in, perfect for global session (JWT) storage and current user/tenant context |
 
 ### 2.2 Backend Technologies
 
@@ -83,8 +84,9 @@ graph TB
 | **PostgreSQL** | 15+ | Relational Database | ACID compliance, production-grade reliability, foreign keys, constraints validation, transaction support |
 
 **PostgreSQL Advantages for this project:**
-- ✅ **ACID Transactions** — Crucial to ensure that leave balance updates are atomic (e.g., deducting a balance must succeed if and only if the leave request is approved successfully).
-- ✅ **Referential Integrity** — Foreign keys guarantee consistent data associations between `employees`, `leave_requests`, `leave_balances`, and `leave_approvals`.
+- ✅ **ACID Transactions** — Crucial to ensure that leave balance updates are atomic.
+- ✅ **Multi-Tenant Segregation** — Row-Level Security (RLS) or strict ORM-level `organization_id` filtering guarantees that B2B clients cannot access each other's data.
+- ✅ **Referential Integrity** — Foreign keys guarantee consistent data associations between `organizations`, `employees`, `leave_requests`, `holidays`, and `approval_chains`.
 - ✅ **Check Constraints** — Multi-layered data protection enforcing allowed database values (e.g., `role` in ('super_admin', 'admin', 'manager', 'employee'), `status` in ('pending', 'approved', 'rejected', 'cancelled')) at the SQL schema level.
 - ✅ **Connection Pooling** — Asynchronous pool utilization to handle simultaneous application requests with minimal overhead.
 
@@ -217,9 +219,9 @@ Leaveflow-management/
     └── 📁 src/
         ├── 📁 app/                  #    App Router folders (Pages & Layouts)
         │   ├── layout.js            #    Global HTML Layout (Fonts, Head, Viewports)
-        │   ├── page.js              #    Landing / Routing router
+        │   ├── page.js              #    Landing / Routing router (Public B2B Marketing Site)
         │   ├── login/
-        │   │   └── page.js          #    Login Component
+        │   │   └── page.js          #    Login Component (OAuth / Email Auth)
         │   ├── dashboard/
         │   │   └── page.js          #    Role-based statistics dashboard page
         │   ├── apply-leave/
@@ -228,6 +230,8 @@ Leaveflow-management/
         │   │   └── page.js          #    Leaves summary table
         │   ├── pending-requests/
         │   │   └── page.js          #    Manager approval view
+        │   ├── system-settings/
+        │   │   └── page.js          #    System Settings & Holiday Configurations
         │   └── employees/
         │       └── page.js          #    Admin employee management
         ├── 📁 context/

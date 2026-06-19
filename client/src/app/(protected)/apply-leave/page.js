@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { leavesApi } from '@/services/api'
+import { leavesApi, settingsApi } from '@/services/api'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 
@@ -27,12 +27,30 @@ export default function ApplyLeavePage() {
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
+  const [holidays, setHolidays] = useState([])
+
+  useEffect(() => {
+    settingsApi.getHolidays().then(setHolidays).catch(console.error)
+  }, [])
+
   const calculateDays = () => {
     if (!form.start_date || !form.end_date) return 0
     const start = new Date(form.start_date)
+    start.setHours(0, 0, 0, 0)
     const end = new Date(form.end_date)
+    end.setHours(0, 0, 0, 0)
     if (end < start) return 0
-    return Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1
+    
+    let days = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1
+    let holidayCount = 0
+    for (const h of holidays) {
+      const hDate = new Date(h.date)
+      hDate.setHours(0, 0, 0, 0)
+      if (hDate >= start && hDate <= end) {
+        holidayCount++
+      }
+    }
+    return days - holidayCount
   }
 
   const handleSubmit = async (e) => {
@@ -140,7 +158,17 @@ export default function ApplyLeavePage() {
                 background: 'var(--accent-glow)', marginBottom: 18,
                 fontSize: '0.85rem', fontWeight: 500,
               }}>
-                Duration: <strong>{calculateDays()}</strong> day{calculateDays() > 1 ? 's' : ''}
+                Duration: <strong>{calculateDays()}</strong> day{calculateDays() > 1 ? 's' : ''} (Public holidays are excluded)
+              </div>
+            )}
+            
+            {form.start_date && form.end_date && calculateDays() <= 0 && (
+              <div style={{
+                padding: '10px 14px', borderRadius: 'var(--radius-sm)',
+                background: 'var(--danger-bg)', border: '1px solid rgba(244, 63, 94, 0.2)',
+                color: 'var(--danger)', fontSize: '0.85rem', marginBottom: 18,
+              }}>
+                The selected date range consists only of public holidays or invalid dates.
               </div>
             )}
 

@@ -41,82 +41,60 @@ All error responses follow this structure:
 
 ---
 
-## 1. Authentication Endpoints
+## 1. Authentication & Onboarding
+Endpoints for secure login, OAuth, and lead provisioning.
 
-### POST `/api/auth/login`
-
-Authenticate a user and receive a JWT token.
-
-**Access:** Public
-
-**Request Body:**
+### 1.1 POST `/api/auth/login`
+Authenticates a registered employee and returns a JWT.
+**Roles:** Public
+**Request:**
 ```json
 {
-  "email": "john@company.com",
-  "password": "password123"
+  "email": "user@company.com",
+  "password": "securepassword"
 }
 ```
-
-**Success Response (200):**
+**Response (200 OK):**
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "access_token": "eyJhbG...",
+  "token_type": "bearer",
   "user": {
-    "id": 1,
-    "name": "John Doe",
-    "email": "john@company.com",
+    "id": "uuid",
     "role": "employee",
-    "department": "Engineering"
+    "organization_id": "uuid"
   }
 }
 ```
 
-**Error Responses:**
-| Status | Condition | Response |
-|--------|-----------|----------|
-| 400 | Missing email or password | `{"error": "Email and password are required"}` |
-| 401 | Invalid credentials | `{"error": "Invalid email or password"}` |
-| 403 | Account deactivated | `{"error": "Account is deactivated"}` |
-
----
-
-### POST `/api/auth/register`
-
-Register a new employee. Admin only.
-
-**Access:** 🛡️ Admin
-
-**Request Body:**
+### 1.2 POST `/api/auth/oauth`
+Authenticates via Google/Facebook.
+**Roles:** Public
+**Request:**
 ```json
 {
-  "name": "Jane Smith",
-  "email": "jane@company.com",
-  "password": "password123",
-  "role": "employee",
-  "department": "Marketing",
-  "manager_id": 2
+  "provider": "google",
+  "token": "ya29.a0A..."
 }
 ```
 
-**Success Response (201):**
+### 1.3 POST `/api/onboarding/apply`
+Submits a company application after initial OAuth/Email registration.
+**Roles:** Authenticated (Unprovisioned Lead)
+**Request:**
 ```json
 {
-  "message": "Employee registered successfully",
-  "employee": {
-    "id": 5,
-    "name": "Jane Smith",
-    "email": "jane@company.com",
-    "role": "employee",
-    "department": "Marketing"
-  }
+  "company_name": "Acme Corp",
+  "size": "50-100",
+  "requirements": "Need approval chains"
 }
 ```
-
-**Error Responses:**
-| Status | Condition | Response |
-|--------|-----------|----------|
-| 400 | Missing required fields | `{"error": "Name, email, password, and role are required"}` |
-| 409 | Email already exists | `{"error": "Email already registered"}` |
+**Response (201 Created):**
+```json
+{
+  "message": "Application submitted successfully. Our team will review and provision your workspace."
+}
+```
 
 ---
 
@@ -302,14 +280,12 @@ Approve a pending leave request.
 }
 ```
 
-**Success Response (200):**
+**Success Response (200 OK):**
 ```json
 {
-  "message": "Leave request approved",
-  "leave": {
-    "id": 10,
-    "status": "approved"
-  }
+  "id": 5,
+  "action": "approved",
+  "acted_at": "2024-05-15T14:35:00Z"
 }
 ```
 
@@ -445,8 +421,6 @@ List all employees.
 }
 ```
 
----
-
 ### PUT `/api/employees/:id`
 
 Update an employee's details.
@@ -471,8 +445,6 @@ Update an employee's details.
 }
 ```
 
----
-
 ### DELETE `/api/employees/:id`
 
 Deactivate an employee (soft delete).
@@ -494,75 +466,44 @@ Deactivate an employee (soft delete).
 
 ---
 
-## 5. Super Admin Endpoints
+## 5. System Settings & Holidays
 
-### POST `/api/admins`
+### 5.1 GET `/api/settings`
+Retrieves global company policies.
+**Roles:** Employee, Manager, Admin, Super Admin
 
-Create a new Admin account.
-
-**Access:** 👑 Super Admin
-
-**Request Body:**
+### 5.2 POST `/api/settings`
+Updates a specific system setting.
+**Roles:** Admin, Super Admin
+**Request:**
 ```json
 {
-  "name": "New Admin",
-  "email": "newadmin@company.com",
-  "password": "securePassword123"
+  "setting_key": "carry_forward_limit",
+  "setting_value": "5"
 }
 ```
 
-**Success Response (201):**
+### 5.3 GET `/api/holidays`
+Lists all company holidays for the current year.
+**Roles:** Employee, Manager, Admin, Super Admin
+
+### 5.4 POST `/api/holidays`
+Adds a new company holiday.
+**Roles:** Admin, Super Admin
+**Request:**
 ```json
 {
-  "message": "Admin account created successfully",
-  "admin": {
-    "id": 6,
-    "name": "New Admin",
-    "email": "newadmin@company.com",
-    "role": "admin"
-  }
-}
-```
-
-**Error Responses:**
-| Status | Condition | Response |
-|--------|-----------|----------|
-| 403 | Not Super Admin | `{"error": "Only Super Admin can create admin accounts"}` |
-| 409 | Email exists | `{"error": "Email already registered"}` |
-
----
-
-### PUT `/api/settings`
-
-Update system settings.
-
-**Access:** 👑 Super Admin
-
-**Request Body:**
-```json
-{
-  "max_casual_leave": 12,
-  "max_sick_leave": 10,
-  "max_earned_leave": 15
-}
-```
-
-**Success Response (200):**
-```json
-{
-  "message": "Settings updated successfully"
+  "name": "Independence Day",
+  "date": "2024-07-04"
 }
 ```
 
 ---
 
-### GET `/api/reports/organization`
+## 6. Dashboard Analytics/reports/organization`
 
 View organization-wide reports and metrics.
 
-**Access:** 👑 Super Admin
-
-**Success Response (200):**
 ```json
 {
   "org_stats": {

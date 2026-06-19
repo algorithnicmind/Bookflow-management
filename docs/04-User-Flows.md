@@ -6,7 +6,38 @@
 
 ---
 
-## 1. Employee — Login Flow
+## 1. B2B Enterprise Onboarding Flow
+
+```mermaid
+flowchart TD
+    A[🌐 Landing Page] --> B[🖱️ Click 'Get Started']
+    B --> C[📄 Welcome / Auth Page]
+    C --> D{Choose Auth Method}
+    D -->|Google/Facebook| E[🔒 OAuth Verification]
+    D -->|Email| F[🔒 Email/Password Signup]
+    E --> G[📋 Company Onboarding Form]
+    F --> G
+    G --> H[📩 Submit Application to LeaveFlow]
+    H --> I[⏳ Status: Unprovisioned Lead]
+    
+    I --> J[🧑‍💼 LeaveFlow Sales Manual Review]
+    J --> K{Approved?}
+    K -->|No| L[❌ Application Rejected]
+    K -->|Yes| M[✅ Provision Organization Workspace]
+    M --> N[👑 Assign SUPERADMIN role to original Auth Credentials]
+    N --> O[🎉 Client Logs In as Superadmin]
+    
+    style A fill:#1e1b4b,color:#fff
+    style G fill:#065f46,color:#fff
+    style J fill:#f59e0b,color:#000
+    style M fill:#065f46,color:#fff
+    style N fill:#9333ea,color:#fff
+    style O fill:#10b981,color:#000
+```
+
+---
+
+## 2. Employee — Login Flow
 
 ```mermaid
 --flowchart TD
@@ -191,7 +222,9 @@ flowchart LR
     subgraph Admin["🛡️ Admin Views"]
         AD[Dashboard]
         EM[Employee Management]
-        SS[System Stats]
+        SS[System Settings & Policies]
+        HC[Holiday Calendar]
+        AC[Approval Chains]
     end
     
     Login -->|Employee| ED
@@ -208,6 +241,8 @@ flowchart LR
     
     AD --> EM
     AD --> SS
+    AD --> HC
+    AD --> AC
     AD --> PR
     AD --> AL
     

@@ -19,38 +19,37 @@ Organizations face significant challenges managing employee leave requests manua
 
 ### The Solution
 
-A **web-based Leave Management System** that digitizes the entire leave lifecycle — from application to approval — with role-based access, real-time status tracking, and an analytics dashboard.
+A **Multi-Tenant B2B web-based Leave Management System** that digitizes the entire leave lifecycle. It features a premium, public-facing landing page for prospective clients and a comprehensive internal dashboard. Organizations can onboard securely through a manual verification process, after which they are provisioned a dedicated workspace. The platform provides robust role-based access, multi-tier approval chains, holiday management, real-time status tracking, and a centralized analytics dashboard.
 
 ---
 
 ## 2. Scope Document
 
-### 2.1 In Scope (MVP)
+### 2.1 In Scope (MVP & v1.x)
 
 | Feature | Description |
 |---------|------------|
-| **User Authentication** | Secure login with email/password, JWT-based sessions |
-| **Role-Based Access** | Four roles: Super Admin, Admin, Manager, Employee — each with distinct permissions |
+| **Multi-Tenant B2B Architecture** | Separate data workspaces for different client organizations. |
+| **Enterprise Onboarding** | Landing page with pricing, OAuth/Email signup, and contact application forms for manual Sales provisioning. |
+| **User Authentication** | Secure login with email/password or OAuth (Google/Facebook), JWT-based sessions |
+| **Role-Based Access** | Four roles per organization: Super Admin, Admin, Manager, Employee |
 | **Leave Application** | Employees can apply for leave with type, date range, and reason |
-| **Leave History** | Employees can view all their past and current leave requests |
-| **Leave Approval** | Managers can approve or reject leave requests from their direct reports |
-| **Employee Management** | Admins can add, edit, and remove employees from the system |
-| **Dashboard** | Visual statistics: leave counts, trends, department-wise breakdown |
+| **Leave Approval Chains** | Managers can approve/reject, with support for multi-tier dynamic approval workflows |
+| **System Settings & Holidays** | Admins can configure global rules, approval chains, and company-wide holiday calendars |
+| **Employee Management** | Admins can add, edit, and remove employees, assigning them to departments and managers |
+| **Dashboard & Analytics** | Visual statistics: leave counts, trends, department-wise breakdown |
 | **Leave Balance Tracking** | Track remaining leave per type (Casual, Sick, Earned) per year |
-| **Input Validation** | Prevent invalid dates, overlapping leaves, empty fields |
-| **Responsive UI** | Works on desktop and tablet browsers |
+| **Premium UI/UX** | Dark-mode, glassmorphism design with floating dock navigation and responsive layouts |
 
 ### 2.2 Out of Scope (Future Enhancements)
 
 | Feature | Reason |
 |---------|--------|
-| Email/SMS Notifications | Requires third-party integration |
-| Leave Calendar Integration (Google/Outlook) | Complexity beyond MVP |
-| Half-Day / Hourly Leave | Simplifying to full-day leave for MVP |
-| Multi-Level Approval Chains | MVP supports single-manager approval |
+| Email/SMS Notifications | Requires third-party integration (SendGrid/Twilio) |
+| Leave Calendar Integration (Google/Outlook) | Complexity beyond current phase |
+| Half-Day / Hourly Leave | Simplifying to full-day leave for current release |
 | Payroll Integration | Separate system concern |
 | Mobile Native App | Web-responsive approach covers mobile use cases |
-| Holiday Calendar Management | Can be added in v2 |
 
 ---
 
@@ -79,7 +78,7 @@ Oversees a team of employees. Responsible for approving or rejecting leave reque
 - View team leave calendar/overview
 
 #### 🛡️ Admin
-System administrator responsible for managing users, roles, and system configuration.
+System administrator responsible for managing users, roles, system configuration, holidays, and approval chains.
 
 **Permissions:**
 - All Manager permissions
@@ -87,19 +86,25 @@ System administrator responsible for managing users, roles, and system configura
 - Add new employees to the system
 - Edit employee details (role, department, manager assignment)
 - Remove employees from the system
-- View system-wide dashboard and statistics (Total employees, Total leave requests, Approved leaves, Rejected leaves)
-- Reset employee leave balances
+- Manage Company Holidays and Approval Chains
+- View system-wide dashboard and statistics
 
-#### 👑 Super Admin
-The highest-level authority in the system. Responsible for creating Admin accounts and overseeing the entire organization.
+#### 👑 Super Admin (Client Organization)
+The highest-level authority within a client's specific organization/tenant. This role is manually provisioned by the internal LeaveFlow team after a successful sales onboarding.
 
 **Permissions:**
 - All Admin permissions
 - Create Admin accounts
-- Manage system settings
-- View organization-wide reports
+- Manage organization-wide system settings
+- Ultimate authority over their company's workspace
 
+#### ⚙️ Internal LeaveFlow Team (System Operators)
+The internal sales and administration team that manages the platform globally.
 
+**Permissions:**
+- Review incoming onboarding applications from the Landing Page
+- Verify identities and manually provision new workspaces/organizations
+- Elevate an authenticated user to the Super Admin role for their new organization
 ### 3.2 Permissions Matrix
 
 | Action | Employee | Manager | Admin | Super Admin |

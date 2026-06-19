@@ -3,6 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from app.core.database import get_db
 from app.core.dependencies import RoleChecker, get_current_user
+from app.core.tenant import get_current_tenant
+from app.modules.organizations.models import Organization
 from app.modules.employees.models import Employee
 from app.modules.employees.schemas import EmployeeResponse, EmployeeCreate, EmployeeUpdate
 from app.modules.employees.repositories import EmployeeRepository
@@ -10,9 +12,31 @@ from app.modules.employees.services import EmployeeService
 
 router = APIRouter(prefix="/api/employees", tags=["employees"])
 
-def get_employee_service(db: AsyncSession = Depends(get_db)) -> EmployeeService:
-    repo = EmployeeRepository(db)
+def get_employee_service(
+    db: AsyncSession = Depends(get_db),
+    tenant: Organization = Depends(get_current_tenant)
+) -> EmployeeService:
+    repo = EmployeeRepository(db, tenant.id)
     return EmployeeService(repo)
+
+@router.get("/me", response_model=EmployeeResponse)
+async def get_my_profile(
+    current_user: Employee = Depends(get_current_user),
+    service: EmployeeService = Depends(get_employee_service)
+):
+    emp = await service.get_employee_by_id(current_user.id)
+    return EmployeeResponse.model_validate(emp)
+
+from app.modules.employees.schemas import EmployeeProfileUpdate
+
+@router.put("/me", response_model=EmployeeResponse)
+async def update_my_profile(
+    request: EmployeeProfileUpdate,
+    current_user: Employee = Depends(get_current_user),
+    service: EmployeeService = Depends(get_employee_service)
+):
+    emp = await service.update_profile(current_user.id, request)
+    return EmployeeResponse.model_validate(emp)
 
 @router.get("", response_model=dict)
 async def list_employees(

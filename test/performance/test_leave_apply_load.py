@@ -33,8 +33,8 @@ async def test_balance_consistency_under_load(client: AsyncClient, seeded_db):
             "reason": f"Load test {day_offset}"
         })
     
-    # Run concurrently
-    results = await asyncio.gather(*[apply_leave(i) for i in range(5)])
+    # Run concurrently with 10 leaves
+    results = await asyncio.gather(*[apply_leave(i) for i in range(10)])
     
     successes = sum(1 for r in results if r.status_code == 201)
     
@@ -44,3 +44,59 @@ async def test_balance_consistency_under_load(client: AsyncClient, seeded_db):
     
     expected = initial_casual - (successes * 2)
     assert final_casual == expected, f"Balance mismatch! Expected {expected}, got {final_casual}"
+
+@pytest.mark.asyncio
+async def test_20_concurrent_leave_applications(client: AsyncClient, seeded_db):
+    """
+    20 users applying for leave at the same time to ensure no deadlocks or errors.
+    """
+    # Assuming we have 20 seeded employees or we just use 'jane@company.com' multiple times if overlap isn't strict.
+    # To avoid overlap constraints for different users, we'll login as jane and apply to different dates.
+    login_res = await client.post("/api/auth/login", data={"username": "jane@company.com", "password": "password123"}, headers={"Content-Type": "application/x-www-form-urlencoded"})
+    token = login_res.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    tomorrow = date.today() + timedelta(days=100) # Far in future
+
+    async def apply_leave(idx):
+        start = tomorrow + timedelta(days=idx * 5)
+        return await client.post("/api/leaves", headers=headers, json={
+            "leave_type": "sick",
+            "start_date": str(start),
+            "end_date": str(start), # 1 day each
+            "reason": f"Bulk Load test {idx}"
+        })
+    
+    results = await asyncio.gather(*[apply_leave(i) for i in range(20)])
+    
+    # They should either succeed or fail gracefully (e.g. out of balance), but no 500 errors
+    for r in results:
+        assert r.status_code in (201, 400), f"Unexpected error during concurrent apply: {r.status_code}"
+
+@pytest.mark.asyncio
+async def test_same_user_concurrent_apply(client: AsyncClient, seeded_db):
+    """
+    5 concurrent identical leave applications by the SAME user.
+    Only 1 should succeed, rest should hit overlap errors to prevent race conditions.
+    """
+    login_res = await client.post("/api/auth/login", data={"username": "john@company.com", "password": "password123"}, headers={"Content-Type": "application/x-www-form-urlencoded"})
+    token = login_res.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    target_date = date.today() + timedelta(days=50) # Target a free date
+    
+    async def apply_identical_leave():
+        return await client.post("/api/leaves", headers=headers, json={
+            "leave_type": "casual",
+            "start_date": str(target_date),
+            "end_date": str(target_date),
+            "reason": "Trying to cheat the system"
+        })
+    
+    results = await asyncio.gather(*[apply_identical_leave() for _ in range(5)])
+    
+    successes = sum(1 for r in results if r.status_code == 201)
+    failures = sum(1 for r in results if r.status_code == 400)
+    
+    assert successes <= 1, "Race condition vulnerability! Multiple identical overlapping leaves were created."
+    assert failures >= 4, "Overlap errors were not triggered for concurrent duplicate requests."

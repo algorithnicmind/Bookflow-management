@@ -1,3 +1,5 @@
+import AppleEmoji from '@/components/AppleEmoji'
+
 export function cn(...classes) {
   return classes.filter(Boolean).join(' ')
 }
@@ -39,14 +41,14 @@ export function getStatusColor(status) {
 
 export function getLeaveTypeIcon(type) {
   const icons = {
-    casual: '📅',
-    sick: '🏥',
-    earned: '🌴',
-    unpaid: '📋',
-    maternity: '👶',
-    miscarriage: '💔',
+    casual: <AppleEmoji char="📅" />,
+    sick: <AppleEmoji char="🏥" />,
+    earned: <AppleEmoji char="🌴" />,
+    unpaid: <AppleEmoji char="📋" />,
+    maternity: <AppleEmoji char="👶" />,
+    miscarriage: <AppleEmoji char="💔" />,
   }
-  return icons[type] || '📋'
+  return icons[type] || <AppleEmoji char="📋" />
 }
 
 export function checkOverlap(start1, end1, start2, end2) {

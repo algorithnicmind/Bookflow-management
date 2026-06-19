@@ -3,15 +3,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from app.core.database import get_db
 from app.core.dependencies import get_current_user, RoleChecker
+from app.core.tenant import get_current_tenant
 from app.modules.employees.models import Employee
+from app.modules.organizations.models import Organization
 from app.modules.leaves.schemas import LeaveApplication, LeaveApprovalAction
 from app.modules.leaves.repositories import LeaveRepository
 from app.modules.leaves.services import LeaveService
 
 router = APIRouter(prefix="/api/leaves", tags=["leaves"])
 
-def get_leave_service(db: AsyncSession = Depends(get_db)) -> LeaveService:
-    repo = LeaveRepository(db)
+def get_leave_service(
+    db: AsyncSession = Depends(get_db),
+    tenant: Organization = Depends(get_current_tenant)
+) -> LeaveService:
+    repo = LeaveRepository(db, tenant.id)
     return LeaveService(repo)
 
 @router.post("", status_code=status.HTTP_201_CREATED)

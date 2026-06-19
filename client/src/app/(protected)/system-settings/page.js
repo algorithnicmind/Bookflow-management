@@ -37,6 +37,11 @@ export default function SystemSettingsPage() {
           <h1 className="page-title">System Settings</h1>
           <p className="page-subtitle">Configure organization-wide leave policies</p>
         </div>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <Button variant="outline" onClick={() => window.location.href='/system-settings/holidays'}>Public Holidays</Button>
+          <Button variant="outline" onClick={() => window.location.href='/system-settings/approval-chains'}>Approval Chains</Button>
+          <Button variant="outline" onClick={() => window.location.href='/system-settings/leave-policies'}>Leave Policies</Button>
+        </div>
       </div>
 
       <div style={{ maxWidth: 500, margin: '0 auto' }}>

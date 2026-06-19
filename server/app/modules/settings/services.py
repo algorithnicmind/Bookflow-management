@@ -1,19 +1,20 @@
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from app.modules.settings.models import SystemSetting
+from app.modules.settings.models import SystemSetting, PublicHoliday
 from app.modules.settings.schemas import SettingsUpdate
 from app.modules.audit.services import AuditLogService
 
 class SettingsService:
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession, organization_id: int):
         self.db = db
+        self.organization_id = organization_id
 
     async def get_settings(self) -> SystemSetting:
-        result = await self.db.execute(select(SystemSetting))
+        result = await self.db.execute(select(SystemSetting).where(SystemSetting.organization_id == self.organization_id))
         settings = result.scalar_one_or_none()
         if not settings:
-            settings = SystemSetting()
+            settings = SystemSetting(organization_id=self.organization_id)
             self.db.add(settings)
             await self.db.commit()
             await self.db.refresh(settings)
@@ -62,3 +63,96 @@ class SettingsService:
         
         await self.db.commit()
         return {"message": "Settings updated successfully"}
+
+    async def get_leave_policies(self):
+        from app.modules.settings.models import LeavePolicy
+        result = await self.db.execute(select(LeavePolicy).where(LeavePolicy.organization_id == self.organization_id))
+        return result.scalars().all()
+
+    async def create_leave_policy(self, data):
+        from app.modules.settings.models import LeavePolicy
+        policy = LeavePolicy(
+            organization_id=self.organization_id,
+            name=data.name,
+            department=data.department,
+            role=data.role,
+            leave_type=data.leave_type,
+            base_days=data.base_days,
+            accrual_rate=data.accrual_rate,
+            max_carry_forward=data.max_carry_forward
+        )
+        self.db.add(policy)
+        await self.db.commit()
+        await self.db.refresh(policy)
+        return policy
+
+    async def delete_leave_policy(self, policy_id: int):
+        from app.modules.settings.models import LeavePolicy
+        result = await self.db.execute(select(LeavePolicy).where(
+            LeavePolicy.id == policy_id,
+            LeavePolicy.organization_id == self.organization_id
+        ))
+        policy = result.scalar_one_or_none()
+        if policy:
+            await self.db.delete(policy)
+            await self.db.commit()
+
+    async def get_holidays(self):
+        result = await self.db.execute(
+            select(PublicHoliday)
+            .where(PublicHoliday.organization_id == self.organization_id)
+            .order_by(PublicHoliday.date)
+        )
+        return result.scalars().all()
+
+    async def create_holiday(self, data):
+        holiday = PublicHoliday(organization_id=self.organization_id, name=data.name, date=data.date, region=data.region)
+        self.db.add(holiday)
+        await self.db.commit()
+        await self.db.refresh(holiday)
+        return holiday
+
+    async def delete_holiday(self, holiday_id: int):
+        result = await self.db.execute(select(PublicHoliday).where(
+            PublicHoliday.id == holiday_id,
+            PublicHoliday.organization_id == self.organization_id
+        ))
+        holiday = result.scalar_one_or_none()
+        if holiday:
+            await self.db.delete(holiday)
+            await self.db.commit()
+
+    async def get_approval_chains(self):
+        from sqlalchemy.orm import selectinload
+        from app.modules.settings.models import ApprovalChain
+        result = await self.db.execute(
+            select(ApprovalChain)
+            .where(ApprovalChain.organization_id == self.organization_id)
+            .options(selectinload(ApprovalChain.steps))
+        )
+        return result.scalars().all()
+
+    async def create_approval_chain(self, data):
+        from app.modules.settings.models import ApprovalChain, ApprovalStep
+        chain = ApprovalChain(organization_id=self.organization_id, department=data.department)
+        self.db.add(chain)
+        await self.db.flush()
+        
+        for step in data.steps:
+            db_step = ApprovalStep(chain_id=chain.id, step_order=step.step_order, role_required=step.role_required)
+            self.db.add(db_step)
+            
+        await self.db.commit()
+        await self.db.refresh(chain)
+        return chain
+
+    async def delete_approval_chain(self, chain_id: int):
+        from app.modules.settings.models import ApprovalChain
+        result = await self.db.execute(select(ApprovalChain).where(
+            ApprovalChain.id == chain_id,
+            ApprovalChain.organization_id == self.organization_id
+        ))
+        chain = result.scalar_one_or_none()
+        if chain:
+            await self.db.delete(chain)
+            await self.db.commit()

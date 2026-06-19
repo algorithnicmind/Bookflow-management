@@ -14,11 +14,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import engine, Base
 
 # Import all models to ensure they are registered on Base.metadata
+from app.modules.organizations.models import Organization, OnboardingApplication
 from app.modules.employees.models import Employee
 from app.modules.leaves.models import LeaveRequest, LeaveApproval, LeaveBalance
 from app.modules.settings.models import SystemSetting
 from app.modules.notifications.models import Notification
 from app.modules.audit.models import AuditLog
+from app.modules.contact.models import ContactMessage
 
 from app.modules.auth.routes import router as auth_router
 from app.modules.employees.routes import router as employees_router
@@ -28,6 +30,8 @@ from app.modules.settings.routes import router as settings_router
 from app.modules.reports.routes import router as reports_router
 from app.modules.notifications.routes import router as notifications_router
 from app.modules.audit.routes import router as audit_router
+from app.modules.contact.routes import router as contact_router
+from app.modules.onboarding.routes import router as onboarding_router
 from bot.router import router as bot_router
 
 from contextlib import asynccontextmanager
@@ -38,6 +42,10 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     await seed_demo_users()
+    
+    from app.modules.leaves.cron import start_scheduler
+    start_scheduler()
+    
     yield
 
 app = FastAPI(
@@ -62,18 +70,28 @@ from app.core.security import pwd_context
 
 async def seed_demo_users():
     async with AsyncSessionLocal() as db:
+        # First, ensure a default organization exists
+        org_res = await db.execute(select(Organization).where(Organization.domain == "company.com"))
+        org = org_res.scalar_one_or_none()
+        if not org:
+            org = Organization(name="Default Company", domain="company.com", plan_type="enterprise", is_active=True)
+            db.add(org)
+            await db.flush()
+            
         admin_res = await db.execute(select(Employee).where(Employee.email == "admin@company.com"))
         if not admin_res.scalar_one_or_none():
             db.add(Employee(
+                organization_id=org.id,
                 name="Admin User",
                 email="admin@company.com",
                 password_hash=pwd_context.hash("password123"),
-                role="admin",
+                role="super_admin",
                 department=None,
                 gender="male",
                 is_active=True
             ))
             manager_demo = Employee(
+                organization_id=org.id,
                 name="Alice Manager",
                 email="alice@company.com",
                 password_hash=pwd_context.hash("password123"),
@@ -86,6 +104,7 @@ async def seed_demo_users():
             await db.flush()
 
             emp_demo = Employee(
+                organization_id=org.id,
                 name="John Doe",
                 email="john@company.com",
                 password_hash=pwd_context.hash("password123"),
@@ -105,7 +124,7 @@ async def seed_demo_users():
                 user = user_result.scalar_one_or_none()
                 if user:
                     for leave_type, days in [("casual", 12), ("sick", 12), ("earned", 18), ("maternity", 182), ("miscarriage", 42)]:
-                        balance = LeaveBalance(employee_id=user.id, leave_type=leave_type, total_days=days, year=current_year)
+                        balance = LeaveBalance(organization_id=org.id, employee_id=user.id, leave_type=leave_type, total_days=days, year=current_year)
                         db.add(balance)
             await db.commit()
 
@@ -119,6 +138,8 @@ app.include_router(settings_router)
 app.include_router(reports_router)
 app.include_router(notifications_router)
 app.include_router(audit_router)
+app.include_router(contact_router)
+app.include_router(onboarding_router)
 app.include_router(bot_router)
 
 @app.get("/")

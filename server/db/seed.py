@@ -18,7 +18,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.modules.employees.models import Employee
 from app.modules.leaves.models import LeaveRequest, LeaveApproval, LeaveBalance
-from app.modules.settings.models import SystemSetting
+from app.modules.settings.models import SystemSetting, PublicHoliday, ApprovalChain, ApprovalStep
 from app.modules.notifications.models import Notification
 from app.modules.audit.models import AuditLog
 from app.core.database import Base
@@ -112,7 +112,17 @@ async def seed_data():
                     year=2026
                 )
                 session.add(balance)
-                
+        
+        # Create LeavePolicies
+        from app.modules.settings.models import LeavePolicy
+        policies = [
+            LeavePolicy(name="Global Earned Leave", department=None, role=None, leave_type="earned", base_days=18, accrual_rate=1.5, max_carry_forward=30),
+            LeavePolicy(name="Engineering Extra Sick", department="Engineering", role=None, leave_type="sick", base_days=15, accrual_rate=0.0, max_carry_forward=0),
+            LeavePolicy(name="Manager Casual", department=None, role="manager", leave_type="casual", base_days=15, accrual_rate=0.0, max_carry_forward=0)
+        ]
+        for p in policies:
+            session.add(p)
+            
         await session.commit()
         print("Successfully seeded database with all Demo Credentials from README!")
 

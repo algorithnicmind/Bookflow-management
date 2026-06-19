@@ -330,42 +330,41 @@
 │  LANDING PAGE — /                                                   │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  ┌── Header ───────────────────────────────────────────────────┐   │
-│  │  [L] LeaveFlow                          [Sign In]           │   │
-│  │  logo (gradient)          btn-primary gradient              │   │
-│  └──────────────────────────────────────────────────────────────┘   │
+│  ┌── Floating Dock Header ─────────────────────────────────────┐   │
+│  │  [L] LeaveFlow       Solutions  Pricing  [Contact] [Login]  │   │
+│  │  (glassmorphic pill docked at top)                          │   │
+│  └─────────────────────────────────────────────────────────────┘   │
 │                                                                     │
 │  ┌── Hero Section ─────────────────────────────────────────────┐   │
 │  │                                                             │   │
-│  │           ✨ Enterprise Leave Management                    │   │
+│  │           ✨ Welcome to the Future of Work                  │   │
 │  │           (pill badge with accent glow)                     │   │
 │  │                                                             │   │
-│  │     Streamline Your                                        │   │
-│  │     Leave Management                                        │   │
-│  │     (gradient text: #4f46e5 → #7c3aed)                     │   │
+│  │     The Enterprise Leave                                    │   │
+│  │     Management System                                       │   │
+│  │     (gradient text: #4f46e5 → #7c3aed)                      │   │
 │  │                                                             │   │
-│  │     A powerful, enterprise-grade platform for               │   │
-│  │     managing employee leave requests...                     │   │
-│  │                                                             │   │
-│  │     [ Get Started → ]     [ Learn More ]                    │   │
-│  │     btn-primary            btn-secondary                    │   │
+│  │     [ Get Started → ]                                       │   │
+│  │     btn-primary                                             │   │
 │  │                                                             │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 │                                                                     │
-│  ┌── Feature Cards (grid 4) ───────────────────────────────────┐   │
+│  ┌── Solutions & Pricing Sections ─────────────────────────────┐   │
 │  │                                                             │   │
-│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐      │   │
-│  │  │  🎯     │  │  ⚡     │  │  📊     │  │  🔒     │      │   │
-│  │  │  Easy   │  │  Fast   │  │  Smart  │  │  Secure │      │   │
-│  │  │  Apply  │  │Approvals│  │Dashboard│  │& Private│      │   │
-│  │  │  Submit │  │Managers │  │Role-    │  │Enterprise│     │   │
-│  │  │  leave  │  │review   │  │based    │  │grade    │      │   │
-│  │  │  in sec │  │with one │  │dashbrd  │  │security │      │   │
-│  │  └─────────┘  └─────────┘  └─────────┘  └─────────┘      │   │
+│  │     [Card 1]       [Card 2]       [Card 3]                  │   │
+│  │                                                             │   │
+│  │     [Starter]   [Professional]  [Enterprise]                │   │
 │  │                                                             │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 │                                                                     │
-│  Background: Animated background beams effect (BackgroundBeams)     │
+│  ┌── Enterprise Contact Section ───────────────────────────────┐   │
+│  │                                                             │   │
+│  │     Contact Form with Social Links                          │   │
+│  │     Email, Name, Message -> Submit                          │   │
+│  │                                                             │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  Background: Deep dark background with subtle blur effects          │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -381,15 +380,19 @@
 │  │                    ┌─────────┐                              │   │
 │  │                    │    L    │  Logo (48x48, gradient)      │   │
 │  │                    └─────────┘                              │   │
-│  │               Welcome back                                  │   │
-│  │          Sign in to your LeaveFlow account                  │   │
+│  │               Welcome to LeaveFlow                          │   │
+│  │          Sign in or create an account                       │   │
 │  │                                                             │   │
 │  │  ┌── Glass Card (form) ───────────────────────────────┐    │   │
 │  │  │                                                     │    │   │
-│  │  │  ┌── Error Banner (conditional) ───────────────┐   │    │   │
-│  │  │  │  ⚠ Error message text                       │   │    │   │
-│  │  │  │  bg: danger-bg, border: danger/20%          │   │    │   │
+│  │  │  ┌─────────────────────────────────────────────┐   │    │   │
+│  │  │  │         Continue with Google                 │   │    │   │
 │  │  │  └─────────────────────────────────────────────┘   │    │   │
+│  │  │  ┌─────────────────────────────────────────────┐   │    │   │
+│  │  │  │         Continue with Facebook               │   │    │   │
+│  │  │  └─────────────────────────────────────────────┘   │    │   │
+│  │  │                                                     │    │   │
+│  │  │  ----- OR ---------------------------------------   │    │   │
 │  │  │                                                     │    │   │
 │  │  │  EMAIL                                              │    │   │
 │  │  │  ┌─────────────────────────────────────────────┐   │    │   │
@@ -402,18 +405,62 @@
 │  │  │  └─────────────────────────────────────────────┘   │    │   │
 │  │  │                                                     │    │   │
 │  │  │  ┌─────────────────────────────────────────────┐   │    │   │
-│  │  │  │         Sign In  (full width btn-primary)    │   │    │   │
+│  │  │  │         Sign In / Register                   │   │    │   │
 │  │  │  └─────────────────────────────────────────────┘   │    │   │
 │  │  └─────────────────────────────────────────────────────┘    │   │
 │  │                                                             │   │
-│  │  ┌── Demo Credentials Box ─────────────────────────────┐   │   │
-│  │  │  DEMO CREDENTIALS                                    │   │   │
-│  │  │  Admin:    admin@leaveflow.com / admin123            │   │   │
-│  │  │  Manager:  manager@leaveflow.com / pass123           │   │   │
-│  │  │  Employee: employee1@leaveflow.com / pass123         │   │   │
-│  │  └──────────────────────────────────────────────────────┘   │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌── B2B Onboarding Flow Note ────────────────────────────────┐   │
+│  │ New users who are not yet provisioned will be redirected    │   │
+│  │ to /onboarding/apply after logging in.                      │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  Input Focus: border → accent, box-shadow: 0 0 0 3px accent-glow   │
+│  Loading State: Spinner + "Signing in..." text, btn opacity 0.7     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 3.2b Onboarding Application Page (/onboarding/apply)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  ONBOARDING PAGE — /onboarding/apply                                │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │                                                             │   │
+│  │               Set Up Your Workspace                         │   │
+│  │          Provide details for your organization              │   │
+│  │                                                             │   │
+│  │  ┌── Glass Card (form) ───────────────────────────────┐    │   │
+│  │  │                                                     │    │   │
+│  │  │  COMPANY NAME                                       │    │   │
+│  │  │  ┌─────────────────────────────────────────────┐   │    │   │
+│  │  │  │  Acme Corp                                   │   │    │   │
+│  │  │  └─────────────────────────────────────────────┘   │    │   │
+│  │  │                                                     │    │   │
+│  │  │  COMPANY SIZE                                       │    │   │
+│  │  │  ┌─────────────────────────────────────────────┐   │    │   │
+│  │  │  │  10-50 Employees                             │   │    │   │
+│  │  │  └─────────────────────────────────────────────┘   │    │   │
+│  │  │                                                     │    │   │
+│  │  │  SPECIAL REQUIREMENTS                               │    │   │
+│  │  │  ┌─────────────────────────────────────────────┐   │    │   │
+│  │  │  │                                              │   │    │   │
+│  │  │  │                                              │   │    │   │
+│  │  │  └─────────────────────────────────────────────┘   │    │   │
+│  │  │                                                     │    │   │
+│  │  │  ┌─────────────────────────────────────────────┐   │    │   │
+│  │  │  │         Submit Application                   │   │    │   │
+│  │  │  └─────────────────────────────────────────────┘   │    │   │
+│  │  └─────────────────────────────────────────────────────┘    │   │
 │  │                                                             │   │
 │  └──────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  Post-Submission: Redirect to /onboarding/pending (Waiting for     │
+│  internal sales team to provision account).                        │
+└─────────────────────────────────────────────────────────────────────┘
 │                                                                     │
 │  Input Focus: border → accent, box-shadow: 0 0 0 3px accent-glow   │
 │  Loading State: Spinner + "Signing in..." text, btn opacity 0.7     │
