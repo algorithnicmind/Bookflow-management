@@ -1,5 +1,5 @@
 from datetime import timedelta
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException, Response, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
@@ -11,6 +11,13 @@ from app.modules.auth.schemas import Token, AdminCreateRequest
 from app.modules.auth.services import authenticate_user, register_admin_user
 from pydantic import BaseModel, EmailStr
 
+from app.core.tenant import get_current_tenant
+from app.modules.organizations.models import Organization
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address)
+
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 class OAuthRequest(BaseModel):
@@ -18,7 +25,7 @@ class OAuthRequest(BaseModel):
     provider: str # google, facebook
 
 @router.post("/oauth-login")
-async def oauth_login(request: OAuthRequest, db: AsyncSession = Depends(get_db)):
+async def oauth_login(request: OAuthRequest, response: Response, db: AsyncSession = Depends(get_db)):
     from sqlalchemy.future import select
     from app.modules.organizations.models import OnboardingApplication
     
@@ -34,6 +41,14 @@ async def oauth_login(request: OAuthRequest, db: AsyncSession = Depends(get_db))
         access_token = create_access_token(
             data={"sub": user.email, "id": user.id, "role": user.role},
             expires_delta=access_token_expires
+        )
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            secure=True,
+            samesite="lax",
+            max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
         )
         return {
             "access_token": access_token,
@@ -71,13 +86,23 @@ async def oauth_login(request: OAuthRequest, db: AsyncSession = Depends(get_db))
     )
 
 @router.post("/login", response_model=Token)
-async def login(request: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
-    user = await authenticate_user(request.username, request.password, db)
+@limiter.limit("5/minute")
+async def login(request: Request, response: Response, form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+    user = await authenticate_user(form_data.username, form_data.password, db)
     
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.email, "id": user.id, "role": user.role},
         expires_delta=access_token_expires
+    )
+    
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
     )
     
     return {
@@ -92,13 +117,19 @@ async def login(request: OAuth2PasswordRequestForm = Depends(), db: AsyncSession
         }
     }
 
+@router.post("/logout")
+async def logout(response: Response):
+    response.delete_cookie(key="access_token", httponly=True, secure=True, samesite="lax")
+    return {"message": "Logged out successfully"}
+
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(
     request: AdminCreateRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: Employee = Depends(RoleChecker(["super_admin"]))
+    current_user: Employee = Depends(RoleChecker(["super_admin"])),
+    current_org: Organization = Depends(get_current_tenant)
 ):
-    new_employee = await register_admin_user(request, db)
+    new_employee = await register_admin_user(request, current_org.id, db)
     
     return {
         "message": "Admin registered successfully",

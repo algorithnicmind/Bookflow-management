@@ -1,26 +1,15 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
-function getToken() {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('token')
-  }
-  return null
-}
-
 export async function request(endpoint, options = {}) {
-  const token = getToken()
   const headers = {
     'Content-Type': 'application/json',
     ...options.headers,
   }
 
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`
-  }
-
   const config = {
     method: options.method || 'GET',
     headers,
+    credentials: 'include', // Important for HttpOnly cookies
     ...(options.body ? { body: JSON.stringify(options.body) } : {}),
   }
 
@@ -39,7 +28,6 @@ export async function request(endpoint, options = {}) {
   const response = await fetch(url, config)
 
   if (response.status === 401) {
-    localStorage.removeItem('token')
     localStorage.removeItem('user')
     throw new Error('Session expired. Please log in again.')
   }
@@ -63,6 +51,7 @@ export const authApi = {
     formData.append('password', password)
     const response = await fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: formData.toString(),
     })
@@ -76,6 +65,7 @@ export const authApi = {
   getProfile: () => request('/api/employees/me'),
   updateProfile: (body) => request('/api/employees/me', { method: 'PUT', body }),
   oauthLogin: (body) => request('/api/auth/oauth-login', { method: 'POST', body }),
+  logout: () => request('/api/auth/logout', { method: 'POST' }),
 }
 
 export const leavesApi = {
@@ -149,5 +139,8 @@ export const contactApi = {
 
 export const onboardingApi = {
   apply: (body) => request('/api/onboarding/apply', { method: 'POST', body }),
+  list: (params) => request('/api/onboarding/applications', { params }),
+  approve: (id) => request(`/api/onboarding/applications/${id}/approve`, { method: 'PUT' }),
+  reject: (id) => request(`/api/onboarding/applications/${id}/reject`, { method: 'PUT' }),
 }
 

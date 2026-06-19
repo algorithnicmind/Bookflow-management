@@ -32,7 +32,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const data = await authApi.login(email.trim(), password)
-      login(data.access_token, data.user)
+      login(data.user)
       router.push('/dashboard')
     } catch (err) {
       setError(err.message)
@@ -134,23 +134,6 @@ export default function LoginPage() {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
-
-        <div style={{
-          marginTop: 24,
-          padding: '16px 20px',
-          borderRadius: 'var(--radius-sm)',
-          background: 'var(--bg-card)',
-          border: '1px solid var(--border)',
-        }}>
-          <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            Demo Credentials
-          </div>
-          <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.8 }}>
-            <div><span style={{ color: 'var(--text-main)' }}>Admin:</span> admin@company.com / password123</div>
-            <div><span style={{ color: 'var(--text-main)' }}>Manager:</span> alice@company.com / password123</div>
-            <div><span style={{ color: 'var(--text-main)' }}>Employee:</span> john@company.com / password123</div>
-          </div>
-        </div>
       </div>
     </div>
   )

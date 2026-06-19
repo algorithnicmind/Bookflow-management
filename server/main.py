@@ -9,8 +9,11 @@ socket.getaddrinfo = getaddrinfo_ipv4
 
 from datetime import datetime
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from app.core.database import engine, Base
 
 # Import all models to ensure they are registered on Base.metadata
@@ -41,7 +44,6 @@ async def lifespan(app: FastAPI):
     # Initialize DB (Creates tables automatically if they don't exist)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    await seed_demo_users()
     
     from app.modules.leaves.cron import start_scheduler
     start_scheduler()
@@ -58,75 +60,21 @@ app = FastAPI(
 # Configure CORS (from TRD)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, restrict to actual frontend domains
+    allow_origins=["http://localhost:3000", "https://leaveflow.com"], # Restrict to frontend domains
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 from sqlalchemy import select
 from app.core.database import AsyncSessionLocal
 from app.core.security import pwd_context
 
-async def seed_demo_users():
-    async with AsyncSessionLocal() as db:
-        # First, ensure a default organization exists
-        org_res = await db.execute(select(Organization).where(Organization.domain == "company.com"))
-        org = org_res.scalar_one_or_none()
-        if not org:
-            org = Organization(name="Default Company", domain="company.com", plan_type="enterprise", is_active=True)
-            db.add(org)
-            await db.flush()
-            
-        admin_res = await db.execute(select(Employee).where(Employee.email == "admin@company.com"))
-        if not admin_res.scalar_one_or_none():
-            db.add(Employee(
-                organization_id=org.id,
-                name="Admin User",
-                email="admin@company.com",
-                password_hash=pwd_context.hash("password123"),
-                role="super_admin",
-                department=None,
-                gender="male",
-                is_active=True
-            ))
-            manager_demo = Employee(
-                organization_id=org.id,
-                name="Alice Manager",
-                email="alice@company.com",
-                password_hash=pwd_context.hash("password123"),
-                role="manager",
-                department="Engineering",
-                gender="female",
-                is_active=True
-            )
-            db.add(manager_demo)
-            await db.flush()
 
-            emp_demo = Employee(
-                organization_id=org.id,
-                name="John Doe",
-                email="john@company.com",
-                password_hash=pwd_context.hash("password123"),
-                role="employee",
-                department="Engineering",
-                gender="male",
-                is_active=True,
-                manager_id=manager_demo.id
-            )
-            db.add(emp_demo)
-            await db.commit()
-
-            # Also create leave balances for demo users
-            current_year = datetime.today().year
-            for user_email in ["admin@company.com", "alice@company.com", "john@company.com"]:
-                user_result = await db.execute(select(Employee).where(Employee.email == user_email))
-                user = user_result.scalar_one_or_none()
-                if user:
-                    for leave_type, days in [("casual", 12), ("sick", 12), ("earned", 18), ("maternity", 182), ("miscarriage", 42)]:
-                        balance = LeaveBalance(organization_id=org.id, employee_id=user.id, leave_type=leave_type, total_days=days, year=current_year)
-                        db.add(balance)
-            await db.commit()
 
 # Startup event replaced by lifespan
 

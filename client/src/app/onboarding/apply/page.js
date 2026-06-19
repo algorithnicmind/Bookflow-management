@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { api } from '@/services/api'
+import { onboardingApi } from '@/services/api'
 import { useAuth } from '@/context/AuthContext'
 
 export default function ApplyPage() {
@@ -37,10 +37,10 @@ export default function ApplyPage() {
     setError(null)
     
     try {
-      await api.post('/onboarding/apply', formData)
+      await onboardingApi.apply(formData)
       router.push('/onboarding/pending')
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to submit application. Please try again.')
+      setError(err.data?.detail || err.message || 'Failed to submit application. Please try again.')
     } finally {
       setLoading(false)
     }

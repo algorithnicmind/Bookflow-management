@@ -28,13 +28,12 @@ export default function OnboardingAuthPage() {
       const response = await authApi.oauthLogin({ email, provider })
       
       // If we reach here, user exists and was logged in
-      login(response.user, response.access_token)
+      login(response.user)
       router.push('/dashboard')
       
     } catch (err) {
-      // Axios error
-      if (err.response && err.response.status === 403) {
-        const detail = err.response.data.detail
+      if (err.status === 403 && err.data?.detail) {
+        const detail = err.data.detail
         if (detail.onboarding_status === 'pending') {
           router.push('/onboarding/pending')
         } else if (detail.onboarding_status === 'required') {

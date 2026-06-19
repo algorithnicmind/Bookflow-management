@@ -9,27 +9,29 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
     const storedUser = localStorage.getItem('user')
-    if (token && storedUser) {
+    if (storedUser) {
       try {
         setUser(JSON.parse(storedUser))
       } catch {
-        localStorage.removeItem('token')
         localStorage.removeItem('user')
       }
     }
     setLoading(false)
   }, [])
 
-  const login = useCallback((token, userData) => {
-    localStorage.setItem('token', token)
+  const login = useCallback((userData) => {
     localStorage.setItem('user', JSON.stringify(userData))
     setUser(userData)
   }, [])
 
-  const logout = useCallback(() => {
-    localStorage.removeItem('token')
+  const logout = useCallback(async () => {
+    try {
+      const { authApi } = await import('@/services/api')
+      await authApi.logout()
+    } catch (e) {
+      console.error('Logout error', e)
+    }
     localStorage.removeItem('user')
     setUser(null)
   }, [])

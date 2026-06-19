@@ -33,6 +33,7 @@ const navItems = {
     { href: '/dashboard', label: 'Dashboard', icon: <AppleEmoji char="📊" /> },
     { href: '/employees', label: 'Employees', icon: <AppleEmoji char="👥" /> },
     { href: '/manage-admins', label: 'Manage Admins', icon: <AppleEmoji char="👑" /> },
+    { href: '/tenant-applications', label: 'Applications', icon: <AppleEmoji char="📝" /> },
     { href: '/pending-requests', label: 'Requests', icon: <AppleEmoji char="⏳" /> },
     { href: '/system-settings', label: 'Settings', icon: <AppleEmoji char="⚙️" /> },
     { href: '/organization-reports', label: 'Reports', icon: <AppleEmoji char="📈" /> },

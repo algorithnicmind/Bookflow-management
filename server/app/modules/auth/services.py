@@ -33,13 +33,14 @@ async def authenticate_user(username: str, password_plain: str, db: AsyncSession
         
     return user
 
-async def register_admin_user(request: AdminCreateRequest, db: AsyncSession) -> Employee:
+async def register_admin_user(request: AdminCreateRequest, org_id: int, db: AsyncSession) -> Employee:
     result = await db.execute(select(Employee).where(Employee.email == request.email))
     if result.scalar_one_or_none():
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
         
     hashed_password = await asyncio.to_thread(pwd_context.hash, request.password)
     new_employee = Employee(
+        organization_id=org_id,
         name=request.name,
         email=request.email,
         password_hash=hashed_password,
@@ -53,7 +54,7 @@ async def register_admin_user(request: AdminCreateRequest, db: AsyncSession) -> 
     
     current_year = datetime.now().year
     for leave_type, days in [("casual", 12), ("sick", 12), ("earned", 18), ("maternity", 182), ("miscarriage", 42)]:
-        balance = LeaveBalance(employee_id=new_employee.id, leave_type=leave_type, total_days=days, year=current_year)
+        balance = LeaveBalance(organization_id=org_id, employee_id=new_employee.id, leave_type=leave_type, total_days=days, year=current_year)
         db.add(balance)
         
     await db.commit()

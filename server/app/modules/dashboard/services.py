@@ -5,13 +5,11 @@ from sqlalchemy import func
 from app.modules.employees.models import Employee
 from app.modules.leaves.models import LeaveRequest, LeaveBalance
 from app.modules.dashboard.schemas import DashboardResponse, DashboardStats
+from app.core.utils import get_business_days
 
 class DashboardService:
     def __init__(self, db: AsyncSession):
         self.db = db
-
-    def get_business_days(self, start_date, end_date) -> int:
-        return (end_date - start_date).days + 1
 
     async def get_stats(self, current_user: Employee) -> DashboardResponse:
         stats = DashboardStats()
@@ -43,7 +41,7 @@ class DashboardService:
                 "status": leave.status,
                 "created_at": leave.created_at,
                 "updated_at": leave.updated_at,
-                "days": self.get_business_days(leave.start_date, leave.end_date)
+                "days": get_business_days(leave.start_date, leave.end_date)
             })
             
         current_year = datetime.today().year

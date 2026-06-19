@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+asyncpg://localhost:5432/leave_management"
     GEMINI_API_KEY: Optional[str] = None
     
-    JWT_SECRET: str = "your-super-cryptographically-secure-key-phrase-12345"
+    JWT_SECRET: Optional[str] = None
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
 
@@ -33,3 +33,4 @@ class Settings(BaseSettings):
     )
 
 settings = Settings()
+assert settings.JWT_SECRET is not None, "JWT_SECRET must be set in environment variables"

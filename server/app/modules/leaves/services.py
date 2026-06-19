@@ -2,6 +2,7 @@ from datetime import datetime
 from fastapi import HTTPException
 from typing import List, Optional
 from sqlalchemy.future import select
+from app.core.utils import get_business_days
 from app.modules.leaves.repositories import LeaveRepository
 from app.modules.leaves.models import LeaveRequest, LeaveApproval
 from app.modules.leaves.schemas import LeaveApplication, LeaveApprovalAction
@@ -27,8 +28,6 @@ class LeaveService:
         )
         self.repo.db.add(notification)
 
-    def get_business_days(self, start_date, end_date) -> int:
-        return (end_date - start_date).days + 1
 
     async def apply_leave(self, employee_id: int, request: LeaveApplication) -> dict:
         today = datetime.today().date()
@@ -47,7 +46,7 @@ class LeaveService:
         holiday_rows = await self.repo.db.execute(select(PublicHoliday.date).where(PublicHoliday.date >= request.start_date, PublicHoliday.date <= request.end_date))
         holidays = [row[0] for row in holiday_rows.all()]
         
-        requested_days = self.get_business_days(request.start_date, request.end_date)
+        requested_days = get_business_days(request.start_date, request.end_date)
         # Exclude holidays
         requested_days -= len(holidays)
         
@@ -69,6 +68,7 @@ class LeaveService:
             balance.used_days += requested_days
 
         new_request = LeaveRequest(
+            organization_id=self.repo.organization_id,
             employee_id=employee_id,
             leave_type=request.leave_type,
             start_date=request.start_date,
@@ -290,6 +290,7 @@ class LeaveService:
                 raise HTTPException(status_code=403, detail="You can only approve requests from your direct reports")
 
         approval = LeaveApproval(
+            organization_id=self.repo.organization_id,
             leave_request_id=leave.id,
             manager_id=manager_id,
             action="approved",
@@ -383,6 +384,7 @@ class LeaveService:
 
         leave.status = "rejected"
         approval = LeaveApproval(
+            organization_id=self.repo.organization_id,
             leave_request_id=leave.id,
             manager_id=manager_id,
             action="rejected",

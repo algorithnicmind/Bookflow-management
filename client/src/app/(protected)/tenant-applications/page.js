@@ -1,0 +1,331 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/context/AuthContext'
+import { useRouter } from 'next/navigation'
+import { onboardingApi } from '@/services/api'
+import Card from '@/components/ui/Card'
+import Badge from '@/components/ui/Badge'
+import Button from '@/components/ui/Button'
+import AppleEmoji from '@/components/AppleEmoji'
+
+export default function TenantApplicationsPage() {
+  const { user } = useAuth()
+  const router = useRouter()
+  const [applications, setApplications] = useState([])
+  const [counts, setCounts] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 })
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [activeFilter, setActiveFilter] = useState(null)
+  const [actionLoading, setActionLoading] = useState(null)
+  const [toast, setToast] = useState(null)
+
+  // Restrict to super_admin only
+  useEffect(() => {
+    if (user && user.role !== 'super_admin') {
+      router.push('/dashboard')
+    }
+  }, [user, router])
+
+  const fetchApplications = async (statusFilter = null) => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const params = statusFilter ? { status: statusFilter } : {}
+      const data = await onboardingApi.list(params)
+      setApplications(data.applications)
+      setCounts(data.counts)
+    } catch (err) {
+      setError(err.message || 'Failed to load applications.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchApplications(activeFilter)
+  }, [activeFilter])
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 4000)
+  }
+
+  const handleApprove = async (id, companyName) => {
+    if (!confirm(`Approve "${companyName}"?\n\nThis will create the organization, a super_admin account (password: Welcome123!), and default leave balances.`)) return
+
+    setActionLoading(id)
+    try {
+      const res = await onboardingApi.approve(id)
+      showToast(res.message || `"${companyName}" approved successfully!`)
+      await fetchApplications(activeFilter)
+    } catch (err) {
+      showToast(err.message || 'Failed to approve.', 'error')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const handleReject = async (id, companyName) => {
+    if (!confirm(`Reject "${companyName}"?\n\nThis action cannot be undone.`)) return
+
+    setActionLoading(id)
+    try {
+      await onboardingApi.reject(id)
+      showToast(`"${companyName}" rejected.`)
+      await fetchApplications(activeFilter)
+    } catch (err) {
+      showToast(err.message || 'Failed to reject.', 'error')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const formatDate = (isoDate) => {
+    if (!isoDate) return '—'
+    const d = new Date(isoDate)
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  }
+
+  const filterTabs = [
+    { key: null, label: 'All', count: counts.total },
+    { key: 'pending', label: 'Pending', count: counts.pending },
+    { key: 'approved', label: 'Approved', count: counts.approved },
+    { key: 'rejected', label: 'Rejected', count: counts.rejected },
+  ]
+
+  if (user?.role !== 'super_admin') return null
+
+  return (
+    <div className="page-container">
+      {/* Toast Notification */}
+      {toast && (
+        <div style={{
+          position: 'fixed', top: 24, right: 24, zIndex: 1000,
+          padding: '14px 24px', borderRadius: 12,
+          background: toast.type === 'error' ? 'rgba(239, 68, 68, 0.95)' : 'rgba(16, 185, 129, 0.95)',
+          color: '#fff', fontSize: '0.9rem', fontWeight: 600,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+          backdropFilter: 'blur(12px)',
+          animation: 'slideIn 0.3s ease-out',
+          display: 'flex', alignItems: 'center', gap: 10,
+        }}>
+          <span>{toast.type === 'error' ? '✕' : '✓'}</span>
+          {toast.message}
+        </div>
+      )}
+
+      {/* Page Header */}
+      <div className="page-header animate-in">
+        <div>
+          <h1 className="page-title">Tenant Applications</h1>
+          <p className="page-subtitle">Review and approve organization onboarding requests</p>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+        gap: 16,
+        marginBottom: 32,
+      }} className="animate-in">
+        {[
+          { label: 'Total', value: counts.total, emoji: '📋', color: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.25)' },
+          { label: 'Pending', value: counts.pending, emoji: '⏳', color: 'rgba(245, 158, 11, 0.15)', border: 'rgba(245, 158, 11, 0.25)' },
+          { label: 'Approved', value: counts.approved, emoji: '✅', color: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.25)' },
+          { label: 'Rejected', value: counts.rejected, emoji: '❌', color: 'rgba(239, 68, 68, 0.15)', border: 'rgba(239, 68, 68, 0.25)' },
+        ].map((stat) => (
+          <div key={stat.label} style={{
+            background: stat.color,
+            border: `1px solid ${stat.border}`,
+            borderRadius: 16,
+            padding: '20px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 16,
+            transition: 'transform 0.2s',
+          }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
+          >
+            <div style={{ fontSize: '1.8rem' }}><AppleEmoji char={stat.emoji} /></div>
+            <div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 800, lineHeight: 1 }}>{stat.value}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500, marginTop: 4 }}>{stat.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Filter Tabs */}
+      <div style={{
+        display: 'flex',
+        gap: 8,
+        marginBottom: 24,
+        flexWrap: 'wrap',
+      }} className="animate-in">
+        {filterTabs.map((tab) => (
+          <button
+            key={tab.label}
+            onClick={() => setActiveFilter(tab.key)}
+            style={{
+              padding: '8px 20px',
+              borderRadius: 100,
+              border: activeFilter === tab.key ? '1px solid var(--accent)' : '1px solid var(--border)',
+              background: activeFilter === tab.key ? 'var(--accent-glow)' : 'transparent',
+              color: activeFilter === tab.key ? 'var(--accent)' : 'var(--text-muted)',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+            onMouseEnter={(e) => {
+              if (activeFilter !== tab.key) {
+                e.currentTarget.style.borderColor = 'var(--accent)'
+                e.currentTarget.style.color = 'var(--accent)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeFilter !== tab.key) {
+                e.currentTarget.style.borderColor = 'var(--border)'
+                e.currentTarget.style.color = 'var(--text-muted)'
+              }
+            }}
+          >
+            {tab.label}
+            <span style={{
+              background: activeFilter === tab.key ? 'var(--accent)' : 'var(--bg-secondary)',
+              color: activeFilter === tab.key ? '#000' : 'var(--text-muted)',
+              padding: '2px 8px',
+              borderRadius: 100,
+              fontSize: '0.75rem',
+              fontWeight: 700,
+            }}>
+              {tab.count}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      {isLoading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
+          <div className="spinner" style={{ width: 32, height: 32 }} />
+        </div>
+      ) : error ? (
+        <Card>
+          <div style={{ textAlign: 'center', padding: 40, color: 'var(--danger)' }}>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: 8 }}>Failed to load applications</p>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{error}</p>
+            <Button variant="secondary" onClick={() => fetchApplications(activeFilter)} style={{ marginTop: 16 }}>
+              Try Again
+            </Button>
+          </div>
+        </Card>
+      ) : applications.length === 0 ? (
+        <Card>
+          <div style={{ textAlign: 'center', padding: 60 }}>
+            <div style={{ fontSize: '3rem', marginBottom: 16 }}><AppleEmoji char="📭" /></div>
+            <p style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: 8 }}>No applications found</p>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+              {activeFilter ? `No ${activeFilter} applications.` : 'No onboarding applications have been submitted yet.'}
+            </p>
+          </div>
+        </Card>
+      ) : (
+        <Card>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  {['Company', 'Admin Email', 'Size', 'Status', 'Submitted', 'Actions'].map((col) => (
+                    <th key={col} style={{
+                      textAlign: 'left',
+                      padding: '12px 16px',
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      color: 'var(--text-dim)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      borderBottom: '1px solid var(--border)',
+                    }}>
+                      {col}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {applications.map((app) => (
+                  <tr
+                    key={app.id}
+                    style={{ transition: 'background 0.15s' }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
+                      <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{app.company_name}</div>
+                      {app.special_requirements && (
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginTop: 4, maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {app.special_requirements}
+                        </div>
+                      )}
+                    </td>
+                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+                      {app.admin_email}
+                    </td>
+                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+                      {app.company_size}
+                    </td>
+                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
+                      <Badge status={app.status} />
+                    </td>
+                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.85rem', color: 'var(--text-dim)' }}>
+                      {formatDate(app.created_at)}
+                    </td>
+                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
+                      {app.status === 'pending' ? (
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <Button
+                            variant="success"
+                            size="sm"
+                            loading={actionLoading === app.id}
+                            onClick={() => handleApprove(app.id, app.company_name)}
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            loading={actionLoading === app.id}
+                            onClick={() => handleReject(app.id, app.company_name)}
+                          >
+                            Reject
+                          </Button>
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', fontStyle: 'italic' }}>
+                          {app.status === 'approved' ? 'Provisioned' : 'Declined'}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
+      <style jsx>{`
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateX(20px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+      `}</style>
+    </div>
+  )
+}

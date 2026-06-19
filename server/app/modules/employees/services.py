@@ -48,6 +48,7 @@ class EmployeeService:
             
         hashed_password = await asyncio.to_thread(pwd_context.hash, data.password)
         new_employee = Employee(
+            organization_id=self.repo.organization_id,
             name=data.name,
             email=data.email,
             password_hash=hashed_password,
@@ -88,6 +89,7 @@ class EmployeeService:
 
         for leave_type, days in default_balances.items():
             balance = LeaveBalance(
+                organization_id=self.repo.organization_id,
                 employee_id=new_employee.id,
                 leave_type=leave_type,
                 total_days=days,
