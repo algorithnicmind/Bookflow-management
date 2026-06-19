@@ -36,6 +36,7 @@ from app.modules.audit.routes import router as audit_router
 from app.modules.contact.routes import router as contact_router
 from app.modules.onboarding.routes import router as onboarding_router
 from bot.router import router as bot_router
+from app.modules.integrations.routes import router as integrations_router
 
 from contextlib import asynccontextmanager
 
@@ -89,6 +90,7 @@ app.include_router(audit_router)
 app.include_router(contact_router)
 app.include_router(onboarding_router)
 app.include_router(bot_router)
+app.include_router(integrations_router)
 
 @app.get("/")
 def root():

@@ -107,6 +107,30 @@ class LeaveService:
             )
             await self.repo.commit()
 
+            # Trigger external integrations (Slack & Teams)
+            try:
+                from app.modules.integrations.services import IntegrationService
+                await IntegrationService.send_slack_leave_notification(
+                    leave_id=new_request.id,
+                    employee_name=employee.name,
+                    leave_type=request.leave_type,
+                    start_date=request.start_date.isoformat(),
+                    end_date=request.end_date.isoformat(),
+                    reason=request.reason
+                )
+                await IntegrationService.send_teams_leave_notification(
+                    leave_id=new_request.id,
+                    employee_name=employee.name,
+                    leave_type=request.leave_type,
+                    start_date=request.start_date.isoformat(),
+                    end_date=request.end_date.isoformat(),
+                    reason=request.reason
+                )
+            except Exception as integration_err:
+                # Log integration errors but do not fail the main application flow
+                import logging
+                logging.getLogger("leaves").error(f"Failed to send Slack/Teams notification: {str(integration_err)}")
+
         return {"message": "Leave application submitted successfully"}
 
     async def get_leave_history(self, employee_id: int, status: Optional[str] = "all") -> List[dict]:
