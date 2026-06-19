@@ -47,7 +47,10 @@ export async function request(endpoint, options = {}) {
   const data = await response.json()
 
   if (!response.ok) {
-    throw new Error(data.detail || data.error || 'An error occurred')
+    const error = new Error(typeof data.detail === 'string' ? data.detail : (data.error || 'An error occurred'))
+    error.status = response.status
+    error.data = data
+    throw error
   }
 
   return data
@@ -72,6 +75,7 @@ export const authApi = {
   register: (body) => request('/api/auth/register', { method: 'POST', body }),
   getProfile: () => request('/api/employees/me'),
   updateProfile: (body) => request('/api/employees/me', { method: 'PUT', body }),
+  oauthLogin: (body) => request('/api/auth/oauth-login', { method: 'POST', body }),
 }
 
 export const leavesApi = {
@@ -141,5 +145,9 @@ export const botApi = {
 
 export const contactApi = {
   submit: (body) => request('/api/contact', { method: 'POST', body }),
+}
+
+export const onboardingApi = {
+  apply: (body) => request('/api/onboarding/apply', { method: 'POST', body }),
 }
 

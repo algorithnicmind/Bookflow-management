@@ -4,6 +4,8 @@ from sqlalchemy.future import select
 from sqlalchemy import func
 from app.core.database import get_db
 from app.core.dependencies import RoleChecker
+from app.core.tenant import get_current_tenant
+from app.modules.organizations.models import Organization
 from app.modules.employees.models import Employee
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
@@ -11,32 +13,43 @@ router = APIRouter(prefix="/api/reports", tags=["reports"])
 @router.get("/organization")
 async def get_organization_report(
     db: AsyncSession = Depends(get_db),
+    tenant: Organization = Depends(get_current_tenant),
     current_user: Employee = Depends(RoleChecker(["super_admin"]))
 ):
-    e_res = await db.execute(select(func.count(Employee.id)))
+    e_res = await db.execute(
+        select(func.count(Employee.id))
+        .where(Employee.organization_id == tenant.id)
+    )
     total_employees = e_res.scalar()
 
     a_res = await db.execute(
-        select(func.count(Employee.id)).where(Employee.role == "admin")
+        select(func.count(Employee.id))
+        .where(Employee.role == "admin", Employee.organization_id == tenant.id)
     )
     total_admins = a_res.scalar()
 
     from app.modules.leaves.models import LeaveRequest
-    l_res = await db.execute(select(func.count(LeaveRequest.id)))
+    l_res = await db.execute(
+        select(func.count(LeaveRequest.id))
+        .where(LeaveRequest.organization_id == tenant.id)
+    )
     total_requests = l_res.scalar()
 
     app_res = await db.execute(
-        select(func.count(LeaveRequest.id)).where(LeaveRequest.status == "approved")
+        select(func.count(LeaveRequest.id))
+        .where(LeaveRequest.status == "approved", LeaveRequest.organization_id == tenant.id)
     )
     approved = app_res.scalar()
 
     rej_res = await db.execute(
-        select(func.count(LeaveRequest.id)).where(LeaveRequest.status == "rejected")
+        select(func.count(LeaveRequest.id))
+        .where(LeaveRequest.status == "rejected", LeaveRequest.organization_id == tenant.id)
     )
     rejected = rej_res.scalar()
 
     dept_res = await db.execute(
         select(Employee.department, func.count(Employee.id))
+        .where(Employee.organization_id == tenant.id)
         .group_by(Employee.department)
     )
     dept_breakdown = [
@@ -45,6 +58,7 @@ async def get_organization_report(
 
     role_res = await db.execute(
         select(Employee.role, func.count(Employee.id))
+        .where(Employee.organization_id == tenant.id)
         .group_by(Employee.role)
     )
     role_breakdown = [
@@ -66,12 +80,15 @@ async def get_organization_report(
 @router.get("/leaves-export")
 async def export_leaves_report(
     db: AsyncSession = Depends(get_db),
+    tenant: Organization = Depends(get_current_tenant),
     current_user: Employee = Depends(RoleChecker(["admin", "super_admin"]))
 ):
     from app.modules.leaves.models import LeaveRequest
     
     # Query all leaves and join with Employee to get names and departments
-    stmt = select(LeaveRequest, Employee).join(Employee, LeaveRequest.employee_id == Employee.id).order_by(LeaveRequest.created_at.desc())
+    stmt = select(LeaveRequest, Employee).join(Employee, LeaveRequest.employee_id == Employee.id).where(
+        LeaveRequest.organization_id == tenant.id
+    ).order_by(LeaveRequest.created_at.desc())
     result = await db.execute(stmt)
     rows = result.all()
     

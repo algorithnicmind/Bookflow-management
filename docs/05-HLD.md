@@ -8,7 +8,7 @@
 
 ## 1. System Architecture
 
-The Leave Management System is designed as a **3-tier system** engineered for maximum scalability, clean separation of concerns, and robust host-level security.
+The Leave Management System is designed as a **Multi-Tenant B2B 3-tier system** engineered for maximum scalability, clean separation of concerns, and robust host-level security. Data is strictly segregated at the database level using `organization_id`.
 
 ```mermaid
 graph TB
@@ -70,18 +70,24 @@ graph TB
 
 ```mermaid
 graph TD
-    LMS["Leave Management System"]
+    LMS["Leave Management System (B2B Multi-Tenant)"]
     
+    LMS --> M0["🚀 Onboarding & Provisioning Module"]
     LMS --> M1["🔐 Authentication Module"]
     LMS --> M2["📋 Leave Management Module"]
     LMS --> M3["✅ Approval Management Module"]
     LMS --> M4["📊 Dashboard Module"]
     LMS --> M5["👥 Admin Module"]
     LMS --> M6["👑 Super Admin Module"]
+    LMS --> M7["⚙️ System Settings Module"]
+    
+    M0 --> M0A[Landing Page Auth]
+    M0 --> M0B[Company Application]
+    M0 --> M0C[Manual Sales Provisioning]
     
     M1 --> M1A[Login / Logout]
     M1 --> M1B[JWT Dependency Validation]
-    M1 --> M1C[Role-Based Access Control]
+    M1 --> M1C[Role & Tenant Access Control]
     
     M2 --> M2A[Apply Leave]
     M2 --> M2B[View Leave History]
@@ -101,13 +107,19 @@ graph TD
     M5 --> M5B[Role Management]
     M5 --> M5C[Balance Quotas Management]
     
+    M7 --> M7A[Global Leave Policies]
+    M7 --> M7B[Approval Chains]
+    M7 --> M7C[Company Holidays]
+    
     style LMS fill:#4F46E5,color:#fff
+    style M0 fill:#059669,color:#fff
     style M1 fill:#7C3AED,color:#fff
     style M2 fill:#2563EB,color:#fff
     style M3 fill:#059669,color:#fff
     style M4 fill:#D97706,color:#fff
     style M5 fill:#DC2626,color:#fff
     style M6 fill:#9333EA,color:#fff
+    style M7 fill:#BE185D,color:#fff
 ```
 
 ---
@@ -162,13 +174,21 @@ graph TD
 | Quota Initialization | Configures yearly leave balances automatically for newly registered employees. |
 
 ### 4.6 👑 Super Admin Module
-**Responsibility:** Create Admin accounts, manage system settings, and view organization-wide reports.
+**Responsibility:** Create Admin accounts, manage system settings, and view organization-wide reports for their specific Tenant.
 
 | Sub-Component | Detailed Operations |
 |---------------|---------------------|
 | Admin Creator | Allows Super Admin to register new Admin-level user accounts. |
-| Settings Manager | Provides interface for configuring global system parameters. |
 | Organization Reporter | Aggregates and displays organization-wide leave and employee metrics. |
+
+### 4.7 ⚙️ System Settings Module
+**Responsibility:** Allow Admins/Super Admins to configure their tenant workspace.
+
+| Sub-Component | Detailed Operations |
+|---------------|---------------------|
+| Global Policies | Set company-wide leave policies and notification logic. |
+| Holiday Calendar | Create and manage fixed company holidays that bypass leave deduction. |
+| Approval Chains | Build multi-tier dynamic approval workflows (e.g., Manager -> HR -> CEO). |
 
 ---
 

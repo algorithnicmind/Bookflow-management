@@ -31,10 +31,11 @@
 | 🔴 P0 | API Documentation | Dev | 3 | ✅ Done |
 | 🔴 P0 | UI Wireframes | Dev | 3 | ✅ Done |
 | 🔴 P0 | Authentication (Login/Logout) | Dev | 5 | ⬜ To Do |
+| 🔴 P0 | B2B Enterprise Onboarding Flow | Dev | 5 | ⬜ To Do |
 | 🔴 P0 | Leave Application Feature | Dev | 5 | ⬜ To Do |
 | 🔴 P0 | Leave History & Balance | Dev | 3 | ⬜ To Do |
 | 🔴 P0 | Manager Approval Workflow | Dev | 5 | ⬜ To Do |
-| 🟡 P1 | Admin Employee Management | Dev | 3 | ⬜ To Do |
+| 🟡 P1 | Admin Employee & Settings Mgmt | Dev | 5 | ⬜ To Do |
 | 🟡 P1 | Dashboard & Analytics | Dev | 5 | ⬜ To Do |
 | 🔴 P0 | Test Plan & Test Cases | Tester | 3 | ✅ Done |
 | 🔴 P0 | Functional Testing Execution | Tester | 5 | ⬜ To Do |
@@ -111,10 +112,11 @@ Each standup answers three questions:
 | **Tester** | Completed test plan | Review dev progress, prepare test environment, begin smoke testing | Waiting for first build |
 
 **Day 4 Outcomes:**
-- [ ] Login/Logout functional
+- [ ] Login/OAuth functional
+- [ ] B2B Onboarding Form (Lead capture) working
 - [ ] Apply Leave form working
 - [ ] Leave History page displaying data
-- [ ] Database seeded with demo data
+- [ ] Database seeded with demo tenant data
 
 ---
 

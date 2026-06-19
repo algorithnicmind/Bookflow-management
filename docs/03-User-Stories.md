@@ -13,7 +13,40 @@
 
 ---
 
-## 1. Authentication
+## 1. B2B Enterprise Onboarding
+
+### US-00A: Prospective Client Registration (OAuth/Email) 🔴
+**As a** Prospective Client,  
+**I want to** authenticate via Google, Facebook, or Email/Password on the Landing Page,  
+**So that** my identity is verified before I apply for an organization workspace.
+
+**Acceptance Criteria:**
+- [ ] User can click "Get Started" to view the Welcome page.
+- [ ] User can choose OAuth or standard email/password.
+- [ ] Authenticated state is temporarily stored as an unprovisioned "Lead".
+
+### US-00B: Submit Company Application 🔴
+**As an** Authenticated Prospective Client,  
+**I want to** fill out a contact form with my company details,  
+**So that** LeaveFlow sales can review my request and provision a workspace.
+
+**Acceptance Criteria:**
+- [ ] Form captures company name, size, phone, and requirements.
+- [ ] Confirmation message displayed after submission.
+
+### US-00C: Manual Workspace Provisioning 🔴
+**As an** Internal LeaveFlow Admin/Sales,  
+**I want to** review onboarding applications and manually provision an organization,  
+**So that** valid clients get their workspace and Superadmin privileges.
+
+**Acceptance Criteria:**
+- [ ] Sales can view submitted applications.
+- [ ] Sales can click "Provision" to create the Organization tenant.
+- [ ] The applicant's linked credentials are automatically assigned the `SUPERADMIN` role for that new Organization.
+
+---
+
+## 2. Authentication
 
 ### US-001: Employee Login 🔴
 **As an** Employee/Manager/Admin,  
@@ -250,6 +283,25 @@
 - [ ] Shows total employees across all departments
 - [ ] Shows total leave requests, approved, rejected counts
 - [ ] Shows department-wise and role-wise breakdowns
+
+---
+
+## 7. System Settings & Holidays
+
+### US-021: Manage Global Policies 🔴
+**As an** Admin or Super Admin,  
+**I want to** configure system-wide policies (e.g. carry forward limits, notification rules),  
+**So that** LeaveFlow reflects my organization's unique requirements.
+
+### US-022: Configure Approval Chains 🔴
+**As an** Admin,  
+**I want to** set up multi-tier approval workflows based on roles or departments,  
+**So that** leave requests require the proper chain of command approvals.
+
+### US-023: Manage Company Holidays 🔴
+**As an** Admin,  
+**I want to** define an annual calendar of company-wide holidays,  
+**So that** these days are automatically excluded from an employee's requested leave duration.
 
 ---
 

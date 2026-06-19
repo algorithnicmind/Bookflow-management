@@ -74,7 +74,10 @@ class DashboardService:
             if is_admin:
                 p_res = await self.db.execute(
                     select(func.count(LeaveRequest.id))
-                    .where(LeaveRequest.status == "pending")
+                    .where(
+                        LeaveRequest.status == "pending",
+                        LeaveRequest.organization_id == current_user.organization_id
+                    )
                 )
             else:
                 p_res = await self.db.execute(
@@ -93,7 +96,8 @@ class DashboardService:
                     .where(
                         LeaveRequest.status == "approved",
                         LeaveRequest.start_date <= today,
-                        LeaveRequest.end_date >= today
+                        LeaveRequest.end_date >= today,
+                        LeaveRequest.organization_id == current_user.organization_id
                     )
                 )
             else:
@@ -112,14 +116,21 @@ class DashboardService:
             
         # 3. Admin-specific org stats
         if current_user.role in ["admin", "super_admin"]:
-            e_res = await self.db.execute(select(func.count(Employee.id)))
+            e_res = await self.db.execute(
+                select(func.count(Employee.id))
+                .where(Employee.organization_id == current_user.organization_id)
+            )
             total_employees = e_res.scalar()
             
-            total_l_res = await self.db.execute(select(func.count(LeaveRequest.id)))
+            total_l_res = await self.db.execute(
+                select(func.count(LeaveRequest.id))
+                .where(LeaveRequest.organization_id == current_user.organization_id)
+            )
             total_reqs = total_l_res.scalar()
             
             dept_res = await self.db.execute(
                 select(Employee.department, func.count(Employee.id))
+                .where(Employee.organization_id == current_user.organization_id)
                 .group_by(Employee.department)
             )
             dept_breakdown = [{"department": r[0], "count": r[1]} for r in dept_res.all()]

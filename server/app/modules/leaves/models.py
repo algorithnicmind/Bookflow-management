@@ -7,6 +7,7 @@ class LeaveRequest(Base):
     __tablename__ = "leave_requests"
 
     id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
     employee_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), nullable=False, index=True)
     leave_type = Column(String(20), nullable=False)
     start_date = Column(Date, nullable=False)
@@ -30,6 +31,7 @@ class LeaveApproval(Base):
     __tablename__ = "leave_approvals"
 
     id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
     leave_request_id = Column(Integer, ForeignKey("leave_requests.id", ondelete="CASCADE"), nullable=False, index=True)
     manager_id = Column(Integer, ForeignKey("employees.id"), nullable=False, index=True)
     action = Column(String(20), nullable=False)
@@ -48,6 +50,7 @@ class LeaveBalance(Base):
     __tablename__ = "leave_balances"
 
     id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
     employee_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), nullable=False)
     leave_type = Column(String(20), nullable=False)
     total_days = Column(Integer, nullable=False)
@@ -56,7 +59,7 @@ class LeaveBalance(Base):
 
     __table_args__ = (
         CheckConstraint(leave_type.in_(['casual', 'sick', 'earned', 'maternity', 'miscarriage']), name="check_balance_leave_type"),
-        UniqueConstraint('employee_id', 'leave_type', 'year', name='uq_employee_leave_year'),
+        UniqueConstraint('employee_id', 'leave_type', 'year', 'organization_id', name='uq_employee_leave_year_org'),
     )
 
     employee = relationship("Employee", back_populates="leave_balances")

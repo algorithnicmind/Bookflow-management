@@ -40,6 +40,15 @@ class RoleChecker:
         if current_user.role not in self.allowed_roles:
             raise HTTPException(status_code=403, detail="Operation forbidden: Insufficient privileges")
         return current_user
+
+class TenantIsolation:
+    """
+    Dependency to ensure all queries are strictly isolated to the user's organization:
+    """
+    async def __call__(self, current_user: User = Depends(get_current_user)):
+        if not current_user.organization_id:
+            raise HTTPException(status_code=403, detail="Unprovisioned account")
+        return current_user.organization_id
 ```
 
 ### 1.2 Leave Business Logic (`server/app/routes/leaves.py`)
@@ -139,7 +148,7 @@ client/
     │       └── page.js              # Admin organizational staff listings (CRUD)
     │
     ├── 📁 context/
-    │   └── AuthContext.js           # AuthProvider: stores token, user metadata in session
+    │   └── AuthContext.js           # AuthProvider: stores token, user metadata, and Tenant/Organization ID
     │
     ├── 📁 components/               # High-fidelity visual components
     │   ├── Layout/
@@ -182,6 +191,12 @@ export default function ProtectedRoute({ children, allowedRoles }) {
 
   if (loading || !user) {
     return <div className="loading-spinner">Verifying Secure Credentials...</div>;
+  }
+  
+  if (user && !user.organization_id && window.location.pathname !== '/onboarding') {
+    // Unprovisioned leads are restricted to the onboarding wait-room
+    router.push("/onboarding/pending");
+    return null;
   }
 
   return children;

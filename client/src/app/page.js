@@ -120,11 +120,11 @@ export default function LandingPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button 
             onClick={() => router.push('/login')} 
-            style={{ width: 42, height: 42, borderRadius: '50%', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#a1a1aa', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }} 
-            onMouseEnter={(e) => { e.currentTarget.style.background='rgba(255,255,255,0.05)'; e.currentTarget.style.color='#fff'; }} 
-            onMouseLeave={(e) => { e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#a1a1aa'; }}
+            style={{ padding: '8px 20px', borderRadius: '100px', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }} 
+            onMouseEnter={(e) => { e.currentTarget.style.background='rgba(255,255,255,0.05)'; }} 
+            onMouseLeave={(e) => { e.currentTarget.style.background='transparent'; }}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            Login
           </button>
         </div>
       </motion.nav>
@@ -144,7 +144,7 @@ export default function LandingPage() {
             alignItems: 'center',
             justifyContent: 'center',
             textAlign: 'center',
-            padding: '160px 24px 80px',
+            padding: '200px 24px 80px', /* Increased top padding to prevent overlap with dock */
             maxWidth: 1000,
             margin: '0 auto',
             position: 'relative'
@@ -197,12 +197,12 @@ export default function LandingPage() {
 
           <motion.div variants={itemVariants} style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
             <button
-              onClick={() => router.push('/login')}
+              onClick={() => router.push('/onboarding')}
               style={{
                 padding: '16px 36px',
                 borderRadius: '100px',
                 background: 'linear-gradient(135deg, var(--accent), var(--accent-hover))',
-                color: '#fff',
+                color: '#000',
                 border: 'none',
                 fontSize: '1rem',
                 fontWeight: 600,
@@ -385,7 +385,7 @@ export default function LandingPage() {
                 <li style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ color: 'var(--accent)' }}>✓</span> Basic leave tracking</li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ color: 'var(--accent)' }}>✓</span> Standard support</li>
               </ul>
-              <button style={{ width: '100%', padding: '12px', borderRadius: 8, background: 'transparent', border: '1px solid var(--border)', color: '#fff', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => {e.target.style.borderColor='var(--accent)'; e.target.style.color='var(--accent)'}} onMouseLeave={e => {e.target.style.borderColor='var(--border)'; e.target.style.color='#fff'}}>Get Started</button>
+              <button onClick={() => router.push('/onboarding')} style={{ width: '100%', padding: '12px', borderRadius: 8, background: 'transparent', border: '1px solid var(--border)', color: '#fff', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => {e.target.style.borderColor='var(--accent)'; e.target.style.color='var(--accent)'}} onMouseLeave={e => {e.target.style.borderColor='var(--border)'; e.target.style.color='#fff'}}>Get Started</button>
             </motion.div>
 
             {/* Pro */}
@@ -404,7 +404,7 @@ export default function LandingPage() {
                 <li style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ color: 'var(--accent)' }}>✓</span> Advanced reporting & analytics</li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ color: 'var(--accent)' }}>✓</span> Slack & Teams integrations</li>
               </ul>
-              <button style={{ width: '100%', padding: '12px', borderRadius: 8, background: 'var(--accent)', border: 'none', color: '#000', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 14px var(--accent-glow)' }} onMouseEnter={e => e.target.style.background='var(--accent-hover)'} onMouseLeave={e => e.target.style.background='var(--accent)'}>Start Free Trial</button>
+              <button onClick={() => router.push('/onboarding')} style={{ width: '100%', padding: '12px', borderRadius: 8, background: 'var(--accent)', border: 'none', color: '#000', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 14px var(--accent-glow)' }} onMouseEnter={e => e.target.style.background='var(--accent-hover)'} onMouseLeave={e => e.target.style.background='var(--accent)'}>Start Free Trial</button>
             </motion.div>
 
             {/* Enterprise */}

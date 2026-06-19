@@ -7,6 +7,7 @@ class SystemSetting(Base):
     __tablename__ = "system_settings"
 
     id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
     max_casual_leave = Column(Integer, nullable=False, default=12)
     max_sick_leave = Column(Integer, nullable=False, default=12)
     max_earned_leave = Column(Integer, nullable=False, default=18)
@@ -17,15 +18,17 @@ class PublicHoliday(Base):
     __tablename__ = "public_holidays"
 
     id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
     name = Column(String(100), nullable=False)
-    date = Column(Date, nullable=False, unique=True)
+    date = Column(Date, nullable=False)
     region = Column(String(50), nullable=True)
 
 class ApprovalChain(Base):
     __tablename__ = "approval_chains"
 
     id = Column(Integer, primary_key=True, index=True)
-    department = Column(String(100), unique=True, index=True) # None means global
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    department = Column(String(100), index=True) # None means global
     
     steps = relationship("ApprovalStep", back_populates="chain", cascade="all, delete-orphan")
 
@@ -43,6 +46,7 @@ class LeavePolicy(Base):
     __tablename__ = "leave_policies"
     
     id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
     name = Column(String(100), nullable=False)
     department = Column(String(50), nullable=True) # If null, applies globally
     role = Column(String(20), nullable=True) # If null, applies to all roles

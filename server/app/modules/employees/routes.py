@@ -3,6 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from app.core.database import get_db
 from app.core.dependencies import RoleChecker, get_current_user
+from app.core.tenant import get_current_tenant
+from app.modules.organizations.models import Organization
 from app.modules.employees.models import Employee
 from app.modules.employees.schemas import EmployeeResponse, EmployeeCreate, EmployeeUpdate
 from app.modules.employees.repositories import EmployeeRepository
@@ -10,8 +12,11 @@ from app.modules.employees.services import EmployeeService
 
 router = APIRouter(prefix="/api/employees", tags=["employees"])
 
-def get_employee_service(db: AsyncSession = Depends(get_db)) -> EmployeeService:
-    repo = EmployeeRepository(db)
+def get_employee_service(
+    db: AsyncSession = Depends(get_db),
+    tenant: Organization = Depends(get_current_tenant)
+) -> EmployeeService:
+    repo = EmployeeRepository(db, tenant.id)
     return EmployeeService(repo)
 
 @router.get("/me", response_model=EmployeeResponse)
