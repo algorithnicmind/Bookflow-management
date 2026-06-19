@@ -82,6 +82,10 @@ class CalendarService:
         if not integration.refresh_token:
             return
 
+        if integration.refresh_token.startswith("mock_refresh_token_"):
+            logger.info("Bypassing token refresh for mock integration")
+            return
+
         logger.info(f"Refreshing token for provider {integration.provider}")
         
         # Google refresh endpoint
@@ -105,6 +109,15 @@ class CalendarService:
     @classmethod
     async def _sync_to_google(cls, access_token: str, leave: LeaveRequest) -> bool:
         """Create Google Calendar Out of Office Event."""
+        if access_token.startswith("mock_access_token_"):
+            from datetime import timedelta
+            logger.info(f"[DEMO/MOCK] Google Calendar OOO Event synced successfully for mock token.")
+            logger.info(f"  - Summary/Subject: OOO - {leave.leave_type.capitalize()} Leave")
+            logger.info(f"  - Dates: {leave.start_date.isoformat()} to {(leave.end_date + timedelta(days=1)).isoformat()} (allDay event)")
+            logger.info(f"  - Event Type: outOfOffice")
+            logger.info(f"  - Properties: Declines other meetings automatically; Show availability: Busy (transparency: opaque)")
+            return True
+
         url = "https://www.googleapis.com/calendar/v3/calendars/primary/events"
         headers = {
             "Authorization": f"Bearer {access_token}",
@@ -141,6 +154,13 @@ class CalendarService:
     @classmethod
     async def _sync_to_outlook(cls, access_token: str, leave: LeaveRequest) -> bool:
         """Create Microsoft Outlook Out of Office (OOF) Event."""
+        if access_token.startswith("mock_access_token_"):
+            logger.info(f"[DEMO/MOCK] Outlook OOO Event synced successfully for mock token.")
+            logger.info(f"  - Subject: OOO - {leave.leave_type.capitalize()} Leave")
+            logger.info(f"  - Dates: {leave.start_date.isoformat()}T00:00:00 to {leave.end_date.isoformat()}T23:59:59")
+            logger.info(f"  - Show As availability status: oof (Out of Office / Out of Office)")
+            return True
+
         url = "https://graph.microsoft.com/v1.0/me/events"
         headers = {
             "Authorization": f"Bearer {access_token}",
