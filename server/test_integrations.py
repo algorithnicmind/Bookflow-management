@@ -15,6 +15,8 @@ from app.modules.notifications.models import Notification
 from app.modules.audit.models import AuditLog
 from app.modules.contact.models import ContactMessage
 from app.modules.accrual.models import AccrualLedger
+from app.modules.integrations.models import CalendarIntegration
+
 
 from sqlalchemy.future import select
 from app.core.database import AsyncSessionLocal
@@ -56,12 +58,57 @@ async def main():
 
         if not john or not alice:
             print("Demo users not found. Seeding database first...")
-            from main import seed_demo_users
-            await seed_demo_users()
+            # Local seed function to avoid importing main.py
+            from app.core.security import pwd_context
+            from app.modules.organizations.models import Organization
+            from app.modules.leaves.models import LeaveBalance
+
+            org_res = await db.execute(select(Organization).where(Organization.domain == "company.com"))
+            org = org_res.scalar_one_or_none()
+            if not org:
+                org = Organization(name="Default Company", domain="company.com", plan_type="enterprise", is_active=True)
+                db.add(org)
+                await db.flush()
+
+            manager_demo = Employee(
+                organization_id=org.id,
+                name="Alice Manager",
+                email="alice@company.com",
+                password_hash=pwd_context.hash("password123"),
+                role="manager",
+                department="Engineering",
+                gender="female",
+                is_active=True
+            )
+            db.add(manager_demo)
+            await db.flush()
+
+            emp_demo = Employee(
+                organization_id=org.id,
+                name="John Doe",
+                email="john@company.com",
+                password_hash=pwd_context.hash("password123"),
+                role="employee",
+                department="Engineering",
+                gender="male",
+                is_active=True,
+                manager_id=manager_demo.id
+            )
+            db.add(emp_demo)
+            await db.flush()
+
+            current_year = datetime.today().year
+            for user in [manager_demo, emp_demo]:
+                for leave_type, days in [("casual", 12), ("sick", 12), ("earned", 18), ("maternity", 182), ("miscarriage", 42)]:
+                    balance = LeaveBalance(organization_id=org.id, employee_id=user.id, leave_type=leave_type, total_days=days, year=current_year)
+                    db.add(balance)
+            await db.commit()
+
             emp_res = await db.execute(select(Employee).where(Employee.email == "john@company.com"))
             john = emp_res.scalar_one_or_none()
             mgr_res = await db.execute(select(Employee).where(Employee.email == "alice@company.com"))
             alice = mgr_res.scalar_one_or_none()
+
 
         print(f"Employee: {john.name} (ID: {john.id})")
         print(f"Manager: {alice.name} (ID: {alice.id})")
@@ -75,7 +122,15 @@ async def main():
         pending_leaves = (await db.execute(del_stmt)).scalars().all()
         for pl in pending_leaves:
             await db.delete(pl)
+        
+        # Delete calendar integrations
+        from sqlalchemy import delete, update
+        from app.modules.leaves.models import LeaveBalance
+        await db.execute(delete(CalendarIntegration).where(CalendarIntegration.employee_id == john.id))
+        await db.execute(update(LeaveBalance).where(LeaveBalance.employee_id == john.id).values(used_days=0))
         await db.commit()
+
+
 
         start_date = datetime.today().date() + timedelta(days=5)
         end_date = datetime.today().date() + timedelta(days=7)
@@ -115,8 +170,28 @@ async def main():
             ]
         }
 
+        # 2.5 Simulate Google Calendar Connect Callback
+        print("\n--- Simulating Google Calendar Connection Callback ---")
+        from app.modules.integrations.routes import calendar_callback
+        conn_res = await calendar_callback(
+            provider="google",
+            code="mock-auth-code",
+            state=str(john.id),
+            db=db
+        )
+        print("Calendar Connect Callback Response:", conn_res)
+        
+        # Verify CalendarIntegration exists in DB
+        cal_res = await db.execute(
+            select(CalendarIntegration).where(CalendarIntegration.employee_id == john.id)
+        )
+        cal_integration = cal_res.scalar_one_or_none()
+        assert cal_integration is not None, "CalendarIntegration should be saved in DB"
+        print(f"Calendar connected successfully: {cal_integration.provider} provider")
+
         mock_req = MockRequest({"payload": json.dumps(slack_payload)})
         slack_res = await slack_actions(mock_req, db)
+
         print("Slack Callback Response:", slack_res)
 
         # Verify status in database

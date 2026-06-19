@@ -97,7 +97,8 @@ class LeaveService:
 
         employee = await self._get_employee(employee_id)
         if employee and employee.manager_id:
-            days = self.get_business_days(request.start_date, request.end_date)
+            days = get_business_days(request.start_date, request.end_date)
+
             await self._create_notification(
                 user_id=employee.manager_id,
                 title="New Leave Application",
@@ -155,7 +156,7 @@ class LeaveService:
                 "status": leave.status,
                 "created_at": leave.created_at,
                 "updated_at": leave.updated_at,
-                "days": self.get_business_days(leave.start_date, leave.end_date),
+                "days": get_business_days(leave.start_date, leave.end_date),
                 "approval": approval_data
             })
         return responses
@@ -186,7 +187,8 @@ class LeaveService:
 
         # Restore balance
         if leave.leave_type != "unpaid":
-            requested_days = self.get_business_days(leave.start_date, leave.end_date)
+            requested_days = get_business_days(leave.start_date, leave.end_date)
+
             current_year = leave.start_date.year
             balance = await self.repo.get_balance(leave.employee_id, leave.leave_type, current_year)
             if balance:
@@ -210,7 +212,8 @@ class LeaveService:
 
         employee = await self._get_employee(leave.employee_id)
         if employee and employee.manager_id:
-            days = self.get_business_days(leave.start_date, leave.end_date)
+            days = get_business_days(leave.start_date, leave.end_date)
+
             await self._create_notification(
                 user_id=employee.manager_id,
                 title="Leave Request Cancelled",
@@ -270,7 +273,8 @@ class LeaveService:
                 "status": leave.status,
                 "created_at": leave.created_at,
                 "updated_at": leave.updated_at,
-                "days": self.get_business_days(leave.start_date, leave.end_date),
+                "days": get_business_days(leave.start_date, leave.end_date),
+
                 "employee_name": emp.name,
                 "department": emp.department,
                 "current_approval_step": getattr(leave, "current_approval_step", 1)
@@ -347,7 +351,8 @@ class LeaveService:
         await self.repo.commit()
 
         if is_final:
-            days = self.get_business_days(leave.start_date, leave.end_date)
+            days = get_business_days(leave.start_date, leave.end_date)
+
             await self._create_notification(
                 user_id=leave.employee_id,
                 title="Leave Request Approved",
@@ -356,6 +361,15 @@ class LeaveService:
                 action_url="/leave-history"
             )
             await self.repo.commit()
+
+            # Trigger calendar syncing
+            try:
+                from app.modules.integrations.calendar_service import CalendarService
+                await CalendarService.sync_leave_to_calendar(self.repo.db, leave.id)
+            except Exception as cal_err:
+                import logging
+                logging.getLogger("leaves").error(f"Failed to sync approved leave to calendar: {str(cal_err)}")
+
         else:
             await self._create_notification(
                 user_id=leave.employee_id,
@@ -418,7 +432,8 @@ class LeaveService:
 
         # Restore balance
         if leave.leave_type != "unpaid":
-            requested_days = self.get_business_days(leave.start_date, leave.end_date)
+            requested_days = get_business_days(leave.start_date, leave.end_date)
+
             current_year = leave.start_date.year
             balance = await self.repo.get_balance(leave.employee_id, leave.leave_type, current_year)
             if balance:
@@ -441,7 +456,8 @@ class LeaveService:
 
         await self.repo.commit()
 
-        days = self.get_business_days(leave.start_date, leave.end_date)
+        days = get_business_days(leave.start_date, leave.end_date)
+
         await self._create_notification(
             user_id=leave.employee_id,
             title="Leave Request Rejected",

@@ -16,6 +16,8 @@ from app.modules.notifications.models import Notification
 from app.modules.audit.models import AuditLog
 from app.modules.contact.models import ContactMessage
 from app.modules.accrual.models import AccrualLedger
+from app.modules.integrations.models import CalendarIntegration
+
 
 async def reset_db():
     async with engine.begin() as conn:

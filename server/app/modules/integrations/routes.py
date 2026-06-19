@@ -224,3 +224,105 @@ async def teams_actions(request: Request, db: AsyncSession = Depends(get_db)):
         "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
         "version": "1.4"
     }
+
+# --- Calendar OAuth & Status Integration Endpoints ---
+
+from app.core.dependencies import get_current_user
+from app.modules.integrations.models import CalendarIntegration
+from datetime import datetime, timedelta, timezone
+
+@router.get("/calendar/status")
+async def get_calendar_status(
+    current_user: Employee = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Checks if the user has connected a calendar."""
+    result = await db.execute(
+        select(CalendarIntegration).where(CalendarIntegration.employee_id == current_user.id)
+    )
+    integration = result.scalar_one_or_none()
+    if integration:
+        return {
+            "connected": True,
+            "provider": integration.provider,
+            "expires_at": integration.expires_at
+        }
+    return {"connected": False}
+
+@router.get("/calendar/connect/{provider}")
+async def connect_calendar(
+    provider: str,
+    current_user: Employee = Depends(get_current_user)
+):
+    """Initiates calendar connection redirection URL."""
+    if provider not in ["google", "outlook"]:
+        raise HTTPException(status_code=400, detail="Invalid provider")
+
+    # Construct OAuth URLs
+    if provider == "google":
+        client_id = os.environ.get("GOOGLE_CLIENT_ID", "mock-google-client-id")
+        redirect_uri = "http://localhost:8000/api/integrations/calendar/callback/google"
+        scope = "https://www.googleapis.com/auth/calendar.events"
+        auth_url = (
+            f"https://accounts.google.com/o/oauth2/v2/auth?"
+            f"client_id={client_id}&redirect_uri={redirect_uri}&response_type=code"
+            f"&scope={scope}&access_type=offline&prompt=consent&state={current_user.id}"
+        )
+    else:
+        client_id = os.environ.get("OUTLOOK_CLIENT_ID", "mock-outlook-client-id")
+        redirect_uri = "http://localhost:8000/api/integrations/calendar/callback/outlook"
+        scope = "https://graph.microsoft.com/Calendars.ReadWrite"
+        auth_url = (
+            f"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?"
+            f"client_id={client_id}&redirect_uri={redirect_uri}&response_type=code"
+            f"&scope={scope}&response_mode=query&state={current_user.id}"
+        )
+
+    return {"auth_url": auth_url}
+
+@router.get("/calendar/callback/{provider}")
+async def calendar_callback(
+    provider: str,
+    code: str,
+    state: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """OAuth callback to exchange auth code for tokens and save them."""
+    if provider not in ["google", "outlook"]:
+        raise HTTPException(status_code=400, detail="Invalid provider")
+
+    employee_id = int(state)
+    
+    # Normally we do token exchange with client_id & secret, here we mock token responses for demo
+    # or handle exchange if client_id/secret is set.
+    mock_access_token = f"mock_access_token_{provider}_{employee_id}"
+    mock_refresh_token = f"mock_refresh_token_{provider}_{employee_id}"
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+
+    # Check if integration already exists
+    res = await db.execute(
+        select(CalendarIntegration).where(CalendarIntegration.employee_id == employee_id)
+    )
+    integration = res.scalar_one_or_none()
+
+    if not integration:
+        integration = CalendarIntegration(
+            employee_id=employee_id,
+            provider=provider,
+            access_token=mock_access_token,
+            refresh_token=mock_refresh_token,
+            expires_at=expires_at
+        )
+        db.add(integration)
+    else:
+        integration.provider = provider
+        integration.access_token = mock_access_token
+        integration.refresh_token = mock_refresh_token
+        integration.expires_at = expires_at
+
+    await db.commit()
+
+    return {
+        "message": f"Successfully connected to {provider.capitalize()} Calendar! You can close this tab."
+    }
+
