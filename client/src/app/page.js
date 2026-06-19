@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { motion } from 'framer-motion'
+import AppleEmoji from '@/components/AppleEmoji'
 import { contactApi } from '@/services/api'
 
 export default function LandingPage() {
@@ -163,7 +164,7 @@ export default function LandingPage() {
             marginBottom: 32,
             boxShadow: '0 0 20px rgba(16, 185, 129, 0.1)'
           }}>
-            🌿 Welcome to the Future of Work
+            <AppleEmoji char="🌿" /> Welcome to the Future of Work
           </motion.div>
 
           <motion.h1 variants={itemVariants} style={{
@@ -257,12 +258,12 @@ export default function LandingPage() {
             gap: 24,
           }}>
             {[
-              { icon: '✨', title: 'Frictionless Requests', desc: 'Apply for time off in seconds. Real-time balance calculations ensure zero errors.' },
-              { icon: '⚡', title: '1-Click Approvals', desc: 'Managers can approve or deny requests directly from email or their dashboard instantly.' },
-              { icon: '📅', title: 'Global Holidays', desc: 'Automatically import regional public holidays tailored to your employee locations.' },
-              { icon: '🛡️', title: 'Audit Ready', desc: 'Comprehensive, tamper-proof logs for HR compliance and seamless annual reporting.' },
-              { icon: '⚙️', title: 'Custom Workflows', desc: 'Multi-tiered approval chains. Route leaves to HR, Managers, or both seamlessly.' },
-              { icon: '📱', title: 'Anywhere Access', desc: 'Fully responsive design allows you to manage leaves from desktop, tablet, or phone.' },
+              { icon: <AppleEmoji char="✨" />, title: 'Frictionless Requests', desc: 'Apply for time off in seconds. Real-time balance calculations ensure zero errors.' },
+              { icon: <AppleEmoji char="⚡" />, title: '1-Click Approvals', desc: 'Managers can approve or deny requests directly from email or their dashboard instantly.' },
+              { icon: <AppleEmoji char="📅" />, title: 'Global Holidays', desc: 'Automatically import regional public holidays tailored to your employee locations.' },
+              { icon: <AppleEmoji char="🛡️" />, title: 'Audit Ready', desc: 'Comprehensive, tamper-proof logs for HR compliance and seamless annual reporting.' },
+              { icon: <AppleEmoji char="⚙️" />, title: 'Custom Workflows', desc: 'Multi-tiered approval chains. Route leaves to HR, Managers, or both seamlessly.' },
+              { icon: <AppleEmoji char="📱" />, title: 'Anywhere Access', desc: 'Fully responsive design allows you to manage leaves from desktop, tablet, or phone.' },
             ].map((feature, i) => (
               <motion.div 
                 key={i} 
@@ -328,9 +329,9 @@ export default function LandingPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 32 }}>
             {[
-              { title: 'For HR Teams', desc: 'Automate compliance, eliminate manual data entry, and generate audit-ready reports instantly.', icon: '👥' },
-              { title: 'For Managers', desc: 'Review and approve requests in one click without ever leaving your inbox or Slack.', icon: '⚡' },
-              { title: 'For Employees', desc: 'Check balances, request time off, and plan holidays seamlessly from any device.', icon: '📱' }
+              { title: 'For HR Teams', desc: 'Automate compliance, eliminate manual data entry, and generate audit-ready reports instantly.', icon: <AppleEmoji char="👥" /> },
+              { title: 'For Managers', desc: 'Review and approve requests in one click without ever leaving your inbox or Slack.', icon: <AppleEmoji char="⚡" /> },
+              { title: 'For Employees', desc: 'Check balances, request time off, and plan holidays seamlessly from any device.', icon: <AppleEmoji char="📱" /> }
             ].map((sol, i) => (
               <motion.div
                 key={i}

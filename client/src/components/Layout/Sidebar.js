@@ -5,38 +5,40 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 
+import AppleEmoji from '@/components/AppleEmoji'
+
 const navItems = {
   employee: [
-    { href: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { href: '/apply-leave', label: 'Apply Leave', icon: '✏️' },
-    { href: '/leave-history', label: 'Leave History', icon: '📋' },
+    { href: '/dashboard', label: 'Dashboard', icon: <AppleEmoji char="📊" /> },
+    { href: '/apply-leave', label: 'Apply Leave', icon: <AppleEmoji char="✏️" /> },
+    { href: '/leave-history', label: 'Leave History', icon: <AppleEmoji char="📋" /> },
   ],
   manager: [
-    { href: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { href: '/pending-requests', label: 'Pending Requests', icon: '⏳' },
-    { href: '/team-overview', label: 'Team Overview', icon: '👥' },
-    { href: '/apply-leave', label: 'Apply Leave', icon: '✏️' },
-    { href: '/leave-history', label: 'Leave History', icon: '📋' },
+    { href: '/dashboard', label: 'Dashboard', icon: <AppleEmoji char="📊" /> },
+    { href: '/pending-requests', label: 'Pending Requests', icon: <AppleEmoji char="⏳" /> },
+    { href: '/team-overview', label: 'Team Overview', icon: <AppleEmoji char="👥" /> },
+    { href: '/apply-leave', label: 'Apply Leave', icon: <AppleEmoji char="✏️" /> },
+    { href: '/leave-history', label: 'Leave History', icon: <AppleEmoji char="📋" /> },
   ],
   admin: [
-    { href: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { href: '/employees', label: 'Employees', icon: '👥' },
-    { href: '/pending-requests', label: 'Requests', icon: '⏳' },
-    { href: '/system-settings', label: 'Settings', icon: '⚙️' },
-    { href: '/audit-logs', label: 'Audit Logs', icon: '🔍' },
-    { href: '/apply-leave', label: 'Apply Leave', icon: '✏️' },
-    { href: '/leave-history', label: 'Leave History', icon: '📋' },
+    { href: '/dashboard', label: 'Dashboard', icon: <AppleEmoji char="📊" /> },
+    { href: '/employees', label: 'Employees', icon: <AppleEmoji char="👥" /> },
+    { href: '/pending-requests', label: 'Requests', icon: <AppleEmoji char="⏳" /> },
+    { href: '/system-settings', label: 'Settings', icon: <AppleEmoji char="⚙️" /> },
+    { href: '/audit-logs', label: 'Audit Logs', icon: <AppleEmoji char="🔍" /> },
+    { href: '/apply-leave', label: 'Apply Leave', icon: <AppleEmoji char="✏️" /> },
+    { href: '/leave-history', label: 'Leave History', icon: <AppleEmoji char="📋" /> },
   ],
   super_admin: [
-    { href: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { href: '/employees', label: 'Employees', icon: '👥' },
-    { href: '/manage-admins', label: 'Manage Admins', icon: '👑' },
-    { href: '/pending-requests', label: 'Requests', icon: '⏳' },
-    { href: '/system-settings', label: 'Settings', icon: '⚙️' },
-    { href: '/organization-reports', label: 'Reports', icon: '📈' },
-    { href: '/audit-logs', label: 'Audit Logs', icon: '🔍' },
-    { href: '/apply-leave', label: 'Apply Leave', icon: '✏️' },
-    { href: '/leave-history', label: 'Leave History', icon: '📋' },
+    { href: '/dashboard', label: 'Dashboard', icon: <AppleEmoji char="📊" /> },
+    { href: '/employees', label: 'Employees', icon: <AppleEmoji char="👥" /> },
+    { href: '/manage-admins', label: 'Manage Admins', icon: <AppleEmoji char="👑" /> },
+    { href: '/pending-requests', label: 'Requests', icon: <AppleEmoji char="⏳" /> },
+    { href: '/system-settings', label: 'Settings', icon: <AppleEmoji char="⚙️" /> },
+    { href: '/organization-reports', label: 'Reports', icon: <AppleEmoji char="📈" /> },
+    { href: '/audit-logs', label: 'Audit Logs', icon: <AppleEmoji char="🔍" /> },
+    { href: '/apply-leave', label: 'Apply Leave', icon: <AppleEmoji char="✏️" /> },
+    { href: '/leave-history', label: 'Leave History', icon: <AppleEmoji char="📋" /> },
   ],
 }
 
