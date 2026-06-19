@@ -19,6 +19,7 @@ from app.modules.leaves.models import LeaveRequest, LeaveApproval, LeaveBalance
 from app.modules.settings.models import SystemSetting
 from app.modules.notifications.models import Notification
 from app.modules.audit.models import AuditLog
+from app.modules.contact.models import ContactMessage
 
 from app.modules.auth.routes import router as auth_router
 from app.modules.employees.routes import router as employees_router
@@ -28,6 +29,7 @@ from app.modules.settings.routes import router as settings_router
 from app.modules.reports.routes import router as reports_router
 from app.modules.notifications.routes import router as notifications_router
 from app.modules.audit.routes import router as audit_router
+from app.modules.contact.routes import router as contact_router
 from bot.router import router as bot_router
 
 from contextlib import asynccontextmanager
@@ -123,6 +125,7 @@ app.include_router(settings_router)
 app.include_router(reports_router)
 app.include_router(notifications_router)
 app.include_router(audit_router)
+app.include_router(contact_router)
 app.include_router(bot_router)
 
 @app.get("/")

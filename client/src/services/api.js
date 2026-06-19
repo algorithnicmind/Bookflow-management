@@ -139,3 +139,7 @@ export const botApi = {
     }),
 }
 
+export const contactApi = {
+  submit: (body) => request('/api/contact', { method: 'POST', body }),
+}
+

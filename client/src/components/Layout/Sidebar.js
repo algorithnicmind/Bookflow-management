@@ -86,21 +86,16 @@ export default function Sidebar({ isOpen, onClose }) {
             gap: 12,
           }}
         >
-          <div style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '1rem',
-            fontWeight: 800,
-            color: '#fff',
-            flexShrink: 0,
-          }}>
-            L
-          </div>
+          <img 
+            src="/logo.png" 
+            alt="LeaveFlow Logo" 
+            style={{
+              width: 36,
+              height: 36,
+              objectFit: 'contain',
+              flexShrink: 0,
+            }}
+          />
           <div>
             <div style={{ fontWeight: 700, fontSize: '1rem' }}>LeaveFlow</div>
             <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
