@@ -147,6 +147,19 @@ export const onboardingApi = {
 export const integrationsApi = {
   getCalendarStatus: () => request('/api/integrations/calendar/status'),
   connectCalendar: (provider) => request(`/api/integrations/calendar/connect/${provider}`),
+  simulateSlackAction: async (payload) => {
+    const formData = new URLSearchParams()
+    formData.append('payload', JSON.stringify(payload))
+    const response = await fetch(`${API_BASE}/api/integrations/slack/actions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: formData.toString()
+    })
+    return response.json()
+  },
+  simulateTeamsAction: (payload) => request('/api/integrations/teams/actions', { method: 'POST', body: payload })
 }
 
 
