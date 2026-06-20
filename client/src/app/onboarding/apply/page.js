@@ -18,6 +18,7 @@ export default function ApplyPage() {
     industry: '',
     admin_name: '',
     admin_email: '',
+    admin_password: '',
     special_requirements: ''
   })
 
@@ -26,8 +27,9 @@ export default function ApplyPage() {
       router.push('/dashboard')
     }
     const email = sessionStorage.getItem('onboarding_email')
+    const password = sessionStorage.getItem('onboarding_password')
     if (email) {
-      setFormData(prev => ({ ...prev, admin_email: email }))
+      setFormData(prev => ({ ...prev, admin_email: email, admin_password: password || '' }))
     }
   }, [user, router])
 

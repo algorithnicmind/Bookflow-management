@@ -117,7 +117,50 @@ async def login(request: Request, response: Response, form_data: OAuth2PasswordR
         }
     }
 
-@router.post("/logout")
+import httpx
+from fastapi.responses import RedirectResponse
+import urllib.parse
+from app.core.config import settings
+
+@router.get("/google/login")
+async def oauth_login():
+    if not settings.GOOGLE_CLIENT_ID:
+        raise HTTPException(status_code=500, detail="Google Client ID is not configured.")
+    redirect_uri = "http://localhost:8000/api/auth/google/callback"
+    auth_url = (
+        "https://accounts.google.com/o/oauth2/v2/auth?"
+        f"client_id={settings.GOOGLE_CLIENT_ID}&"
+        f"redirect_uri={redirect_uri}&"
+        "response_type=code&"
+        "scope=openid email profile"
+    )
+    return RedirectResponse(url=auth_url)
+
+@router.get("/google/callback")
+async def oauth_callback(code: str):
+    redirect_uri = "http://localhost:8000/api/auth/google/callback"
+    token_url = "https://oauth2.googleapis.com/token"
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(token_url, data={
+            "code": code,
+            "client_id": settings.GOOGLE_CLIENT_ID,
+            "client_secret": settings.GOOGLE_CLIENT_SECRET,
+            "redirect_uri": redirect_uri,
+            "grant_type": "authorization_code",
+        })
+        if resp.status_code != 200:
+            raise HTTPException(status_code=400, detail=f"OAuth error: {resp.text}")
+        
+        access_token = resp.json().get("access_token")
+        user_resp = await client.get("https://www.googleapis.com/oauth2/v2/userinfo", headers={"Authorization": f"Bearer {access_token}"})
+        email = user_resp.json().get("email")
+
+    if not email:
+        raise HTTPException(status_code=400, detail="Could not retrieve email from Google")
+
+    # Redirect to frontend with the email
+    frontend_url = f"http://localhost:3000/onboarding/oauth-callback?email={urllib.parse.quote(email)}&provider=google"
+    return RedirectResponse(url=frontend_url)@router.post("/logout")
 async def logout(response: Response):
     response.delete_cookie(key="access_token", httponly=True, secure=True, samesite="lax")
     return {"message": "Logged out successfully"}

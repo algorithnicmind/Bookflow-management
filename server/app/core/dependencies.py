@@ -51,3 +51,12 @@ class RoleChecker:
         if current_user.role not in self.allowed_roles:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Operation forbidden: Insufficient privileges")
         return current_user
+
+async def RequireOwner(current_user: Employee = Depends(get_current_user)):
+    """Only allows access to the Platform Owner."""
+    if current_user.department != 'System':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, 
+            detail="Operation forbidden: This endpoint is restricted to the platform owner."
+        )
+    return current_user

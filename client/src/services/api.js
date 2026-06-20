@@ -135,6 +135,7 @@ export const botApi = {
 
 export const contactApi = {
   submit: (body) => request('/api/contact', { method: 'POST', body }),
+  list: () => request('/api/contact'),
 }
 
 export const onboardingApi = {
@@ -144,3 +145,7 @@ export const onboardingApi = {
   reject: (id) => request(`/api/onboarding/applications/${id}/reject`, { method: 'PUT' }),
 }
 
+export const systemOwnersApi = {
+  list: () => request('/api/employees/system-owners'),
+  create: (body) => request('/api/employees/system-owners', { method: 'POST', body }),
+}
