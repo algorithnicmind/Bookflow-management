@@ -19,7 +19,7 @@ export default function DashboardLayout({ children }) {
 
   useEffect(() => {
     if (!loading && !user && mounted) {
-      router.push('/login')
+      router.push('/sign-in')
     }
   }, [user, loading, mounted, router])
 

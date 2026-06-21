@@ -119,7 +119,7 @@ export default function LandingPage() {
         {/* Right: Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button 
-            onClick={() => router.push('/login')} 
+            onClick={() => router.push('/sign-in')} 
             style={{ padding: '8px 20px', borderRadius: '100px', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }} 
             onMouseEnter={(e) => { e.currentTarget.style.background='rgba(255,255,255,0.05)'; }} 
             onMouseLeave={(e) => { e.currentTarget.style.background='transparent'; }}

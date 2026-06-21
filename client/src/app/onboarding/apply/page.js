@@ -18,7 +18,6 @@ export default function ApplyPage() {
     industry: '',
     admin_name: '',
     admin_email: '',
-    admin_password: '',
     special_requirements: ''
   })
 
@@ -26,10 +25,15 @@ export default function ApplyPage() {
     if (user) {
       router.push('/dashboard')
     }
-    const email = sessionStorage.getItem('onboarding_email')
-    const password = sessionStorage.getItem('onboarding_password')
-    if (email) {
-      setFormData(prev => ({ ...prev, admin_email: email, admin_password: password || '' }))
+    
+    // Auto-fill from Clerk if available
+    if (typeof window !== 'undefined' && window.Clerk && window.Clerk.user) {
+      const primaryEmailObj = window.Clerk.user.emailAddresses.find(
+        e => e.id === window.Clerk.user.primaryEmailAddressId
+      )
+      if (primaryEmailObj) {
+        setFormData(prev => ({ ...prev, admin_email: primaryEmailObj.emailAddress, admin_name: window.Clerk.user.fullName || '' }))
+      }
     }
   }, [user, router])
 
@@ -133,11 +137,9 @@ export default function ApplyPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <label style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--text-muted)' }}>Admin Email</label>
               <input
-                type="email" required
+                type="email" required readOnly
                 value={formData.admin_email} onChange={e => setFormData({...formData, admin_email: e.target.value})}
-                style={{ background: 'var(--bg-primary)', border: '1px solid var(--border)', padding: '12px 16px', borderRadius: 8, color: '#fff', fontSize: '1rem', outline: 'none', transition: 'all 0.2s' }}
-                onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 2px rgba(16, 185, 129, 0.2)' }}
-                onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.boxShadow = 'none' }}
+                style={{ background: 'var(--bg-primary)', border: '1px solid var(--border)', padding: '12px 16px', borderRadius: 8, color: '#888', fontSize: '1rem', outline: 'none', cursor: 'not-allowed' }}
               />
             </div>
           </div>

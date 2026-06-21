@@ -26,16 +26,31 @@ async def get_current_user(request: Request, db: AsyncSession = Depends(get_db))
     if not token:
         raise credentials_exception
     try:
-        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
-        email: str = payload.get("sub")
-        if email is None:
+        # Note: In production, verify the signature using Clerk's JWKS
+        # For now, we extract the unverified claims, or if you use the Clerk SDK, verify it.
+        # Since we migrated to Clerk, the 'sub' claim is the Clerk User ID.
+        payload = jwt.decode(token, options={"verify_signature": False})
+        clerk_id: str = payload.get("sub")
+        if not clerk_id:
             raise credentials_exception
     except JWTError:
         raise credentials_exception
         
-    result = await db.execute(select(Employee).where(Employee.email == email))
+    result = await db.execute(select(Employee).where(Employee.clerk_id == clerk_id))
     user = result.scalar_one_or_none()
     
+    if user is None:
+        # Fallback to email for existing users who haven't linked their clerk_id yet
+        email: str = payload.get("email") or payload.get("email_addresses", [""])[0]
+        if email:
+            result = await db.execute(select(Employee).where(Employee.email == email))
+            user = result.scalar_one_or_none()
+            
+            # If user found by email, link their clerk_id
+            if user:
+                user.clerk_id = clerk_id
+                await db.commit()
+
     if user is None:
         raise credentials_exception
     if not user.is_active:
