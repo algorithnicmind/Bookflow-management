@@ -34,7 +34,6 @@ const navItems = {
     { href: '/dashboard', label: 'Dashboard', icon: <AppleEmoji char="📊" /> },
     { href: '/employees', label: 'Employees', icon: <AppleEmoji char="👥" /> },
     { href: '/manage-admins', label: 'Manage Admins', icon: <AppleEmoji char="👑" /> },
-    { href: '/tenant-applications', label: 'Applications', icon: <AppleEmoji char="📝" /> },
     { href: '/pending-requests', label: 'Requests', icon: <AppleEmoji char="⏳" /> },
     { href: '/system-settings', label: 'Settings', icon: <AppleEmoji char="⚙️" /> },
     { href: '/organization-reports', label: 'Reports', icon: <AppleEmoji char="📈" /> },
@@ -49,7 +48,19 @@ export default function Sidebar({ isOpen, onClose }) {
   const pathname = usePathname()
   const { user, logout } = useAuth()
   const role = user?.role || 'employee'
-  const items = navItems[role] || navItems.employee
+  
+  let items = navItems[role] || navItems.employee
+  
+  // Platform Owner specific tabs (Exclusive)
+  if (user?.department === 'System') {
+    items = [
+      { href: '/tenant-applications?status=pending', label: 'Pending Onboarding', icon: <AppleEmoji char="⏳" /> },
+      { href: '/tenant-applications?status=approved', label: 'Approved Tenants', icon: <AppleEmoji char="✅" /> },
+      { href: '/tenant-applications?status=rejected', label: 'Rejected Apps', icon: <AppleEmoji char="❌" /> },
+      { href: '/owner-contacts', label: 'Contact Messages', icon: <AppleEmoji char="📨" /> },
+      { href: '/platform-owners', label: 'Platform Owners', icon: <AppleEmoji char="👥" /> },
+    ]
+  }
 
   return (
     <>

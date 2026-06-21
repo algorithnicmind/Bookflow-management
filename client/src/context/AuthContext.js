@@ -1,46 +1,63 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { useUser, useAuth as useClerkAuth } from '@clerk/nextjs'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
+  const { user: clerkUser, isLoaded } = useUser()
+  const { signOut } = useClerkAuth()
+  
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user')
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser))
-      } catch {
-        localStorage.removeItem('user')
+    async function fetchLocalProfile() {
+      if (!isLoaded) return;
+      
+      if (clerkUser) {
+        try {
+          // Import api dynamically to avoid circular dependencies if any
+          const { authApi } = await import('@/services/api');
+          // Fetch the full database profile which contains role, organization_id, etc.
+          const profile = await authApi.getProfile();
+          setUser({ ...profile, clerkInfo: clerkUser });
+        } catch (err) {
+          console.error("Failed to fetch local profile:", err);
+          setUser(null); // Ensure user is null if not authenticated locally
+          
+          // If they are logged into Clerk but have no local profile, they are a new user.
+          // They need to apply for an organization.
+          if (window.location.pathname !== '/onboarding/apply' && !window.location.pathname.startsWith('/sign-')) {
+            window.location.href = '/onboarding/apply';
+          }
+        }
+      } else {
+        setUser(null);
       }
+      setLoading(false);
     }
-    setLoading(false)
-  }, [])
+    fetchLocalProfile();
+  }, [clerkUser, isLoaded])
 
   const login = useCallback((userData) => {
-    localStorage.setItem('user', JSON.stringify(userData))
+    // With Clerk, login is handled by Clerk UI, but we keep this for compatibility
     setUser(userData)
   }, [])
 
   const logout = useCallback(async () => {
     try {
-      const { authApi } = await import('@/services/api')
-      await authApi.logout()
+      await signOut()
     } catch (e) {
       console.error('Logout error', e)
     }
-    localStorage.removeItem('user')
     setUser(null)
-  }, [])
+  }, [signOut])
 
   const updateUser = useCallback((data) => {
-    const updated = { ...user, ...data }
-    localStorage.setItem('user', JSON.stringify(updated))
-    setUser(updated)
-  }, [user])
+    setUser(prev => ({ ...prev, ...data }))
+  }, [])
 
   return (
     <AuthContext.Provider value={{ user, loading, login, logout, updateUser }}>

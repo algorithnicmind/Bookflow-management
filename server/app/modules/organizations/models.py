@@ -19,6 +19,7 @@ class OnboardingApplication(Base):
     company_name = Column(String(100), nullable=False)
     company_size = Column(String(50), nullable=False)
     admin_email = Column(String(255), nullable=False, index=True)
+    admin_password_hash = Column(String(255), nullable=True)
     special_requirements = Column(Text, nullable=True)
     status = Column(String(20), default="pending", nullable=False) # pending, approved, rejected
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

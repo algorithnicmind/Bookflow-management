@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import func as sql_func
 from app.core.database import get_db
-from app.core.dependencies import RoleChecker
+from app.core.dependencies import RoleChecker, RequireOwner
 from app.core.security import pwd_context
 from app.modules.organizations.models import Organization, OnboardingApplication
 from app.modules.employees.models import Employee
@@ -18,6 +18,7 @@ class ApplicationRequest(BaseModel):
     company_name: str
     company_size: str
     admin_email: EmailStr
+    admin_password: Optional[str] = None
     special_requirements: str | None = None
 
 class ApplicationResponse(BaseModel):
@@ -40,10 +41,15 @@ async def submit_application(request: ApplicationRequest, db: AsyncSession = Dep
         )
 
     # Create new application
+    password_hash = None
+    if request.admin_password:
+        password_hash = pwd_context.hash(request.admin_password)
+
     new_app = OnboardingApplication(
         company_name=request.company_name,
         company_size=request.company_size,
         admin_email=request.admin_email,
+        admin_password_hash=password_hash,
         special_requirements=request.special_requirements,
         status="pending"
     )
@@ -68,7 +74,7 @@ async def submit_application(request: ApplicationRequest, db: AsyncSession = Dep
 async def list_applications(
     status_filter: Optional[str] = Query(None, alias="status"),
     db: AsyncSession = Depends(get_db),
-    current_user: Employee = Depends(RoleChecker(["super_admin"])),
+    current_user: Employee = Depends(RequireOwner),
 ):
     """List all onboarding applications, optionally filtered by status."""
     query = select(OnboardingApplication).order_by(OnboardingApplication.created_at.desc())
@@ -116,7 +122,7 @@ async def list_applications(
 async def approve_application(
     application_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: Employee = Depends(RoleChecker(["super_admin"])),
+    current_user: Employee = Depends(RequireOwner),
 ):
     """Approve a pending application: create Organization + Super Admin + Leave Balances."""
 
@@ -154,7 +160,7 @@ async def approve_application(
         organization_id=org.id,
         name="Admin User",
         email=application.admin_email,
-        password_hash=pwd_context.hash("Welcome123!"),
+        password_hash=application.admin_password_hash or pwd_context.hash("Welcome123!"),
         role="super_admin",
         department="Management",
         gender="not_specified",
@@ -196,7 +202,7 @@ async def approve_application(
 async def reject_application(
     application_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: Employee = Depends(RoleChecker(["super_admin"])),
+    current_user: Employee = Depends(RequireOwner),
 ):
     """Reject a pending application."""
 

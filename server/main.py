@@ -81,7 +81,11 @@ from app.core.security import pwd_context
 
 # Startup event replaced by lifespan
 
+from app.modules.auth.routes import router as auth_router
+from app.modules.auth.webhooks import router as webhooks_router
+
 app.include_router(auth_router)
+app.include_router(webhooks_router)
 app.include_router(employees_router)
 app.include_router(leaves_router)
 app.include_router(dashboard_router)

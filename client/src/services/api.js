@@ -9,8 +9,20 @@ export async function request(endpoint, options = {}) {
   const config = {
     method: options.method || 'GET',
     headers,
-    credentials: 'include', // Important for HttpOnly cookies
+    credentials: 'include',
     ...(options.body ? { body: JSON.stringify(options.body) } : {}),
+  }
+
+  // Inject Clerk token if available
+  if (typeof window !== 'undefined' && window.Clerk && window.Clerk.session) {
+    try {
+      const token = await window.Clerk.session.getToken()
+      if (token) {
+        config.headers['Authorization'] = `Bearer ${token}`
+      }
+    } catch (e) {
+      console.error("Failed to get Clerk token", e)
+    }
   }
 
   let url = `${API_BASE}${endpoint}`
@@ -135,6 +147,7 @@ export const botApi = {
 
 export const contactApi = {
   submit: (body) => request('/api/contact', { method: 'POST', body }),
+  list: () => request('/api/contact'),
 }
 
 export const onboardingApi = {
@@ -162,4 +175,8 @@ export const integrationsApi = {
   simulateTeamsAction: (payload) => request('/api/integrations/teams/actions', { method: 'POST', body: payload })
 }
 
+export const systemOwnersApi = {
+  list: () => request('/api/employees/system-owners'),
+  create: (body) => request('/api/employees/system-owners', { method: 'POST', body }),
+}
 
