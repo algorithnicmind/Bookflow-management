@@ -13,17 +13,7 @@ export async function request(endpoint, options = {}) {
     ...(options.body ? { body: JSON.stringify(options.body) } : {}),
   }
 
-  // Inject Clerk token if available
-  if (typeof window !== 'undefined' && window.Clerk && window.Clerk.session) {
-    try {
-      const token = await window.Clerk.session.getToken()
-      if (token) {
-        config.headers['Authorization'] = `Bearer ${token}`
-      }
-    } catch (e) {
-      console.error("Failed to get Clerk token", e)
-    }
-  }
+
 
   let url = `${API_BASE}${endpoint}`
   if (options.params) {

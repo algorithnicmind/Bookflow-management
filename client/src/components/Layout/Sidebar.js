@@ -52,9 +52,7 @@ export default function Sidebar({ isOpen, onClose }) {
   // Platform Owner specific tabs (Exclusive)
   if (user?.department === 'System') {
     items = [
-      { href: '/tenant-applications?status=pending', label: 'Pending Onboarding', icon: <AppleEmoji char="⏳" /> },
-      { href: '/tenant-applications?status=approved', label: 'Approved Tenants', icon: <AppleEmoji char="✅" /> },
-      { href: '/tenant-applications?status=rejected', label: 'Rejected Apps', icon: <AppleEmoji char="❌" /> },
+      { href: '/leads', label: 'Leads', icon: <AppleEmoji char="🎯" /> },
       { href: '/owner-contacts', label: 'Contact Messages', icon: <AppleEmoji char="📨" /> },
       { href: '/platform-owners', label: 'Platform Owners', icon: <AppleEmoji char="👥" /> },
     ]
