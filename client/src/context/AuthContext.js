@@ -29,7 +29,11 @@ export function AuthProvider({ children }) {
           
           // If they are logged into Clerk but have no local profile, they are a new user.
           // They need to apply for an organization.
-          if (window.location.pathname !== '/onboarding/apply' && !window.location.pathname.startsWith('/sign-')) {
+          if (
+            window.location.pathname !== '/' &&
+            window.location.pathname !== '/onboarding/apply' && 
+            !window.location.pathname.startsWith('/sign-')
+          ) {
             window.location.href = '/onboarding/apply';
           }
         }

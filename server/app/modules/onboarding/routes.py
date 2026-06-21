@@ -17,14 +17,18 @@ router = APIRouter(prefix="/api/onboarding", tags=["onboarding"])
 class ApplicationRequest(BaseModel):
     company_name: str
     company_size: str
+    admin_name: str
     admin_email: EmailStr
+    industry: str
     admin_password: Optional[str] = None
     special_requirements: str | None = None
 
 class ApplicationResponse(BaseModel):
     id: int
     company_name: str
+    admin_name: str
     admin_email: str
+    industry: str
     status: str
     message: str
 
@@ -48,7 +52,9 @@ async def submit_application(request: ApplicationRequest, db: AsyncSession = Dep
     new_app = OnboardingApplication(
         company_name=request.company_name,
         company_size=request.company_size,
+        admin_name=request.admin_name,
         admin_email=request.admin_email,
+        industry=request.industry,
         admin_password_hash=password_hash,
         special_requirements=request.special_requirements,
         status="pending"
@@ -61,7 +67,9 @@ async def submit_application(request: ApplicationRequest, db: AsyncSession = Dep
     return {
         "id": new_app.id,
         "company_name": new_app.company_name,
+        "admin_name": new_app.admin_name,
         "admin_email": new_app.admin_email,
+        "industry": new_app.industry,
         "status": new_app.status,
         "message": "Application submitted successfully. Our team will contact you shortly."
     }
@@ -102,7 +110,9 @@ async def list_applications(
                 "id": app.id,
                 "company_name": app.company_name,
                 "company_size": app.company_size,
+                "admin_name": app.admin_name,
                 "admin_email": app.admin_email,
+                "industry": app.industry,
                 "special_requirements": app.special_requirements,
                 "status": app.status,
                 "created_at": app.created_at.isoformat() if app.created_at else None,

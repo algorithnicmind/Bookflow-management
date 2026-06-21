@@ -10,7 +10,7 @@ import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
 import AppleEmoji from '@/components/AppleEmoji'
 
-export default function TenantApplicationsPage() {
+export default function LeadsPage() {
   const { user } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -132,8 +132,8 @@ export default function TenantApplicationsPage() {
       {/* Page Header */}
       <div className="page-header animate-in">
         <div>
-          <h1 className="page-title">Tenant Applications</h1>
-          <p className="page-subtitle">Review and approve organization onboarding requests</p>
+          <h1 className="page-title">Leads Management</h1>
+          <p className="page-subtitle">Review and manage platform leads and onboarding inquiries</p>
         </div>
       </div>
 
@@ -256,7 +256,7 @@ export default function TenantApplicationsPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
-                  {['Company', 'Admin Email', 'Size', 'Status', 'Submitted', 'Actions'].map((col) => (
+                  {['Company', 'Industry', 'Admin Name', 'Admin Email', 'Size', 'Status', 'Submitted', 'Actions'].map((col) => (
                     <th key={col} style={{
                       textAlign: 'left',
                       padding: '12px 16px',
@@ -287,6 +287,12 @@ export default function TenantApplicationsPage() {
                           {app.special_requirements}
                         </div>
                       )}
+                    </td>
+                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+                      {app.industry || '—'}
+                    </td>
+                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+                      {app.admin_name || '—'}
                     </td>
                     <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
                       {app.admin_email}
