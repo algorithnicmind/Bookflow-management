@@ -13,12 +13,16 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from jose import JWTError, jwt
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from app.core.database import get_db
 from app.modules.employees.models import Employee
 from app.core.config import settings
 
 # This tells FastAPI where the login endpoint is for auto-generating Swagger UI docs
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
+
+limiter = Limiter(key_func=get_remote_address)
 
 async def get_current_user(request: Request, db: AsyncSession = Depends(get_db)) -> Employee:
     """

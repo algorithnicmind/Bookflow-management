@@ -20,10 +20,7 @@ from pydantic import BaseModel, EmailStr
 
 from app.core.tenant import get_current_tenant
 from app.modules.organizations.models import Organization
-from slowapi import Limiter
-from slowapi.util import get_remote_address
-
-limiter = Limiter(key_func=get_remote_address)
+from app.core.dependencies import limiter
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 

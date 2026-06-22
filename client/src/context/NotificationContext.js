@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { useAuth } from './AuthContext'
+import { notificationsApi } from '@/services/api'
 
 const NotificationContext = createContext(null)
 
@@ -17,13 +18,7 @@ export function NotificationProvider({ children }) {
       return
     }
     try {
-      const token = localStorage.getItem('token')
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const res = await fetch(`${API_BASE}/api/notifications`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      if (!res.ok) return
-      const data = await res.json()
+      const data = await notificationsApi.list()
       const list = data.notifications || []
       setNotifications(list)
       setUnreadCount(list.filter(n => !n.is_read).length)
@@ -34,12 +29,7 @@ export function NotificationProvider({ children }) {
 
   const markAsRead = useCallback(async (notificationId) => {
     try {
-      const token = localStorage.getItem('token')
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      await fetch(`${API_BASE}/api/notifications/${notificationId}/read`, {
-        method: 'PUT',
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
+      await notificationsApi.markRead(notificationId)
       setNotifications(prev =>
         prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
       )
@@ -51,12 +41,7 @@ export function NotificationProvider({ children }) {
 
   const markAllAsRead = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token')
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      await fetch(`${API_BASE}/api/notifications/read-all`, {
-        method: 'PUT',
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
+      await notificationsApi.markAllRead()
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
       setUnreadCount(0)
     } catch (err) {

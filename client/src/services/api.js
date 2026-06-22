@@ -134,6 +134,12 @@ export const auditApi = {
   list: (params) => request('/api/audit-logs', { params }),
 }
 
+export const notificationsApi = {
+  list: () => request('/api/notifications'),
+  markRead: (id) => request(`/api/notifications/${id}/read`, { method: 'PUT' }),
+  markAllRead: () => request('/api/notifications/read-all', { method: 'PUT' }),
+}
+
 export const botApi = {
   chat: (message, sessionState) =>
     request('/api/bot/chat', {

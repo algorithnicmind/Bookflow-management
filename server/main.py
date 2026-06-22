@@ -11,10 +11,10 @@ from datetime import datetime
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from app.core.database import engine, Base
+from app.core.dependencies import limiter
 
 # Import all models to ensure they are registered on Base.metadata
 from app.modules.organizations.models import Organization, OnboardingApplication
@@ -69,7 +69,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
