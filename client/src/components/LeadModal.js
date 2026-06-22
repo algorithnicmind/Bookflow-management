@@ -11,6 +11,7 @@ export default function LeadModal({ isOpen, onClose }) {
     company_size: '',
     admin_name: '',
     admin_email: '',
+    admin_phone: '',
     industry: '',
     special_requirements: ''
   })
@@ -93,9 +94,15 @@ export default function LeadModal({ isOpen, onClose }) {
             </div>
           </div>
 
-          <div>
-            <label style={{ display: 'block', marginBottom: 6, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Industry *</label>
-            <input required name="industry" value={formData.industry} onChange={handleChange} className="form-input" placeholder="e.g. Technology, Healthcare" />
+          <div style={{ display: 'flex', gap: 16 }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', marginBottom: 6, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Industry *</label>
+              <input required name="industry" value={formData.industry} onChange={handleChange} className="form-input" placeholder="e.g. Technology, Healthcare" />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', marginBottom: 6, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Admin Phone *</label>
+              <input required type="tel" name="admin_phone" value={formData.admin_phone} onChange={handleChange} className="form-input" placeholder="e.g. +1 555-0199" />
+            </div>
           </div>
 
           <div>

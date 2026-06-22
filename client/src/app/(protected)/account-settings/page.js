@@ -13,7 +13,7 @@ import Button from '@/components/ui/Button'
 import { useAuth } from '@/context/AuthContext'
 
 export default function AccountSettingsPage() {
-  const { user, setUser } = useAuth()
+  const { user, updateUser } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState({ text: '', type: '' })
@@ -90,7 +90,7 @@ export default function AccountSettingsPage() {
       
       const updatedUser = await authApi.updateProfile(payload)
       // Update context user if name/email changed
-      setUser({ ...user, name: updatedUser.name, email: updatedUser.email })
+      updateUser({ name: updatedUser.name, email: updatedUser.email })
       
       setForm(prev => ({ ...prev, password: '' })) // Clear password field
       setMessage({ text: 'Profile updated successfully!', type: 'success' })

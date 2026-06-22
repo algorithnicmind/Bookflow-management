@@ -25,6 +25,7 @@ class ApplicationRequest(BaseModel):
     company_size: str
     admin_name: str
     admin_email: EmailStr
+    admin_phone: Optional[str] = None
     industry: str
     admin_password: Optional[str] = None
     special_requirements: str | None = None
@@ -34,6 +35,7 @@ class ApplicationResponse(BaseModel):
     company_name: str
     admin_name: str
     admin_email: str
+    admin_phone: Optional[str] = None
     industry: str
     status: str
     message: str
@@ -60,6 +62,7 @@ async def submit_application(request: ApplicationRequest, db: AsyncSession = Dep
         company_size=request.company_size,
         admin_name=request.admin_name,
         admin_email=request.admin_email,
+        admin_phone=request.admin_phone,
         industry=request.industry,
         admin_password_hash=password_hash,
         special_requirements=request.special_requirements,
@@ -75,6 +78,7 @@ async def submit_application(request: ApplicationRequest, db: AsyncSession = Dep
         "company_name": new_app.company_name,
         "admin_name": new_app.admin_name,
         "admin_email": new_app.admin_email,
+        "admin_phone": new_app.admin_phone,
         "industry": new_app.industry,
         "status": new_app.status,
         "message": "Application submitted successfully. Our team will contact you shortly."
@@ -118,6 +122,7 @@ async def list_applications(
                 "company_size": app.company_size,
                 "admin_name": app.admin_name,
                 "admin_email": app.admin_email,
+                "admin_phone": app.admin_phone,
                 "industry": app.industry,
                 "special_requirements": app.special_requirements,
                 "status": app.status,

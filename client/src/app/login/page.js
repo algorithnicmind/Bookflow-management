@@ -24,7 +24,13 @@ export default function LoginPage() {
   useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
-    if (user && mounted) router.push('/dashboard')
+    if (user && mounted) {
+      if (user.department === 'System') {
+        router.push('/leads')
+      } else {
+        router.push('/dashboard')
+      }
+    }
   }, [user, mounted, router])
 
   const handleSubmit = async (e) => {
@@ -40,7 +46,11 @@ export default function LoginPage() {
     try {
       const data = await authApi.login(email.trim(), password)
       login(data.user)
-      router.push('/dashboard')
+      if (data.user?.department === 'System') {
+        router.push('/leads')
+      } else {
+        router.push('/dashboard')
+      }
     } catch (err) {
       setError(err.message)
     } finally {

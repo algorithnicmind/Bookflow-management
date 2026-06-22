@@ -16,7 +16,7 @@ from jose import JWTError, jwt
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from app.core.database import get_db
-from app.modules.employees.models import Employee
+from app.modules.employees.models import Employee, PlatformOwner
 from app.core.config import settings
 
 # This tells FastAPI where the login endpoint is for auto-generating Swagger UI docs
@@ -24,7 +24,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
 
 limiter = Limiter(key_func=get_remote_address)
 
-async def get_current_user(request: Request, db: AsyncSession = Depends(get_db)) -> Employee:
+async def get_current_user(request: Request, db: AsyncSession = Depends(get_db)) -> Employee | PlatformOwner:
     """
     Dependency: Authenticates the user for the current request.
     
@@ -66,6 +66,11 @@ async def get_current_user(request: Request, db: AsyncSession = Depends(get_db))
     user = result.scalar_one_or_none()
 
     if user is None:
+        from app.modules.employees.models import PlatformOwner
+        po_res = await db.execute(select(PlatformOwner).where(PlatformOwner.email == email))
+        user = po_res.scalar_one_or_none()
+
+    if user is None:
         raise credentials_exception
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Account is deactivated")
@@ -88,7 +93,7 @@ class RoleChecker:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Operation forbidden: Insufficient privileges")
         return current_user
 
-async def RequireOwner(current_user: Employee = Depends(get_current_user)):
+async def RequireOwner(current_user: Employee | PlatformOwner = Depends(get_current_user)):
     """
     Dependency: Only allows access to the global Platform Owner (System department).
     This restricts tenant users (even super_admins of a tenant) from accessing platform-wide operations.

@@ -111,7 +111,7 @@ export default function Sidebar({ isOpen, onClose }) {
           <div>
             <div style={{ fontWeight: 700, fontSize: '1rem' }}>LeaveFlow</div>
             <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              {role.replace('_', ' ')}
+              {user?.department === 'System' ? 'Platform Owner' : role.replace('_', ' ')}
             </div>
           </div>
         </div>
