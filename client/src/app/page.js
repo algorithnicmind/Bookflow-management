@@ -30,7 +30,11 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      router.push('/dashboard')
+      if (user.department === 'System') {
+        router.push('/leads')
+      } else {
+        router.push('/dashboard')
+      }
     }
   }, [user, loading, router])
 
@@ -119,7 +123,6 @@ export default function LandingPage() {
         {/* Center: Links */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 32, color: '#a1a1aa', fontSize: '0.9rem', fontWeight: 600 }}>
           <a href="#features" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='#fff'} onMouseLeave={(e) => e.target.style.color='#a1a1aa'}>Features</a>
-          <a href="#platform" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='#fff'} onMouseLeave={(e) => e.target.style.color='#a1a1aa'}>Platform</a>
           <a href="#solutions" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='#fff'} onMouseLeave={(e) => e.target.style.color='#a1a1aa'}>Solutions</a>
           <a href="#contact" style={{ padding: '8px 18px', background: 'rgba(255,255,255,0.08)', borderRadius: 100, color: '#fff', textDecoration: 'none', transition: 'background 0.2s' }} onMouseEnter={(e) => e.target.style.background='rgba(255,255,255,0.12)'} onMouseLeave={(e) => e.target.style.background='rgba(255,255,255,0.08)'}>Contact</a>
           <a href="#pricing" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='#fff'} onMouseLeave={(e) => e.target.style.color='#a1a1aa'}>Pricing</a>

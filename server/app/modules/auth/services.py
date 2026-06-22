@@ -25,8 +25,13 @@ async def authenticate_user(username: str, password_plain: str, db: AsyncSession
     
     Returns the Employee object if successful, raises HTTPException (401/403) otherwise.
     """
+    from app.modules.employees.models import PlatformOwner
     result = await db.execute(select(Employee).where(Employee.email == username))
     user = result.scalar_one_or_none()
+    if not user:
+        po_res = await db.execute(select(PlatformOwner).where(PlatformOwner.email == username))
+        user = po_res.scalar_one_or_none()
+        
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

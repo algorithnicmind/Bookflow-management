@@ -29,14 +29,16 @@ def get_employee_service(
 @router.get("/me", response_model=EmployeeResponse)
 async def get_my_profile(
     current_user: Employee = Depends(get_current_user),
-    service: EmployeeService = Depends(get_employee_service)
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Get Current User Profile.
     Used by the frontend to hydrate the AuthContext state on mount.
     """
-    emp = await service.get_employee_by_id(current_user.id)
-    return EmployeeResponse.model_validate(emp)
+    from app.modules.employees.repositories import EmployeeRepository
+    repo = EmployeeRepository(db, current_user.organization_id or 0)
+    emp = await repo.get_by_id(current_user.id)
+    return EmployeeResponse.model_validate(emp or current_user)
 
 from app.modules.employees.schemas import EmployeeProfileUpdate
 
@@ -44,17 +46,36 @@ from app.modules.employees.schemas import EmployeeProfileUpdate
 async def update_my_profile(
     request: EmployeeProfileUpdate,
     current_user: Employee = Depends(get_current_user),
-    service: EmployeeService = Depends(get_employee_service)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Update Current User Profile.
     Allows employees to update non-administrative fields like their name or password.
     """
+    from app.modules.employees.models import PlatformOwner
+    if isinstance(current_user, PlatformOwner) or not current_user.organization_id:
+        if request.name:
+            current_user.name = request.name
+        if request.email is not None:
+            current_user.email = request.email
+        if request.password:
+            current_user.password_hash = pwd_context.hash(request.password)
+        db.add(current_user)
+        await db.commit()
+        await db.refresh(current_user)
+        return EmployeeResponse.model_validate(current_user)
+
+    from app.modules.organizations.models import Organization
+    from app.core.tenant import get_current_tenant
+    tenant = await get_current_tenant(current_user, db)
+    repo = EmployeeRepository(db, tenant.id)
+    service = EmployeeService(repo)
     emp = await service.update_profile(current_user.id, request)
     return EmployeeResponse.model_validate(emp)
 
 from fastapi import HTTPException
 from sqlalchemy.future import select
+from app.modules.employees.models import PlatformOwner
 
 @router.get("/system-owners", response_model=dict)
 async def list_system_owners(
@@ -67,7 +88,7 @@ async def list_system_owners(
     Used for global platform management.
     """
     result = await db.execute(
-        select(Employee).where(Employee.department == 'System', Employee.is_active == True)
+        select(PlatformOwner).where(PlatformOwner.is_active == True)
     )
     owners = result.scalars().all()
     return {"owners": [EmployeeResponse.model_validate(o) for o in owners]}
@@ -78,16 +99,15 @@ async def create_system_owner(
     db: AsyncSession = Depends(get_db),
     current_user: Employee = Depends(RequireOwner)
 ):
-    result = await db.execute(select(Employee).where(Employee.email == request.email))
+    result = await db.execute(select(PlatformOwner).where(PlatformOwner.email == request.email))
     if result.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Email already registered")
         
-    owner = Employee(
-        organization_id=current_user.organization_id,
+    owner = PlatformOwner(
         name=request.name,
         email=request.email,
         password_hash=pwd_context.hash("Owner@123!"),
-        role="super_admin",
+        role="platform_owner",
         department="System",
         is_active=True
     )

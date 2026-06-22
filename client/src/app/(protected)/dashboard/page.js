@@ -25,8 +25,12 @@ export default function DashboardPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    fetchDashboard()
-  }, [])
+    if (user?.department === 'System') {
+      router.push('/leads')
+    } else {
+      fetchDashboard()
+    }
+  }, [user, router])
 
   const fetchDashboard = async () => {
     setLoading(true)
@@ -78,13 +82,13 @@ export default function DashboardPage() {
             {role === 'employee' && 'My Dashboard'}
             {role === 'manager' && 'Manager Dashboard'}
             {role === 'admin' && 'Admin Dashboard'}
-            {role === 'super_admin' && 'Super Admin Dashboard'}
+            {role === 'super_admin' && (user?.department === 'System' ? 'Platform Owner Dashboard' : 'Super Admin Dashboard')}
           </h1>
           <p className="page-subtitle">
             {role === 'employee' && 'Overview of your leave status and balances'}
             {role === 'manager' && 'Team overview, pending approvals, and more'}
             {role === 'admin' && 'System-wide statistics and employee overview'}
-            {role === 'super_admin' && 'Organization-wide metrics and controls'}
+            {role === 'super_admin' && (user?.department === 'System' ? 'Platform metrics and system controls' : 'Organization-wide metrics and controls')}
           </p>
         </div>
         <Button onClick={() => router.push('/apply-leave')}>

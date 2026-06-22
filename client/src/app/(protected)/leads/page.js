@@ -67,39 +67,7 @@ export default function LeadsPage() {
     setTimeout(() => setToast(null), 4000)
   }
 
-  const handleApprove = async (id, companyName) => {
-    if (!confirm(`Approve "${companyName}"?\n\nThis will create the organization, a super_admin account (password: Welcome123!), and default leave balances.`)) return
 
-    setActionLoading(id)
-    try {
-      const res = await onboardingApi.approve(id)
-      setProvisionedDetails({
-        companyName: res.organization?.name || companyName,
-        email: res.admin?.email || '',
-        password: 'Welcome123!'
-      })
-      await fetchApplications(activeFilter)
-    } catch (err) {
-      showToast(err.message || 'Failed to approve.', 'error')
-    } finally {
-      setActionLoading(null)
-    }
-  }
-
-  const handleReject = async (id, companyName) => {
-    if (!confirm(`Reject "${companyName}"?\n\nThis action cannot be undone.`)) return
-
-    setActionLoading(id)
-    try {
-      await onboardingApi.reject(id)
-      showToast(`"${companyName}" rejected.`)
-      await fetchApplications(activeFilter)
-    } catch (err) {
-      showToast(err.message || 'Failed to reject.', 'error')
-    } finally {
-      setActionLoading(null)
-    }
-  }
 
   const formatDate = (isoDate) => {
     if (!isoDate) return '—'
@@ -262,7 +230,7 @@ export default function LeadsPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
-                  {['Company', 'Industry', 'Admin Name', 'Admin Email', 'Size', 'Status', 'Submitted', 'Actions'].map((col) => (
+                  {['Company', 'Industry', 'Admin Name', 'Admin Email', 'Phone', 'Size', 'Status', 'Submitted'].map((col) => (
                     <th key={col} style={{
                       textAlign: 'left',
                       padding: '12px 16px',
@@ -304,6 +272,9 @@ export default function LeadsPage() {
                       {app.admin_email}
                     </td>
                     <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+                      {app.admin_phone || '—'}
+                    </td>
+                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
                       {app.company_size}
                     </td>
                     <td style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
@@ -312,32 +283,7 @@ export default function LeadsPage() {
                     <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.85rem', color: 'var(--text-dim)' }}>
                       {formatDate(app.created_at)}
                     </td>
-                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
-                      {app.status === 'pending' ? (
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          <Button
-                            variant="success"
-                            size="sm"
-                            loading={actionLoading === app.id}
-                            onClick={() => handleApprove(app.id, app.company_name)}
-                          >
-                            Approve
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            loading={actionLoading === app.id}
-                            onClick={() => handleReject(app.id, app.company_name)}
-                          >
-                            Reject
-                          </Button>
-                        </div>
-                      ) : (
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', fontStyle: 'italic' }}>
-                          {app.status === 'approved' ? 'Provisioned' : 'Declined'}
-                        </span>
-                      )}
-                    </td>
+
                   </tr>
                 ))}
               </tbody>
@@ -346,33 +292,7 @@ export default function LeadsPage() {
         </Card>
       )}
 
-      {/* Provisioned Modal */}
-      <Modal isOpen={!!provisionedDetails} onClose={() => setProvisionedDetails(null)} title="Application Approved">
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <div style={{ fontSize: '3rem', marginBottom: 16 }}><AppleEmoji char="🎉" /></div>
-          <h3 style={{ fontSize: '1.2rem', marginBottom: 8 }}>{provisionedDetails?.companyName} is ready!</h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            The organization and super admin account have been created successfully. Share these credentials with the tenant admin.
-          </p>
-        </div>
-        <div style={{ background: 'var(--bg-secondary)', padding: 16, borderRadius: 8, marginBottom: 24 }}>
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>Admin Email</div>
-            <div style={{ fontSize: '1rem', fontWeight: 600 }}>{provisionedDetails?.email}</div>
-          </div>
-          <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>Temporary Password</div>
-            <div style={{ fontSize: '1rem', fontWeight: 600, fontFamily: 'monospace', letterSpacing: '1px' }}>{provisionedDetails?.password}</div>
-          </div>
-        </div>
-        <Button fullWidth size="lg" onClick={() => {
-          navigator.clipboard.writeText(`Login URL: ${window.location.origin}/login\nEmail: ${provisionedDetails?.email}\nPassword: ${provisionedDetails?.password}`)
-          showToast('Credentials copied to clipboard!')
-          setProvisionedDetails(null)
-        }}>
-          Copy to Clipboard & Close
-        </Button>
-      </Modal>
+
 
       <style jsx>{`
         @keyframes slideIn {

@@ -20,6 +20,7 @@ class OnboardingApplication(Base):
     company_size = Column(String(50), nullable=False)
     admin_email = Column(String(255), nullable=False, index=True)
     admin_name = Column(String(100), nullable=True)
+    admin_phone = Column(String(50), nullable=True)
     industry = Column(String(100), nullable=True)
     admin_password_hash = Column(String(255), nullable=True)
     special_requirements = Column(Text, nullable=True)
