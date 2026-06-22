@@ -18,7 +18,7 @@ import AppleEmoji from '@/components/AppleEmoji'
 const STATUS_OPTIONS = [
   { value: 'pending', label: 'Pending', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)', border: 'rgba(245, 158, 11, 0.35)' },
   { value: 'contacted', label: 'Contacted', color: '#6366f1', bg: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.35)' },
-  { value: 'interested_custom_pricing', label: 'Interested', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.35)' },
+  { value: 'interested', label: 'Interested', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.35)' },
   { value: 'not_interested', label: 'Not Interested', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)', border: 'rgba(239, 68, 68, 0.35)' },
 ]
 
@@ -105,7 +105,7 @@ export default function LeadsPage() {
     { key: null, label: 'All', count: counts.total },
     { key: 'pending', label: 'Pending', count: counts.pending },
     { key: 'contacted', label: 'Contacted', count: counts.contacted },
-    { key: 'interested_custom_pricing', label: 'Interested', count: counts.interested },
+    { key: 'interested', label: 'Interested', count: counts.interested },
     { key: 'not_interested', label: 'Not Interested', count: counts.not_interested },
   ]
 

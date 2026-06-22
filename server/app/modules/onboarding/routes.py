@@ -97,7 +97,7 @@ async def list_applications(
     """List all onboarding applications, optionally filtered by status."""
     query = select(OnboardingApplication).order_by(OnboardingApplication.created_at.desc())
 
-    if status_filter and status_filter in ("pending", "contacted", "interested_custom_pricing", "not_interested"):
+    if status_filter and status_filter in ("pending", "contacted", "interested", "not_interested"):
         query = query.where(OnboardingApplication.status == status_filter)
 
     result = await db.execute(query)
@@ -109,7 +109,7 @@ async def list_applications(
             sql_func.count(OnboardingApplication.id).label("total"),
             sql_func.count(OnboardingApplication.id).filter(OnboardingApplication.status == "pending").label("pending"),
             sql_func.count(OnboardingApplication.id).filter(OnboardingApplication.status == "contacted").label("contacted"),
-            sql_func.count(OnboardingApplication.id).filter(OnboardingApplication.status == "interested_custom_pricing").label("interested"),
+            sql_func.count(OnboardingApplication.id).filter(OnboardingApplication.status == "interested").label("interested"),
             sql_func.count(OnboardingApplication.id).filter(OnboardingApplication.status == "not_interested").label("not_interested"),
         )
     )
@@ -141,7 +141,7 @@ async def list_applications(
     }
 
 
-VALID_LEAD_STATUSES = ["pending", "contacted", "interested_custom_pricing", "not_interested"]
+VALID_LEAD_STATUSES = ["pending", "contacted", "interested", "not_interested"]
 
 
 class UpdateStatusRequest(BaseModel):
