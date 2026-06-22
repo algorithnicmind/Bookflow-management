@@ -1,9 +1,5 @@
 import AppleEmoji from '@/components/AppleEmoji'
 
-export function cn(...classes) {
-  return classes.filter(Boolean).join(' ')
-}
-
 export function formatDate(dateString) {
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
@@ -51,6 +47,4 @@ export function getLeaveTypeIcon(type) {
   return icons[type] || <AppleEmoji char="📋" />
 }
 
-export function checkOverlap(start1, end1, start2, end2) {
-  return start1 <= end2 && end1 >= start2
-}
+

@@ -76,15 +76,6 @@ class LeaveRepository:
         result = await self.db.execute(query)
         return list(result.unique().scalars().all())
 
-    async def list_pending_requests_for_manager(self, manager_id: int):
-        query = select(LeaveRequest, Employee).join(Employee).where(
-            LeaveRequest.status == "pending",
-            LeaveRequest.organization_id == self.organization_id,
-            Employee.manager_id == manager_id
-        )
-        result = await self.db.execute(query)
-        return result.all()
-
     async def list_all_pending_requests(self):
         query = select(LeaveRequest, Employee).join(Employee).where(
             LeaveRequest.status == "pending",

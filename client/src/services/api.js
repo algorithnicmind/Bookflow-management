@@ -84,7 +84,6 @@ export const authApi = {
   register: (body) => request('/api/auth/register', { method: 'POST', body }),
   getProfile: () => request('/api/employees/me'),
   updateProfile: (body) => request('/api/employees/me', { method: 'PUT', body }),
-  oauthLogin: (body) => request('/api/auth/oauth-login', { method: 'POST', body }),
   logout: () => request('/api/auth/logout', { method: 'POST' }),
 }
 
@@ -111,10 +110,6 @@ export const dashboardApi = {
   stats: () => request('/api/dashboard/stats'),
 }
 
-export const adminsApi = {
-  create: (body) => request('/api/auth/register', { method: 'POST', body }),
-}
-
 export const settingsApi = {
   update: (body) => request('/api/settings', { method: 'PUT', body }),
   getHolidays: () => request('/api/settings/holidays'),
@@ -137,12 +132,6 @@ export const reportsApi = {
 
 export const auditApi = {
   list: (params) => request('/api/audit-logs', { params }),
-}
-
-export const notificationsApi = {
-  list: () => request('/api/notifications'),
-  markRead: (id) => request(`/api/notifications/${id}/read`, { method: 'PUT' }),
-  markAllRead: () => request('/api/notifications/read-all', { method: 'PUT' }),
 }
 
 export const botApi = {

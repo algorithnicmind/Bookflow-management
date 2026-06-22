@@ -10,7 +10,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { dashboardApi, leavesApi } from '@/services/api'
+import { dashboardApi } from '@/services/api'
 import StatCard from '@/components/ui/StatCard'
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'

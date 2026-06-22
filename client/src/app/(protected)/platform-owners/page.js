@@ -13,7 +13,6 @@ import { systemOwnersApi } from '@/services/api'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
-import AppleEmoji from '@/components/AppleEmoji'
 import Badge from '@/components/ui/Badge'
 
 export default function PlatformOwnersPage() {

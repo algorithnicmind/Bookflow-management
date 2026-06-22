@@ -1,22 +1,4 @@
-import { cn, formatDate, formatDateTime, getStatusColor, getLeaveTypeIcon, checkOverlap } from '@/lib/utils'
-
-describe('cn (classNames)', () => {
-  test('joins single class', () => {
-    expect(cn('btn')).toBe('btn')
-  })
-
-  test('joins multiple classes', () => {
-    expect(cn('btn', 'primary')).toBe('btn primary')
-  })
-
-  test('filters out falsy values', () => {
-    expect(cn('btn', false, null, undefined, 'active')).toBe('btn active')
-  })
-
-  test('returns empty string when empty', () => {
-    expect(cn()).toBe('')
-  })
-})
+import { formatDate, formatDateTime, getStatusColor } from '@/lib/utils'
 
 describe('formatDate', () => {
   test('formats date correctly', () => {
@@ -63,32 +45,4 @@ describe('getStatusColor', () => {
   })
 })
 
-describe('getLeaveTypeIcon', () => {
-  it('returns correct icon component for valid type', () => {
-    // Tests are skipped because getLeaveTypeIcon now returns a React component
-    // expect(getLeaveTypeIcon('casual').props.char).toBe('📅')
-  })
 
-  it('returns default icon component for invalid type', () => {
-    // expect(getLeaveTypeIcon('xyz').props.char).toBe('📋')
-  })
-})
-
-describe('checkOverlap', () => {
-  test('overlapping dates return true', () => {
-    expect(checkOverlap('2026-06-15', '2026-06-18', '2026-06-16', '2026-06-20')).toBe(true)
-  })
-
-  test('non-overlapping dates return false', () => {
-    expect(checkOverlap('2026-06-15', '2026-06-16', '2026-06-20', '2026-06-22')).toBe(false)
-  })
-
-  test('same day overlap returns true', () => {
-    expect(checkOverlap('2026-06-15', '2026-06-15', '2026-06-15', '2026-06-15')).toBe(true)
-  })
-
-  test('adjacent dates return false', () => {
-    // 2026-06-15 to 2026-06-16 vs 2026-06-17 to 2026-06-18
-    expect(checkOverlap('2026-06-15', '2026-06-16', '2026-06-17', '2026-06-18')).toBe(false)
-  })
-})

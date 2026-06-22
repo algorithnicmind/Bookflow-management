@@ -11,7 +11,6 @@ import { dashboardApi, leavesApi } from '@/services/api'
 import Card from '@/components/ui/Card'
 import StatCard from '@/components/ui/StatCard'
 import Badge from '@/components/ui/Badge'
-import Button from '@/components/ui/Button'
 import { formatDate, getLeaveTypeIcon } from '@/lib/utils'
 
 export default function TeamOverviewPage() {

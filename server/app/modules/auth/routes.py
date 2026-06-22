@@ -144,7 +144,6 @@ async def login_for_access_token(
 import httpx
 from fastapi.responses import RedirectResponse
 import urllib.parse
-from app.core.config import settings
 
 @router.get("/google/login")
 async def oauth_login():
