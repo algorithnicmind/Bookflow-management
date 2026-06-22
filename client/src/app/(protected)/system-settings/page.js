@@ -1,5 +1,11 @@
 'use client'
 
+/**
+ * System Settings Page
+ * --------------------
+ * A configuration hub for admins to manage Approval Chains, Public Holidays, and general Org settings.
+ */
+
 import { useState } from 'react'
 import { settingsApi } from '@/services/api'
 import Card from '@/components/ui/Card'

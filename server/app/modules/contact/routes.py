@@ -1,3 +1,9 @@
+"""
+Contact & Support API Routes
+----------------------------
+Handles incoming contact form submissions from the landing page.
+Stores inquiries as leads for the Platform Owner to review.
+"""
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select

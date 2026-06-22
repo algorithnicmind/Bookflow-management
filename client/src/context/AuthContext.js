@@ -1,63 +1,54 @@
 'use client'
 
+/**
+ * Global Authentication State Management
+ * --------------------------------------
+ * This Context Provider wraps the entire application and manages the user's session.
+ * 
+ * Architectural Flow:
+ * 1. On Mount: Calls `/api/employees/me` to check if a valid HttpOnly cookie exists.
+ * 2. If valid, it populates the global `user` state and the app proceeds.
+ * 3. If invalid (401), it sets `user` to null and redirects unauthenticated users to the `/login` page.
+ * 4. Provides `login` and `logout` callbacks for the UI components to trigger state changes.
+ */
+
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { useUser, useAuth as useClerkAuth } from '@clerk/nextjs'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const { user: clerkUser, isLoaded } = useUser()
-  const { signOut } = useClerkAuth()
-  
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchLocalProfile() {
-      if (!isLoaded) return;
-      
-      if (clerkUser) {
-        try {
-          // Import api dynamically to avoid circular dependencies if any
-          const { authApi } = await import('@/services/api');
-          // Fetch the full database profile which contains role, organization_id, etc.
-          const profile = await authApi.getProfile();
-          setUser({ ...profile, clerkInfo: clerkUser });
-        } catch (err) {
-          console.error("Failed to fetch local profile:", err);
-          setUser(null); // Ensure user is null if not authenticated locally
-          
-          // If they are logged into Clerk but have no local profile, they are a new user.
-          // They need to apply for an organization.
-          if (
-            window.location.pathname !== '/' &&
-            window.location.pathname !== '/onboarding/apply' && 
-            !window.location.pathname.startsWith('/sign-')
-          ) {
-            window.location.href = '/onboarding/apply';
-          }
-        }
-      } else {
-        setUser(null);
+      try {
+        const { authApi } = await import('@/services/api')
+        const profile = await authApi.getProfile()
+        setUser(profile)
+      } catch (err) {
+        setUser(null)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false);
     }
-    fetchLocalProfile();
-  }, [clerkUser, isLoaded])
+    fetchLocalProfile()
+  }, [])
 
   const login = useCallback((userData) => {
-    // With Clerk, login is handled by Clerk UI, but we keep this for compatibility
     setUser(userData)
   }, [])
 
   const logout = useCallback(async () => {
     try {
-      await signOut()
+      const { authApi } = await import('@/services/api')
+      await authApi.logout()
     } catch (e) {
       console.error('Logout error', e)
     }
     setUser(null)
-  }, [signOut])
+    window.location.href = '/' // Redirect to landing page
+  }, [])
 
   const updateUser = useCallback((data) => {
     setUser(prev => ({ ...prev, ...data }))

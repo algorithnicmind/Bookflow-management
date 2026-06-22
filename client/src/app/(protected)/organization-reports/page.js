@@ -1,5 +1,11 @@
 'use client'
 
+/**
+ * Organization Reports Page
+ * -------------------------
+ * Provides data visualization and CSV exports of company-wide leave statistics.
+ */
+
 import { useState, useEffect } from 'react'
 import { reportsApi } from '@/services/api'
 import Card from '@/components/ui/Card'

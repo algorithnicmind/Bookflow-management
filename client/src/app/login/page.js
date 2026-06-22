@@ -1,5 +1,12 @@
 'use client'
 
+/**
+ * Login Page
+ * ----------
+ * Handles user authentication. Submits credentials to the backend,
+ * receives an HttpOnly cookie, and redirects the user to the dashboard.
+ */
+
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'

@@ -1,4 +1,10 @@
 """
+Accrual Engine API Routes
+-------------------------
+Provides endpoints to view and manage leave balance accruals.
+These are typically called by the backend scheduler but can be triggered manually by super admins.
+"""
+"""
 Accrual API Routes
 ==================
 Super Admin endpoints for managing the automated accrual system:

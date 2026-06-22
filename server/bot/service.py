@@ -1,3 +1,11 @@
+"""
+AI Chatbot Service
+------------------
+This module manages the conversational state machine for the AI Assistant.
+It bridges the Gemini LLM (which extracts intent and entities from natural language)
+with the application's backend business logic.
+"""
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from bot.llm import LLMEngine
 from bot.policies import get_policy
@@ -6,6 +14,17 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 class ChatbotService:
+    """
+    Orchestrates the Chatbot State Machine.
+    
+    Architectural Flow:
+    1. Receives raw user text and the persistent `session_state` dict (stored client-side or in DB).
+    2. Passes the text and state to `LLMEngine.analyze_message` to extract 'intents' (e.g. apply_leave)
+       and 'entities' (e.g. leave_type, start_date).
+    3. Uses a rule-based State Machine below to process the intent. If it's a multi-turn process
+       (like applying for leave), it stores missing entities in `session_state` and asks the user for them.
+    4. Once all required entities are collected, it executes the backend DB action.
+    """
     def __init__(self):
         self.llm = LLMEngine()
 

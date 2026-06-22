@@ -1,5 +1,11 @@
 'use client'
 
+/**
+ * Account Settings Page
+ * ---------------------
+ * Allows individual users to update their personal profile (name, password).
+ */
+
 import { useState, useEffect } from 'react'
 import { authApi } from '@/services/api'
 import Card from '@/components/ui/Card'

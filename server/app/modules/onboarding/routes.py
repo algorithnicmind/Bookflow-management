@@ -1,3 +1,9 @@
+"""
+Onboarding API Routes
+---------------------
+Manages new organization signups. Platform Owners use this to review and approve incoming leads,
+which triggers the automatic creation of their tenant database schema and first admin account.
+"""
 from datetime import datetime
 from fastapi import APIRouter, Depends, status, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession

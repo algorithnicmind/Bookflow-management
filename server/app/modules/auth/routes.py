@@ -1,3 +1,10 @@
+"""
+Authentication API Routes
+-------------------------
+This module defines the API endpoints responsible for logging users in, 
+registering new tenant administrators, and managing HTTP-only session cookies.
+It includes rate-limiting to prevent brute force attacks.
+"""
 from datetime import timedelta
 from fastapi import APIRouter, Depends, status, HTTPException, Response, Request
 from fastapi.security import OAuth2PasswordRequestForm
@@ -26,6 +33,11 @@ class OAuthRequest(BaseModel):
 
 @router.post("/oauth-login")
 async def oauth_login(request: OAuthRequest, response: Response, db: AsyncSession = Depends(get_db)):
+    """
+    OAuth Login Handler.
+    Used by the frontend when logging in via third-party providers (Google/Facebook).
+    Checks if the email belongs to an active Employee. If so, issues an HttpOnly cookie.
+    """
     from sqlalchemy.future import select
     from app.modules.organizations.models import OnboardingApplication
     
@@ -87,7 +99,19 @@ async def oauth_login(request: OAuthRequest, response: Response, db: AsyncSessio
 
 @router.post("/login", response_model=Token)
 @limiter.limit("5/minute")
-async def login(request: Request, response: Response, form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+async def login_for_access_token(
+    request: Request,
+    response: Response, 
+    form_data: OAuth2PasswordRequestForm = Depends(), 
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Standard Email/Password Login Handler.
+    - Rate Limited to 5 requests per minute to prevent brute-force attacks.
+    - Authenticates the user credentials against the database.
+    - Generates a JWT access token containing the user's ID, email, and Role.
+    - Sets the token as a secure HttpOnly cookie to prevent XSS attacks.
+    """
     user = await authenticate_user(form_data.username, form_data.password, db)
     
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -160,18 +184,29 @@ async def oauth_callback(code: str):
 
     # Redirect to frontend with the email
     frontend_url = f"http://localhost:3000/onboarding/oauth-callback?email={urllib.parse.quote(email)}&provider=google"
-    return RedirectResponse(url=frontend_url)@router.post("/logout")
+    return RedirectResponse(url=frontend_url)
+
+@router.post("/logout")
 async def logout(response: Response):
+    """
+    Logout Handler.
+    Simply deletes the HttpOnly `access_token` cookie, terminating the user's session.
+    """
     response.delete_cookie(key="access_token", httponly=True, secure=True, samesite="lax")
     return {"message": "Logged out successfully"}
 
-@router.post("/register", status_code=status.HTTP_201_CREATED)
-async def register(
+@router.post("/register", response_model=dict, status_code=status.HTTP_201_CREATED)
+async def register_admin(
     request: AdminCreateRequest,
     db: AsyncSession = Depends(get_db),
     current_user: Employee = Depends(RoleChecker(["super_admin"])),
     current_org: Organization = Depends(get_current_tenant)
 ):
+    """
+    Tenant Administrator Registration.
+    Called when a new organization is approved and the primary admin account needs to be created.
+    Requires an active Organization tenant context.
+    """
     new_employee = await register_admin_user(request, current_org.id, db)
     
     return {

@@ -1,5 +1,12 @@
 'use client'
 
+/**
+ * Landing Page
+ * ------------
+ * The public-facing marketing page. Contains the "Get Started" contact form 
+ * which submits data to the backend /api/contact endpoint.
+ */
+
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'

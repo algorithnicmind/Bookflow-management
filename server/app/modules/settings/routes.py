@@ -1,3 +1,9 @@
+"""
+System Settings API Routes
+--------------------------
+Handles global platform configurations, approval chains, and triggering scheduled CRON jobs like accruals.
+Restricted to system administrators.
+"""
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db

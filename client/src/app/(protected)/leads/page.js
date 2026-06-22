@@ -1,5 +1,11 @@
 'use client'
 
+/**
+ * Leads / Contact Inquiries Page
+ * ------------------------------
+ * Restricted to Platform Owners. Displays contact submissions from the public landing page.
+ */
+
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter, useSearchParams } from 'next/navigation'

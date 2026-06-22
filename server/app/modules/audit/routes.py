@@ -1,3 +1,9 @@
+"""
+Audit Logs API Routes
+---------------------
+Exposes a read-only view of the immutable Audit Log.
+Allows administrators to track who performed which actions (approvals, edits, logins) for compliance.
+"""
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List

@@ -1,5 +1,11 @@
 'use client'
 
+/**
+ * Owner Contacts Page
+ * -------------------
+ * A CRM-like view for the Platform Owner to manage communications with tenant admins.
+ */
+
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter } from 'next/navigation'

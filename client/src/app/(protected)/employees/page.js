@@ -1,5 +1,12 @@
 'use client'
 
+/**
+ * Employee Directory Page
+ * -----------------------
+ * Restricted to admins. Allows the organization administrator to add, edit,
+ * or deactivate employee accounts within their tenant.
+ */
+
 import { useState, useEffect } from 'react'
 import { employeesApi } from '@/services/api'
 import Card from '@/components/ui/Card'

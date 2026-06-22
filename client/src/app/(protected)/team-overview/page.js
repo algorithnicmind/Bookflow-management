@@ -1,5 +1,11 @@
 'use client'
 
+/**
+ * Team Overview Page
+ * ------------------
+ * A calendar and list view for Managers to see who is absent on their direct team today/this week.
+ */
+
 import { useState, useEffect } from 'react'
 import { dashboardApi, leavesApi } from '@/services/api'
 import Card from '@/components/ui/Card'

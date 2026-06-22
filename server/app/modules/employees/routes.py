@@ -1,3 +1,9 @@
+"""
+Employee Management API Routes
+------------------------------
+This module provides endpoints for managing employee profiles, viewing directories,
+and securely managing system owner accounts.
+"""
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
@@ -25,6 +31,10 @@ async def get_my_profile(
     current_user: Employee = Depends(get_current_user),
     service: EmployeeService = Depends(get_employee_service)
 ):
+    """
+    Get Current User Profile.
+    Used by the frontend to hydrate the AuthContext state on mount.
+    """
     emp = await service.get_employee_by_id(current_user.id)
     return EmployeeResponse.model_validate(emp)
 
@@ -36,6 +46,10 @@ async def update_my_profile(
     current_user: Employee = Depends(get_current_user),
     service: EmployeeService = Depends(get_employee_service)
 ):
+    """
+    Update Current User Profile.
+    Allows employees to update non-administrative fields like their name or password.
+    """
     emp = await service.update_profile(current_user.id, request)
     return EmployeeResponse.model_validate(emp)
 
@@ -47,6 +61,11 @@ async def list_system_owners(
     db: AsyncSession = Depends(get_db),
     current_user: Employee = Depends(RequireOwner)
 ):
+    """
+    List System Owners.
+    Restricted entirely to users in the 'System' department.
+    Used for global platform management.
+    """
     result = await db.execute(
         select(Employee).where(Employee.department == 'System', Employee.is_active == True)
     )

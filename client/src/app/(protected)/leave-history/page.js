@@ -1,5 +1,12 @@
 'use client'
 
+/**
+ * Leave History Page
+ * ------------------
+ * Displays a table of all past and present leave requests for the logged-in user,
+ * including the real-time status of their request in the approval chain.
+ */
+
 import { useState, useEffect } from 'react'
 import { leavesApi } from '@/services/api'
 import Card from '@/components/ui/Card'

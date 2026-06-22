@@ -1,5 +1,11 @@
 'use client'
 
+/**
+ * Platform Owners Directory
+ * -------------------------
+ * Highly restricted view for managing the super-users (System department) of the entire SaaS platform.
+ */
+
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter } from 'next/navigation'

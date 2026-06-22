@@ -1,5 +1,12 @@
 'use client'
 
+/**
+ * Dashboard Page
+ * --------------
+ * The main landing area for authenticated users. Displays personalized widgets
+ * based on the user's role (e.g. pending approvals for managers, leave balance for employees).
+ */
+
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'

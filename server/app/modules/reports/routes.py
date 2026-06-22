@@ -1,3 +1,9 @@
+"""
+Reporting API Routes
+--------------------
+Generates organizational leave reports, calculating metrics like total leaves taken, pending requests,
+and departmental breakdowns for administrators.
+"""
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select

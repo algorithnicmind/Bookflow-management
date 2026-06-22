@@ -1,3 +1,9 @@
+"""
+Leave Management API Routes
+---------------------------
+This module exposes endpoints for employees to apply for leaves, view balances,
+and for managers/admins to approve or reject leave requests.
+"""
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
@@ -25,6 +31,10 @@ async def apply_leave(
     service: LeaveService = Depends(get_leave_service),
     current_user: Employee = Depends(get_current_user)
 ):
+    """
+    Apply for a Leave.
+    Accessible by any authenticated employee. Validates dates and deducts balance.
+    """
     return await service.apply_leave(current_user.id, request)
 
 @router.get("")
@@ -33,6 +43,11 @@ async def get_leave_history(
     service: LeaveService = Depends(get_leave_service),
     current_user: Employee = Depends(get_current_user)
 ):
+    """
+    View Leave History.
+    Returns all past and present leave requests for the logged-in employee.
+    Optionally filter by status (e.g. 'pending', 'approved').
+    """
     leaves = await service.get_leave_history(current_user.id, status)
     return {"leaves": leaves}
 
@@ -59,6 +74,11 @@ async def get_pending_requests(
     service: LeaveService = Depends(get_leave_service),
     current_user: Employee = Depends(RoleChecker(["manager", "admin", "super_admin"]))
 ):
+    """
+    Get Pending Approvals.
+    Restricted to managers and admins. Returns a list of leave requests waiting
+    for the current user's approval in the approval chain.
+    """
     is_admin = current_user.role in ["admin", "super_admin"]
     pending = await service.get_pending_requests(current_user.id, is_admin)
     return {"pending": pending}
@@ -71,6 +91,11 @@ async def approve_leave(
     service: LeaveService = Depends(get_leave_service),
     current_user: Employee = Depends(RoleChecker(["manager", "admin", "super_admin"]))
 ):
+    """
+    Approve a Leave Request.
+    Steps the request forward in the Approval Chain. If it's the final step,
+    marks it as fully approved.
+    """
     is_admin = current_user.role in ["admin", "super_admin"]
     return await service.approve_leave(leave_id, current_user.id, is_admin, action)
 

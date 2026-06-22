@@ -1,5 +1,12 @@
 'use client'
 
+/**
+ * Pending Requests Page
+ * ---------------------
+ * Restricted to managers/admins. Displays a queue of leave requests waiting for their approval.
+ * Provides Quick Approve/Reject actions.
+ */
+
 import { useState, useEffect } from 'react'
 import { leavesApi } from '@/services/api'
 import Card from '@/components/ui/Card'
