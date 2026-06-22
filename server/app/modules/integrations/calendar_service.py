@@ -8,7 +8,6 @@ from datetime import datetime, timezone
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.modules.integrations.models import CalendarIntegration
-from app.modules.employees.models import Employee
 from app.modules.leaves.models import LeaveRequest
 
 logger = logging.getLogger("integrations")

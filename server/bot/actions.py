@@ -83,7 +83,7 @@ async def apply_leave_action(
         )
         
         # Submit leave
-        res = await service.apply_leave(employee_id, app_schema)
+        await service.apply_leave(employee_id, app_schema)
         return {
             "success": True, 
             "message": f"Successfully applied for {leave_type} leave from {start_date} to {end_date}."

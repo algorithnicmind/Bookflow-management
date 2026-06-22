@@ -6,13 +6,12 @@ It ensures that passwords are verified securely, accounts are active,
 and new administrators are properly provisioned with default Leave Balances.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 import asyncio
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from app.core.security import pwd_context, create_access_token
-from app.core.config import settings
+from app.core.security import pwd_context
 from app.modules.employees.models import Employee
 from app.modules.leaves.models import LeaveBalance
 from app.modules.auth.schemas import AdminCreateRequest

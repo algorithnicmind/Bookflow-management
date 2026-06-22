@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import func as sql_func
 from app.core.database import get_db
-from app.core.dependencies import RoleChecker, RequireOwner
+from app.core.dependencies import RequireOwner
 from app.core.security import pwd_context
 from app.modules.organizations.models import Organization, OnboardingApplication
 from app.modules.employees.models import Employee

@@ -3,7 +3,7 @@ from sqlalchemy.future import select
 from sqlalchemy import desc, select, func
 from app.modules.audit.models import AuditLog
 from app.modules.employees.models import Employee
-from typing import Optional, Any, Dict, List
+from typing import Optional, Any, Dict
 
 class AuditLogService:
     @staticmethod

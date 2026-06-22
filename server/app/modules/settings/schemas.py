@@ -8,8 +8,6 @@ class SettingsUpdate(BaseModel):
     max_maternity_leave: Optional[int] = None
     max_miscarriage_leave: Optional[int] = None
 
-class SettingsResponse(BaseModel):
-    message: str = "Settings updated successfully"
 
 from datetime import date
 from typing import List

@@ -6,7 +6,7 @@ Allows administrators to track who performed which actions (approvals, edits, lo
 """
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, List
+from typing import Optional
 from app.core.database import get_db
 from app.core.dependencies import RoleChecker
 from app.modules.employees.models import Employee

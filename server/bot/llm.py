@@ -2,7 +2,7 @@ import os
 import re
 import json
 import httpx
-from datetime import datetime, date
+from datetime import datetime
 from typing import Dict, Any, Optional
 
 SYSTEM_PROMPT = """You are an intelligent HR Chatbot Assistant for the Leaveflow Management system.

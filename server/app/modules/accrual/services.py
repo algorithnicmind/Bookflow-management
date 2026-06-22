@@ -33,7 +33,7 @@ from typing import Optional, List, Dict, Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import func, and_
+from sqlalchemy import func
 
 from app.core.database import AsyncSessionLocal
 from app.modules.accrual.models import AccrualLedger
