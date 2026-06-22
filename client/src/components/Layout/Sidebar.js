@@ -26,6 +26,7 @@ const navItems = {
     { href: '/pending-requests', label: 'Requests', icon: <AppleEmoji char="⏳" /> },
     { href: '/system-settings', label: 'Settings', icon: <AppleEmoji char="⚙️" /> },
     { href: '/audit-logs', label: 'Audit Logs', icon: <AppleEmoji char="🔍" /> },
+    { href: '/integrations-demo', label: 'Demo Hub', icon: <AppleEmoji char="⚡" /> },
     { href: '/apply-leave', label: 'Apply Leave', icon: <AppleEmoji char="✏️" /> },
     { href: '/leave-history', label: 'Leave History', icon: <AppleEmoji char="📋" /> },
   ],
@@ -37,6 +38,7 @@ const navItems = {
     { href: '/system-settings', label: 'Settings', icon: <AppleEmoji char="⚙️" /> },
     { href: '/organization-reports', label: 'Reports', icon: <AppleEmoji char="📈" /> },
     { href: '/audit-logs', label: 'Audit Logs', icon: <AppleEmoji char="🔍" /> },
+    { href: '/integrations-demo', label: 'Demo Hub', icon: <AppleEmoji char="⚡" /> },
     { href: '/apply-leave', label: 'Apply Leave', icon: <AppleEmoji char="✏️" /> },
     { href: '/leave-history', label: 'Leave History', icon: <AppleEmoji char="📋" /> },
   ],
@@ -98,9 +100,9 @@ export default function Sidebar({ isOpen, onClose }) {
             gap: 12,
           }}
         >
-          <img 
-            src="/logo.png" 
-            alt="LeaveFlow Logo" 
+          <img
+            src="/logo.png"
+            alt="LeaveFlow Logo"
             style={{
               width: 36,
               height: 36,

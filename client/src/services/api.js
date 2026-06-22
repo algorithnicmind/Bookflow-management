@@ -161,11 +161,30 @@ export const contactApi = {
 export const onboardingApi = {
   apply: (body) => request('/api/onboarding/apply', { method: 'POST', body }),
   list: (params) => request('/api/onboarding/applications', { params }),
-  approve: (id) => request(`/api/onboarding/applications/${id}/approve`, { method: 'PUT' }),
-  reject: (id) => request(`/api/onboarding/applications/${id}/reject`, { method: 'PUT' }),
+  approve: (id) => request(`/api/onboarding/applications/${id}/approve`, { method: 'PUT', body: {} }), // Fix to send empty body or match endpoint
+  reject: (id) => request(`/api/onboarding/applications/${id}/reject`, { method: 'PUT', body: {} }),
+}
+
+export const integrationsApi = {
+  getCalendarStatus: () => request('/api/integrations/calendar/status'),
+  connectCalendar: (provider) => request(`/api/integrations/calendar/connect/${provider}`),
+  simulateSlackAction: async (payload) => {
+    const formData = new URLSearchParams()
+    formData.append('payload', JSON.stringify(payload))
+    const response = await fetch(`${API_BASE}/api/integrations/slack/actions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: formData.toString()
+    })
+    return response.json()
+  },
+  simulateTeamsAction: (payload) => request('/api/integrations/teams/actions', { method: 'POST', body: payload })
 }
 
 export const systemOwnersApi = {
   list: () => request('/api/employees/system-owners'),
   create: (body) => request('/api/employees/system-owners', { method: 'POST', body }),
 }
+
