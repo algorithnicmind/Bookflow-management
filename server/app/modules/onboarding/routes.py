@@ -97,7 +97,7 @@ async def list_applications(
     """List all onboarding applications, optionally filtered by status."""
     query = select(OnboardingApplication).order_by(OnboardingApplication.created_at.desc())
 
-    if status_filter and status_filter in ("pending", "approved", "rejected"):
+    if status_filter and status_filter in ("pending", "contacted", "interested_custom_pricing", "not_interested"):
         query = query.where(OnboardingApplication.status == status_filter)
 
     result = await db.execute(query)
@@ -108,8 +108,9 @@ async def list_applications(
         select(
             sql_func.count(OnboardingApplication.id).label("total"),
             sql_func.count(OnboardingApplication.id).filter(OnboardingApplication.status == "pending").label("pending"),
-            sql_func.count(OnboardingApplication.id).filter(OnboardingApplication.status == "approved").label("approved"),
-            sql_func.count(OnboardingApplication.id).filter(OnboardingApplication.status == "rejected").label("rejected"),
+            sql_func.count(OnboardingApplication.id).filter(OnboardingApplication.status == "contacted").label("contacted"),
+            sql_func.count(OnboardingApplication.id).filter(OnboardingApplication.status == "interested_custom_pricing").label("interested"),
+            sql_func.count(OnboardingApplication.id).filter(OnboardingApplication.status == "not_interested").label("not_interested"),
         )
     )
     counts = count_result.one()
@@ -133,10 +134,47 @@ async def list_applications(
         "counts": {
             "total": counts.total,
             "pending": counts.pending,
-            "approved": counts.approved,
-            "rejected": counts.rejected,
+            "contacted": counts.contacted,
+            "interested": counts.interested,
+            "not_interested": counts.not_interested,
         },
     }
+
+
+VALID_LEAD_STATUSES = ["pending", "contacted", "interested_custom_pricing", "not_interested"]
+
+
+class UpdateStatusRequest(BaseModel):
+    status: str
+
+
+@router.patch("/applications/{application_id}/status")
+async def update_application_status(
+    application_id: int,
+    body: UpdateStatusRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(RequireOwner),
+):
+    """Update the status of an onboarding application (Platform Owner only)."""
+
+    if body.status not in VALID_LEAD_STATUSES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid status '{body.status}'. Must be one of: {', '.join(VALID_LEAD_STATUSES)}",
+        )
+
+    result = await db.execute(
+        select(OnboardingApplication).where(OnboardingApplication.id == application_id)
+    )
+    application = result.scalar_one_or_none()
+
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found.")
+
+    application.status = body.status
+    await db.commit()
+
+    return {"message": f"Status updated to '{body.status}'.", "id": application.id, "status": body.status}
 
 
 @router.put("/applications/{application_id}/approve")

@@ -4,6 +4,7 @@
  * Leads / Contact Inquiries Page
  * ------------------------------
  * Restricted to Platform Owners. Displays contact submissions from the public landing page.
+ * Platform Owner can update lead status via a dropdown (Contacted, Interested, Not Interested).
  */
 
 import { useState, useEffect } from 'react'
@@ -11,25 +12,33 @@ import { useAuth } from '@/context/AuthContext'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { onboardingApi } from '@/services/api'
 import Card from '@/components/ui/Card'
-import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
-import Modal from '@/components/ui/Modal'
 import AppleEmoji from '@/components/AppleEmoji'
+
+const STATUS_OPTIONS = [
+  { value: 'pending', label: 'Pending', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)', border: 'rgba(245, 158, 11, 0.35)' },
+  { value: 'contacted', label: 'Contacted', color: '#6366f1', bg: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.35)' },
+  { value: 'interested_custom_pricing', label: 'Interested', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.35)' },
+  { value: 'not_interested', label: 'Not Interested', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)', border: 'rgba(239, 68, 68, 0.35)' },
+]
+
+function getStatusMeta(value) {
+  return STATUS_OPTIONS.find((s) => s.value === value) || STATUS_OPTIONS[0]
+}
 
 export default function LeadsPage() {
   const { user } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const statusParam = searchParams.get('status')
-  
+
   const [applications, setApplications] = useState([])
-  const [counts, setCounts] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 })
+  const [counts, setCounts] = useState({ total: 0, pending: 0, contacted: 0, interested: 0, not_interested: 0 })
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [activeFilter, setActiveFilter] = useState(statusParam || null)
-  const [actionLoading, setActionLoading] = useState(null)
+  const [updatingId, setUpdatingId] = useState(null)
   const [toast, setToast] = useState(null)
-  const [provisionedDetails, setProvisionedDetails] = useState(null)
 
   // Sync filter when URL changes (e.g. clicking sidebar links)
   useEffect(() => {
@@ -67,7 +76,24 @@ export default function LeadsPage() {
     setTimeout(() => setToast(null), 4000)
   }
 
-
+  const handleStatusChange = async (appId, newStatus) => {
+    setUpdatingId(appId)
+    try {
+      await onboardingApi.updateStatus(appId, newStatus)
+      // Update local state immediately for responsiveness
+      setApplications((prev) =>
+        prev.map((app) => (app.id === appId ? { ...app, status: newStatus } : app))
+      )
+      // Update counts based on the frontend changes, or ideally re-fetch:
+      await fetchApplications(activeFilter)
+      const meta = getStatusMeta(newStatus)
+      showToast(`Status updated to "${meta.label}"`)
+    } catch (err) {
+      showToast(err.message || 'Failed to update status.', 'error')
+    } finally {
+      setUpdatingId(null)
+    }
+  }
 
   const formatDate = (isoDate) => {
     if (!isoDate) return '—'
@@ -78,8 +104,9 @@ export default function LeadsPage() {
   const filterTabs = [
     { key: null, label: 'All', count: counts.total },
     { key: 'pending', label: 'Pending', count: counts.pending },
-    { key: 'approved', label: 'Approved', count: counts.approved },
-    { key: 'rejected', label: 'Rejected', count: counts.rejected },
+    { key: 'contacted', label: 'Contacted', count: counts.contacted },
+    { key: 'interested_custom_pricing', label: 'Interested', count: counts.interested },
+    { key: 'not_interested', label: 'Not Interested', count: counts.not_interested },
   ]
 
   if (user?.department !== 'System') return null
@@ -121,8 +148,9 @@ export default function LeadsPage() {
         {[
           { label: 'Total', value: counts.total, emoji: '📋', color: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.25)' },
           { label: 'Pending', value: counts.pending, emoji: '⏳', color: 'rgba(245, 158, 11, 0.15)', border: 'rgba(245, 158, 11, 0.25)' },
-          { label: 'Approved', value: counts.approved, emoji: '✅', color: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.25)' },
-          { label: 'Rejected', value: counts.rejected, emoji: '❌', color: 'rgba(239, 68, 68, 0.15)', border: 'rgba(239, 68, 68, 0.25)' },
+          { label: 'Contacted', value: counts.contacted, emoji: '📞', color: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.25)' },
+          { label: 'Interested', value: counts.interested, emoji: '🌟', color: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.25)' },
+          { label: 'Not Interested', value: counts.not_interested, emoji: '❌', color: 'rgba(239, 68, 68, 0.15)', border: 'rgba(239, 68, 68, 0.25)' },
         ].map((stat) => (
           <div key={stat.label} style={{
             background: stat.color,
@@ -247,57 +275,90 @@ export default function LeadsPage() {
                 </tr>
               </thead>
               <tbody>
-                {applications.map((app) => (
-                  <tr
-                    key={app.id}
-                    style={{ transition: 'background 0.15s' }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                  >
-                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
-                      <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{app.company_name}</div>
-                      {app.special_requirements && (
-                        <div style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginTop: 4, maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {app.special_requirements}
-                        </div>
-                      )}
-                    </td>
-                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
-                      {app.industry || '—'}
-                    </td>
-                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
-                      {app.admin_name || '—'}
-                    </td>
-                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
-                      {app.admin_email}
-                    </td>
-                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
-                      {app.admin_phone || '—'}
-                    </td>
-                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
-                      {app.company_size}
-                    </td>
-                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
-                      <Badge status={app.status} />
-                    </td>
-                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.85rem', color: 'var(--text-dim)' }}>
-                      {formatDate(app.created_at)}
-                    </td>
-
-                  </tr>
-                ))}
+                {applications.map((app) => {
+                  const statusMeta = getStatusMeta(app.status)
+                  return (
+                    <tr
+                      key={app.id}
+                      style={{ transition: 'background 0.15s' }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <td style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
+                        <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{app.company_name}</div>
+                        {app.special_requirements && (
+                          <div style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginTop: 4, maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {app.special_requirements}
+                          </div>
+                        )}
+                      </td>
+                      <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+                        {app.industry || '—'}
+                      </td>
+                      <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+                        {app.admin_name || '—'}
+                      </td>
+                      <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+                        {app.admin_email}
+                      </td>
+                      <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+                        {app.admin_phone || '—'}
+                      </td>
+                      <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+                        {app.company_size}
+                      </td>
+                      <td style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
+                        <select
+                          id={`status-select-${app.id}`}
+                          value={app.status}
+                          disabled={updatingId === app.id}
+                          onChange={(e) => handleStatusChange(app.id, e.target.value)}
+                          style={{
+                            appearance: 'none',
+                            WebkitAppearance: 'none',
+                            MozAppearance: 'none',
+                            padding: '6px 28px 6px 12px',
+                            borderRadius: 8,
+                            border: `1px solid ${statusMeta.border}`,
+                            background: `${statusMeta.bg} url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 8px center`,
+                            color: statusMeta.color,
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                            cursor: updatingId === app.id ? 'wait' : 'pointer',
+                            outline: 'none',
+                            transition: 'all 0.2s',
+                            opacity: updatingId === app.id ? 0.6 : 1,
+                            minWidth: 160,
+                          }}
+                        >
+                          {STATUS_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.85rem', color: 'var(--text-dim)' }}>
+                        {formatDate(app.created_at)}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
         </Card>
       )}
 
-
-
       <style jsx>{`
         @keyframes slideIn {
           from { opacity: 0; transform: translateX(20px); }
           to { opacity: 1; transform: translateX(0); }
+        }
+        select option {
+          background: var(--bg-primary, #1a1a2e);
+          color: var(--text-primary, #e0e0e0);
+          padding: 8px;
         }
       `}</style>
     </div>

@@ -156,6 +156,7 @@ export const contactApi = {
 export const onboardingApi = {
   apply: (body) => request('/api/onboarding/apply', { method: 'POST', body }),
   list: (params) => request('/api/onboarding/applications', { params }),
+  updateStatus: (id, status) => request(`/api/onboarding/applications/${id}/status`, { method: 'PATCH', body: { status } }),
   approve: (id) => request(`/api/onboarding/applications/${id}/approve`, { method: 'PUT', body: {} }), // Fix to send empty body or match endpoint
   reject: (id) => request(`/api/onboarding/applications/${id}/reject`, { method: 'PUT', body: {} }),
 }
