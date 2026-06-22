@@ -1,5 +1,11 @@
 'use client'
 
+/**
+ * Manage Admins Page
+ * ------------------
+ * Allows Super Admins to elevate privileges of existing employees to Admin status.
+ */
+
 import { useState } from 'react'
 import { authApi } from '@/services/api'
 import Card from '@/components/ui/Card'

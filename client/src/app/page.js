@@ -1,16 +1,25 @@
 'use client'
 
+/**
+ * Landing Page
+ * ------------
+ * The public-facing marketing page. Contains the "Get Started" contact form 
+ * which submits data to the backend /api/contact endpoint.
+ */
+
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import AppleEmoji from '@/components/AppleEmoji'
 import { contactApi } from '@/services/api'
+import LeadModal from '@/components/LeadModal'
 
 export default function LandingPage() {
   const router = useRouter()
   const { user, loading } = useAuth()
   const [mounted, setMounted] = useState(false)
+  const [leadModalOpen, setLeadModalOpen] = useState(false)
   
   const [contactData, setContactData] = useState({ name: '', email: '', message: '' })
   const [contactStatus, setContactStatus] = useState(null)
@@ -197,7 +206,7 @@ export default function LandingPage() {
 
           <motion.div variants={itemVariants} style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
             <button
-              onClick={() => router.push('/onboarding')}
+              onClick={() => setLeadModalOpen(true)}
               style={{
                 padding: '16px 36px',
                 borderRadius: '100px',
@@ -385,7 +394,7 @@ export default function LandingPage() {
                 <li style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ color: 'var(--accent)' }}>✓</span> Basic leave tracking</li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ color: 'var(--accent)' }}>✓</span> Standard support</li>
               </ul>
-              <button onClick={() => router.push('/onboarding')} style={{ width: '100%', padding: '12px', borderRadius: 8, background: 'transparent', border: '1px solid var(--border)', color: '#fff', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => {e.target.style.borderColor='var(--accent)'; e.target.style.color='var(--accent)'}} onMouseLeave={e => {e.target.style.borderColor='var(--border)'; e.target.style.color='#fff'}}>Get Started</button>
+              <button onClick={() => setLeadModalOpen(true)} style={{ width: '100%', padding: '12px', borderRadius: 8, background: 'transparent', border: '1px solid var(--border)', color: '#fff', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => {e.target.style.borderColor='var(--accent)'; e.target.style.color='var(--accent)'}} onMouseLeave={e => {e.target.style.borderColor='var(--border)'; e.target.style.color='#fff'}}>Get Started</button>
             </motion.div>
 
             {/* Pro */}
@@ -404,7 +413,7 @@ export default function LandingPage() {
                 <li style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ color: 'var(--accent)' }}>✓</span> Advanced reporting & analytics</li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ color: 'var(--accent)' }}>✓</span> Slack & Teams integrations</li>
               </ul>
-              <button onClick={() => router.push('/onboarding')} style={{ width: '100%', padding: '12px', borderRadius: 8, background: 'var(--accent)', border: 'none', color: '#000', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 14px var(--accent-glow)' }} onMouseEnter={e => e.target.style.background='var(--accent-hover)'} onMouseLeave={e => e.target.style.background='var(--accent)'}>Start Free Trial</button>
+              <button onClick={() => setLeadModalOpen(true)} style={{ width: '100%', padding: '12px', borderRadius: 8, background: 'var(--accent)', border: 'none', color: '#000', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 14px var(--accent-glow)' }} onMouseEnter={e => e.target.style.background='var(--accent-hover)'} onMouseLeave={e => e.target.style.background='var(--accent)'}>Start Free Trial</button>
             </motion.div>
 
             {/* Enterprise */}
@@ -422,7 +431,7 @@ export default function LandingPage() {
                 <li style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ color: 'var(--accent)' }}>✓</span> Dedicated Success Manager</li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ color: 'var(--accent)' }}>✓</span> Custom integrations</li>
               </ul>
-              <button style={{ width: '100%', padding: '12px', borderRadius: 8, background: 'transparent', border: '1px solid var(--border)', color: '#fff', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => {e.target.style.borderColor='var(--accent)'; e.target.style.color='var(--accent)'}} onMouseLeave={e => {e.target.style.borderColor='var(--border)'; e.target.style.color='#fff'}}>Contact Sales</button>
+              <button onClick={() => document.getElementById('contact').scrollIntoView({ behavior: 'smooth' })} style={{ width: '100%', padding: '12px', borderRadius: 8, background: 'transparent', border: '1px solid var(--border)', color: '#fff', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => {e.target.style.borderColor='var(--accent)'; e.target.style.color='var(--accent)'}} onMouseLeave={e => {e.target.style.borderColor='var(--border)'; e.target.style.color='#fff'}}>Contact Sales</button>
             </motion.div>
           </div>
         </section>
@@ -598,6 +607,7 @@ export default function LandingPage() {
         </section>
 
       </main>
+      <LeadModal isOpen={leadModalOpen} onClose={() => setLeadModalOpen(false)} />
     </div>
   )
 }

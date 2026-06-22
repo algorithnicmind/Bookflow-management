@@ -68,7 +68,7 @@ async def approve_tenant(email: str) -> None:
                 organization_id=org.id,
                 name="Admin User",
                 email=email,
-                password_hash=pwd_context.hash("Welcome123!"),
+                password_hash=application.admin_password_hash or pwd_context.hash("Welcome123!"),
                 role="super_admin",
                 department="Management",
                 gender="not_specified",

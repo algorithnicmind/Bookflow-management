@@ -1,5 +1,12 @@
 'use client'
 
+/**
+ * Apply Leave Page
+ * ----------------
+ * A form component allowing employees to request time off. 
+ * It validates dates against public holidays and checks leave balances before submission.
+ */
+
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { leavesApi, settingsApi } from '@/services/api'

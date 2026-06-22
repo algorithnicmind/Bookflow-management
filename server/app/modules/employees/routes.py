@@ -1,9 +1,16 @@
+"""
+Employee Management API Routes
+------------------------------
+This module provides endpoints for managing employee profiles, viewing directories,
+and securely managing system owner accounts.
+"""
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from app.core.database import get_db
-from app.core.dependencies import RoleChecker, get_current_user
+from app.core.dependencies import RoleChecker, get_current_user, RequireOwner
 from app.core.tenant import get_current_tenant
+from app.core.security import pwd_context
 from app.modules.organizations.models import Organization
 from app.modules.employees.models import Employee
 from app.modules.employees.schemas import EmployeeResponse, EmployeeCreate, EmployeeUpdate
@@ -24,6 +31,10 @@ async def get_my_profile(
     current_user: Employee = Depends(get_current_user),
     service: EmployeeService = Depends(get_employee_service)
 ):
+    """
+    Get Current User Profile.
+    Used by the frontend to hydrate the AuthContext state on mount.
+    """
     emp = await service.get_employee_by_id(current_user.id)
     return EmployeeResponse.model_validate(emp)
 
@@ -35,8 +46,55 @@ async def update_my_profile(
     current_user: Employee = Depends(get_current_user),
     service: EmployeeService = Depends(get_employee_service)
 ):
+    """
+    Update Current User Profile.
+    Allows employees to update non-administrative fields like their name or password.
+    """
     emp = await service.update_profile(current_user.id, request)
     return EmployeeResponse.model_validate(emp)
+
+from fastapi import HTTPException
+from sqlalchemy.future import select
+
+@router.get("/system-owners", response_model=dict)
+async def list_system_owners(
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(RequireOwner)
+):
+    """
+    List System Owners.
+    Restricted entirely to users in the 'System' department.
+    Used for global platform management.
+    """
+    result = await db.execute(
+        select(Employee).where(Employee.department == 'System', Employee.is_active == True)
+    )
+    owners = result.scalars().all()
+    return {"owners": [EmployeeResponse.model_validate(o) for o in owners]}
+
+@router.post("/system-owners", status_code=status.HTTP_201_CREATED)
+async def create_system_owner(
+    request: EmployeeCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(RequireOwner)
+):
+    result = await db.execute(select(Employee).where(Employee.email == request.email))
+    if result.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="Email already registered")
+        
+    owner = Employee(
+        organization_id=current_user.organization_id,
+        name=request.name,
+        email=request.email,
+        password_hash=pwd_context.hash("Owner@123!"),
+        role="super_admin",
+        department="System",
+        is_active=True
+    )
+    db.add(owner)
+    await db.commit()
+    await db.refresh(owner)
+    return {"message": "Owner created successfully (Password: Owner@123!)", "owner": EmployeeResponse.model_validate(owner)}
 
 @router.get("", response_model=dict)
 async def list_employees(

@@ -10,7 +10,19 @@ from app.modules.employees.models import Employee
 from app.modules.notifications.models import Notification
 from app.modules.audit.services import AuditLogService
 
+"""
+Leave Management Services
+-------------------------
+This module encapsulates the core business logic for the application.
+It handles leave applications, dynamic multi-step approval chains, balance deductions,
+and integrations with external services (Slack, Teams, Calendar).
+"""
+
 class LeaveService:
+    """
+    Service Layer: Acts as the orchestrator between the API routes and the Database repositories.
+    Enforces business rules such as balance limits, overlapping dates, and holiday exclusions.
+    """
     def __init__(self, repo: LeaveRepository):
         self.repo = repo
 
@@ -30,6 +42,18 @@ class LeaveService:
 
 
     async def apply_leave(self, employee_id: int, request: LeaveApplication) -> dict:
+        """
+        Core logic for submitting a leave application.
+        
+        Architectural Flow:
+        1. Validates the dates (no past dates, end >= start).
+        2. Checks for overlapping requests.
+        3. Calculates actual business days (excluding weekends and public holidays).
+        4. Validates and synchronously deducts from the user's Leave Balance.
+        5. Creates the LeaveRequest record.
+        6. Logs the action to the AuditLog.
+        7. Sends in-app notifications and external webhook integrations (Slack/Teams).
+        """
         today = datetime.today().date()
         if request.start_date < today:
             raise HTTPException(status_code=400, detail="Start date cannot be in the past")
@@ -226,6 +250,16 @@ class LeaveService:
         return {"message": "Leave request cancelled successfully"}
 
     async def get_pending_requests(self, manager_id: int, is_admin: bool = False) -> List[dict]:
+        """
+        Retrieves all pending leave requests that the current user has the authority to approve.
+        
+        Architectural Flow (Multi-Step Approvals):
+        1. Checks the dynamic Approval Chain configured for the requester's department.
+        2. Looks at the `current_approval_step` of the leave request.
+        3. Determines if the current user (manager or specific role like HR) has the required role
+           for the current step in the chain.
+        4. Admins bypass these checks.
+        """
         rows = await self.repo.list_all_pending_requests()
         approver = await self._get_employee(manager_id)
 
@@ -283,6 +317,16 @@ class LeaveService:
 
 
     async def approve_leave(self, leave_id: int, manager_id: int, is_admin: bool, action: LeaveApprovalAction) -> dict:
+        """
+        Processes a leave approval action.
+        
+        Architectural Flow:
+        1. Validates the user's authority to approve the current step (via the Approval Chain).
+        2. Creates a LeaveApproval record.
+        3. If there are more steps in the chain, increments `current_approval_step`.
+        4. If it's the final step, marks the leave as 'approved' and triggers Calendar integration.
+        5. Logs the action in the AuditLog.
+        """
         row = await self.repo.get_request_with_employee(leave_id)
         if not row:
             raise HTTPException(status_code=404, detail="Leave request not found")
@@ -383,6 +427,16 @@ class LeaveService:
         return {"message": "Leave request approved"}
 
     async def reject_leave(self, leave_id: int, manager_id: int, is_admin: bool, action: LeaveApprovalAction) -> dict:
+        """
+        Processes a leave rejection action.
+        
+        Architectural Flow:
+        1. Requires a rejection comment.
+        2. Validates authority via the Approval Chain.
+        3. Marks the request as 'rejected' (stops the chain immediately).
+        4. Restores the deducted days back to the user's Leave Balance.
+        5. Logs the action in the AuditLog and sends an in-app notification.
+        """
         if not action.comments or not action.comments.strip():
             raise HTTPException(status_code=400, detail="Rejection reason is required")
 

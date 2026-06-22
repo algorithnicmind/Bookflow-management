@@ -1,28 +1,44 @@
 'use client'
 
+/**
+ * Leads / Contact Inquiries Page
+ * ------------------------------
+ * Restricted to Platform Owners. Displays contact submissions from the public landing page.
+ */
+
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { onboardingApi } from '@/services/api'
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
+import Modal from '@/components/ui/Modal'
 import AppleEmoji from '@/components/AppleEmoji'
 
-export default function TenantApplicationsPage() {
+export default function LeadsPage() {
   const { user } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const statusParam = searchParams.get('status')
+  
   const [applications, setApplications] = useState([])
   const [counts, setCounts] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 })
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [activeFilter, setActiveFilter] = useState(null)
+  const [activeFilter, setActiveFilter] = useState(statusParam || null)
   const [actionLoading, setActionLoading] = useState(null)
   const [toast, setToast] = useState(null)
+  const [provisionedDetails, setProvisionedDetails] = useState(null)
 
-  // Restrict to super_admin only
+  // Sync filter when URL changes (e.g. clicking sidebar links)
   useEffect(() => {
-    if (user && user.role !== 'super_admin') {
+    setActiveFilter(statusParam || null)
+  }, [statusParam])
+
+  // Restrict to Platform Owner only
+  useEffect(() => {
+    if (user && user.department !== 'System') {
       router.push('/dashboard')
     }
   }, [user, router])
@@ -57,7 +73,11 @@ export default function TenantApplicationsPage() {
     setActionLoading(id)
     try {
       const res = await onboardingApi.approve(id)
-      showToast(res.message || `"${companyName}" approved successfully!`)
+      setProvisionedDetails({
+        companyName: res.organization?.name || companyName,
+        email: res.admin?.email || '',
+        password: 'Welcome123!'
+      })
       await fetchApplications(activeFilter)
     } catch (err) {
       showToast(err.message || 'Failed to approve.', 'error')
@@ -94,7 +114,7 @@ export default function TenantApplicationsPage() {
     { key: 'rejected', label: 'Rejected', count: counts.rejected },
   ]
 
-  if (user?.role !== 'super_admin') return null
+  if (user?.department !== 'System') return null
 
   return (
     <div className="page-container">
@@ -118,8 +138,8 @@ export default function TenantApplicationsPage() {
       {/* Page Header */}
       <div className="page-header animate-in">
         <div>
-          <h1 className="page-title">Tenant Applications</h1>
-          <p className="page-subtitle">Review and approve organization onboarding requests</p>
+          <h1 className="page-title">Leads Management</h1>
+          <p className="page-subtitle">Review and manage platform leads and onboarding inquiries</p>
         </div>
       </div>
 
@@ -242,7 +262,7 @@ export default function TenantApplicationsPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
-                  {['Company', 'Admin Email', 'Size', 'Status', 'Submitted', 'Actions'].map((col) => (
+                  {['Company', 'Industry', 'Admin Name', 'Admin Email', 'Size', 'Status', 'Submitted', 'Actions'].map((col) => (
                     <th key={col} style={{
                       textAlign: 'left',
                       padding: '12px 16px',
@@ -273,6 +293,12 @@ export default function TenantApplicationsPage() {
                           {app.special_requirements}
                         </div>
                       )}
+                    </td>
+                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+                      {app.industry || '—'}
+                    </td>
+                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+                      {app.admin_name || '—'}
                     </td>
                     <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
                       {app.admin_email}
@@ -319,6 +345,34 @@ export default function TenantApplicationsPage() {
           </div>
         </Card>
       )}
+
+      {/* Provisioned Modal */}
+      <Modal isOpen={!!provisionedDetails} onClose={() => setProvisionedDetails(null)} title="Application Approved">
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <div style={{ fontSize: '3rem', marginBottom: 16 }}><AppleEmoji char="🎉" /></div>
+          <h3 style={{ fontSize: '1.2rem', marginBottom: 8 }}>{provisionedDetails?.companyName} is ready!</h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+            The organization and super admin account have been created successfully. Share these credentials with the tenant admin.
+          </p>
+        </div>
+        <div style={{ background: 'var(--bg-secondary)', padding: 16, borderRadius: 8, marginBottom: 24 }}>
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>Admin Email</div>
+            <div style={{ fontSize: '1rem', fontWeight: 600 }}>{provisionedDetails?.email}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>Temporary Password</div>
+            <div style={{ fontSize: '1rem', fontWeight: 600, fontFamily: 'monospace', letterSpacing: '1px' }}>{provisionedDetails?.password}</div>
+          </div>
+        </div>
+        <Button fullWidth size="lg" onClick={() => {
+          navigator.clipboard.writeText(`Login URL: ${window.location.origin}/login\nEmail: ${provisionedDetails?.email}\nPassword: ${provisionedDetails?.password}`)
+          showToast('Credentials copied to clipboard!')
+          setProvisionedDetails(null)
+        }}>
+          Copy to Clipboard & Close
+        </Button>
+      </Modal>
 
       <style jsx>{`
         @keyframes slideIn {

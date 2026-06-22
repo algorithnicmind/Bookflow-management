@@ -1,3 +1,9 @@
+"""
+Notifications API Routes
+------------------------
+Manages the in-app notification center. Allows users to fetch their unread notifications
+and mark them as read.
+"""
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select

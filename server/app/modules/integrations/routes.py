@@ -1,3 +1,8 @@
+"""
+Integrations API Routes
+-----------------------
+Manages third-party Webhook integrations like Slack, Microsoft Teams, and Google Calendar syncing.
+"""
 import os
 import json
 import logging

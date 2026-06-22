@@ -1,5 +1,24 @@
+/**
+ * API Service Layer
+ * -----------------
+ * This file centralizes all HTTP communication between the Next.js frontend and the FastAPI backend.
+ * By using this centralized layer, we ensure consistent error handling, header injection,
+ * and session management across the entire application.
+ */
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
+/**
+ * Core HTTP Request Wrapper
+ * 
+ * Architectural Flow:
+ * 1. Sets default headers (application/json).
+ * 2. Enforces `credentials: 'include'` so that secure HttpOnly cookies (like `access_token`)
+ *    are automatically attached to cross-origin requests.
+ * 3. Serializes the request body and URL parameters.
+ * 4. Intercepts 401 Unauthorized responses to clear local state and trigger a re-login.
+ * 5. Parses and normalizes error messages from the backend so components can easily display them.
+ */
 export async function request(endpoint, options = {}) {
   const headers = {
     'Content-Type': 'application/json',
@@ -9,9 +28,10 @@ export async function request(endpoint, options = {}) {
   const config = {
     method: options.method || 'GET',
     headers,
-    credentials: 'include', // Important for HttpOnly cookies
+    credentials: 'include',
     ...(options.body ? { body: JSON.stringify(options.body) } : {}),
   }
+
 
   let url = `${API_BASE}${endpoint}`
   if (options.params) {
@@ -135,6 +155,7 @@ export const botApi = {
 
 export const contactApi = {
   submit: (body) => request('/api/contact', { method: 'POST', body }),
+  list: () => request('/api/contact'),
 }
 
 export const onboardingApi = {
@@ -162,4 +183,8 @@ export const integrationsApi = {
   simulateTeamsAction: (payload) => request('/api/integrations/teams/actions', { method: 'POST', body: payload })
 }
 
+export const systemOwnersApi = {
+  list: () => request('/api/employees/system-owners'),
+  create: (body) => request('/api/employees/system-owners', { method: 'POST', body }),
+}
 

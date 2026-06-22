@@ -1,5 +1,11 @@
 'use client'
 
+/**
+ * Audit Logs Page
+ * ---------------
+ * A security and compliance dashboard for admins to review all sensitive actions taken in the system.
+ */
+
 import { useState, useEffect } from 'react'
 import { auditApi } from '@/services/api'
 import { formatDateTime } from '@/lib/utils'

@@ -1,3 +1,9 @@
+"""
+Dashboard API Routes
+--------------------
+Aggregates high-level statistics (pending requests, team absence, recent activity)
+to populate the main dashboard for employees and managers.
+"""
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
