@@ -11,11 +11,10 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { dashboardApi } from '@/services/api'
-import StatCard from '@/components/ui/StatCard'
-import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import { formatDate, getLeaveTypeIcon } from '@/lib/utils'
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts'
 
 export default function DashboardPage() {
   const { user } = useAuth()
@@ -70,223 +69,292 @@ export default function DashboardPage() {
   const isManager = ['manager', 'admin', 'super_admin'].includes(role)
   const isAdmin = ['admin', 'super_admin'].includes(role)
 
+  // Color mapping for leave types based on the project's CSS variables
+  const leaveColors = {
+    sick: '#f43f5e',
+    casual: '#f59e0b',
+    earned: '#10b981',
+    unpaid: '#64748b',
+    floater: '#3b82f6',
+    default: '#10b981'
+  }
+  
+  const getChartColor = (type) => leaveColors[type?.toLowerCase()] || leaveColors.default;
+
   return (
     <div className="page-container">
       <div className="page-header animate-in">
         <div>
-          <h1 className="page-title">
+          <h1 className="page-title" style={{ fontSize: '1.8rem', marginBottom: '8px' }}>
             {role === 'employee' && 'My Dashboard'}
             {role === 'manager' && 'Manager Dashboard'}
             {role === 'admin' && 'Admin Dashboard'}
             {role === 'super_admin' && 'Super Admin Dashboard'}
           </h1>
-          <p className="page-subtitle">
+          <p className="page-subtitle" style={{ fontSize: '0.95rem' }}>
             {role === 'employee' && 'Overview of your leave status and balances'}
             {role === 'manager' && 'Team overview, pending approvals, and more'}
             {role === 'admin' && 'System-wide statistics and employee overview'}
             {role === 'super_admin' && 'Organization-wide metrics and controls'}
           </p>
         </div>
-        <Button onClick={() => router.push('/apply-leave')}>
+        <Button onClick={() => router.push('/apply-leave')} style={{ padding: '12px 24px', borderRadius: '12px', fontWeight: 600, boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)' }}>
           + Apply Leave
         </Button>
       </div>
 
-      <div className="grid-4 animate-in" style={{ animationDelay: '0.05s' }}>
-        <StatCard
-          label="Total Requests"
-          value={data.stats?.total_requests || 0}
-          icon="📋"
-          color="var(--accent)"
-        />
-        <StatCard
-          label="Pending"
-          value={data.stats?.pending || 0}
-          icon="⏳"
-          color="var(--warning)"
-        />
-        <StatCard
-          label="Approved"
-          value={data.stats?.approved || 0}
-          icon="✅"
-          color="var(--success)"
-        />
-        <StatCard
-          label="Rejected"
-          value={data.stats?.rejected || 0}
-          icon="❌"
-          color="var(--danger)"
-        />
-      </div>
-
-      {isManager && data.team_pending_count !== undefined && (
-        <div className="grid-3 animate-in" style={{ animationDelay: '0.1s', marginTop: 20 }}>
-          <StatCard
-            label="Team Pending Approvals"
-            value={data.team_pending_count}
-            icon="⏳"
-            color="var(--warning)"
-            subtitle={data.team_pending_count > 0 ? `${data.team_pending_count} request(s) awaiting your action` : 'No pending requests'}
-          />
-          {data.team_on_leave_today && data.team_on_leave_today.length > 0 && (
-            <div className="glass" style={{ padding: 20, gridColumn: 'span 2' }}>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>
-                Team on Leave Today
-              </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {data.team_on_leave_today.map((name, i) => (
-                  <span key={i} style={{
-                    padding: '6px 14px',
-                    borderRadius: 100,
-                    background: 'var(--warning-bg)',
-                    color: 'var(--warning)',
-                    fontSize: '0.85rem',
-                    fontWeight: 500,
-                  }}>
-                    {name}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {isAdmin && data.org_stats && (
-        <div className="grid-3 animate-in" style={{ animationDelay: '0.15s', marginTop: 20 }}>
-          <StatCard
-            label="Total Employees"
-            value={data.org_stats.total_employees || 0}
-            icon="👥"
-            color="var(--info)"
-          />
-          <StatCard
-            label="Total Requests (All)"
-            value={data.org_stats.total_requests || 0}
-            icon="📊"
-            color="var(--accent)"
-          />
-          {data.org_stats.department_breakdown && data.org_stats.department_breakdown.length > 0 && (
-            <div className="glass" style={{ padding: 20 }}>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>
-                Department Breakdown
-              </div>
-              {data.org_stats.department_breakdown.map((dept, i) => (
-                <div key={i} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '8px 0', borderBottom: i < data.org_stats.department_breakdown.length - 1 ? '1px solid var(--border)' : 'none',
-                }}>
-                  <span style={{ fontSize: '0.85rem' }}>{dept.department}</span>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent)' }}>
-                    {dept.count} {dept.count === 1 ? 'employee' : 'employees'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      <div style={{ marginTop: 28 }}>
-        <Card>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>Leave Balances</h3>
+      {/* KPI WIDGETS */}
+      <div className="grid-4 animate-in" style={{ animationDelay: '0.05s', marginBottom: '28px' }}>
+        <div className="glass widget-card">
+          <div className="widget-header">
+            <span className="widget-icon" style={{ background: 'rgba(16, 185, 129, 0.15)', color: 'var(--accent)' }}>📋</span>
           </div>
-          {data.balances && data.balances.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
-              {data.balances.map((b, i) => (
+          <div className="widget-value">{data.stats?.total_requests || 0}</div>
+          <div className="widget-label">Total Requests</div>
+        </div>
+        
+        <div className="glass widget-card">
+          <div className="widget-header">
+            <span className="widget-icon" style={{ background: 'rgba(245, 158, 11, 0.15)', color: 'var(--warning)' }}>⏳</span>
+          </div>
+          <div className="widget-value">{data.stats?.pending || 0}</div>
+          <div className="widget-label">Pending Approvals</div>
+        </div>
+        
+        <div className="glass widget-card">
+          <div className="widget-header">
+            <span className="widget-icon" style={{ background: 'rgba(16, 185, 129, 0.15)', color: 'var(--success)' }}>✅</span>
+          </div>
+          <div className="widget-value">{data.stats?.approved || 0}</div>
+          <div className="widget-label">Approved Leaves</div>
+        </div>
+        
+        <div className="glass widget-card">
+          <div className="widget-header">
+            <span className="widget-icon" style={{ background: 'rgba(244, 63, 94, 0.15)', color: 'var(--danger)' }}>❌</span>
+          </div>
+          <div className="widget-value">{data.stats?.rejected || 0}</div>
+          <div className="widget-label">Rejected Leaves</div>
+        </div>
+      </div>
+
+      {/* LEAVE BALANCES WIDGETS */}
+      <div className="glass animate-in" style={{ animationDelay: '0.1s', padding: '24px', marginBottom: '28px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>Leave Balances</h3>
+        </div>
+        
+        {data.balances && data.balances.length > 0 ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+            {data.balances.map((b, i) => {
+              const color = getChartColor(b.leave_type);
+              const chartData = [
+                { name: 'Used', value: b.used_days, fill: color },
+                { name: 'Remaining', value: b.remaining, fill: 'var(--bg-secondary)' }
+              ];
+              
+              return (
                 <div key={i} style={{
-                  padding: '16px',
-                  borderRadius: 'var(--radius-sm)',
-                  background: 'var(--bg-primary)',
+                  padding: '20px',
+                  borderRadius: '16px',
+                  background: 'var(--bg-secondary)',
                   border: '1px solid var(--border)',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                    <span>{getLeaveTypeIcon(b.leave_type)}</span>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, textTransform: 'capitalize' }}>{b.leave_type}</span>
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '20px',
+                  transition: 'var(--transition)'
+                }} className="glass-hover">
+                  <div style={{ width: '100px', height: '100px', position: 'relative' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={chartData}
+                          innerRadius={35}
+                          outerRadius={45}
+                          paddingAngle={5}
+                          dataKey="value"
+                          stroke="none"
+                        >
+                          {chartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                          ))}
+                        </Pie>
+                        <RechartsTooltip 
+                          contentStyle={{ background: 'var(--bg-primary)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '0.8rem' }}
+                          itemStyle={{ color: 'var(--text-main)' }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    {/* Center text for donut */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      fontSize: '1.2rem',
+                      fontWeight: '700',
+                      color: color
+                    }}>
+                      {b.remaining}
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 16 }}>
-                    <div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', marginBottom: 2 }}>Total</div>
-                      <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>{b.total_days}</div>
+                  
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: '12px' }}>
+                      <span style={{ fontSize: '1.2rem' }}>{getLeaveTypeIcon(b.leave_type)}</span>
+                      <span style={{ fontSize: '1.05rem', fontWeight: 600, textTransform: 'capitalize' }}>{b.leave_type}</span>
                     </div>
-                    <div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', marginBottom: 2 }}>Used</div>
-                      <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--warning)' }}>{b.used_days}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', marginBottom: 2 }}>Remaining</div>
-                      <div style={{
-                        fontSize: '1.1rem', fontWeight: 700,
-                        color: b.remaining < 3 ? 'var(--danger)' : 'var(--success)',
-                      }}>{b.remaining}</div>
+                    <div style={{ display: 'flex', gap: '20px' }}>
+                      <div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>Total</div>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 600 }}>{b.total_days}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>Used</div>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--warning)' }}>{b.used_days}</div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="empty-state" style={{ padding: '20px' }}>
-              <div className="empty-state-desc">No balance data available</div>
-            </div>
-          )}
-        </Card>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="empty-state" style={{ padding: '40px 20px', background: 'var(--bg-secondary)', borderRadius: '16px' }}>
+            <div className="empty-state-icon">📭</div>
+            <div className="empty-state-desc">No balance data available</div>
+          </div>
+        )}
       </div>
 
-      <div style={{ marginTop: 20 }}>
-        <Card>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>Recent Leaves</h3>
-            <Button variant="ghost" size="sm" onClick={() => router.push('/leave-history')}>
+      <div className="grid-2 animate-in" style={{ animationDelay: '0.15s', alignItems: 'start' }}>
+        {/* RECENT LEAVES WIDGET */}
+        <div className="glass widget-card" style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Recent Leaves</h3>
+            <Button variant="ghost" size="sm" onClick={() => router.push('/leave-history')} style={{ fontSize: '0.85rem' }}>
               View All →
             </Button>
           </div>
           {data.recent_leaves && data.recent_leaves.length > 0 ? (
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    <th style={{ textAlign: 'left', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Type</th>
-                    <th style={{ textAlign: 'left', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Dates</th>
-                    <th style={{ textAlign: 'left', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Days</th>
-                    <th style={{ textAlign: 'left', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</th>
-                    <th style={{ textAlign: 'right', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Applied</th>
+                  <tr style={{ background: 'rgba(0,0,0,0.2)' }}>
+                    <th style={{ textAlign: 'left', padding: '16px 24px', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Type</th>
+                    <th style={{ textAlign: 'left', padding: '16px 24px', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Dates</th>
+                    <th style={{ textAlign: 'left', padding: '16px 24px', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.recent_leaves.map((leave, i) => (
                     <tr key={leave.id} style={{ borderBottom: '1px solid var(--border)', transition: 'var(--transition)' }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
                       onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                     >
-                      <td style={{ padding: '12px' }}>
-                        <span style={{ textTransform: 'capitalize' }}>{getLeaveTypeIcon(leave.leave_type)} {leave.leave_type}</span>
+                      <td style={{ padding: '16px 24px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{ width: 8, height: 8, borderRadius: '50%', background: getChartColor(leave.leave_type) }}></div>
+                          <span style={{ textTransform: 'capitalize', fontWeight: 500 }}>{leave.leave_type}</span>
+                        </div>
                       </td>
-                      <td style={{ padding: '12px', color: 'var(--text-muted)' }}>
-                        {formatDate(leave.start_date)} - {formatDate(leave.end_date)}
+                      <td style={{ padding: '16px 24px', color: 'var(--text-muted)' }}>
+                        <div style={{ fontWeight: 500, color: 'var(--text-main)' }}>{leave.days || '-'} Days</div>
+                        <div style={{ fontSize: '0.8rem' }}>{formatDate(leave.start_date)} - {formatDate(leave.end_date)}</div>
                       </td>
-                      <td style={{ padding: '12px', fontWeight: 600 }}>{leave.days || '-'}</td>
-                      <td style={{ padding: '12px' }}><Badge status={leave.status} /></td>
-                      <td style={{ padding: '12px', color: 'var(--text-muted)', textAlign: 'right', fontSize: '0.8rem' }}>
-                        {formatDate(leave.created_at)}
-                      </td>
+                      <td style={{ padding: '16px 24px' }}><Badge status={leave.status} /></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           ) : (
-            <div className="empty-state" style={{ padding: '20px' }}>
+            <div className="empty-state" style={{ padding: '40px 20px' }}>
               <div className="empty-state-icon">📭</div>
               <div className="empty-state-title">No leaves yet</div>
-              <div className="empty-state-desc">Apply for your first leave to get started</div>
               <Button style={{ marginTop: 16 }} onClick={() => router.push('/apply-leave')}>
                 Apply for Leave
               </Button>
             </div>
           )}
-        </Card>
+        </div>
+
+        {/* EXTRA WIDGETS (Manager/Admin) */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+          {isManager && data.team_pending_count !== undefined && (
+            <div className="glass widget-card" style={{ borderLeft: '4px solid var(--warning)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '4px' }}>Team Pending</h3>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Requests awaiting your action</p>
+                </div>
+                <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--warning)' }}>
+                  {data.team_pending_count}
+                </div>
+              </div>
+              
+              {data.team_on_leave_today && data.team_on_leave_today.length > 0 && (
+                <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px dashed var(--border)' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '12px' }}>
+                    Team on Leave Today
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {data.team_on_leave_today.map((name, i) => (
+                      <span key={i} style={{
+                        padding: '6px 14px',
+                        borderRadius: 100,
+                        background: 'var(--bg-secondary)',
+                        border: '1px solid var(--border)',
+                        color: 'var(--text-main)',
+                        fontSize: '0.85rem',
+                        fontWeight: 500,
+                      }}>
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {isAdmin && data.org_stats && (
+            <div className="glass widget-card">
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '20px' }}>Organization Overview</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+                <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', fontWeight: 600 }}>Total Employees</div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: 700, color: 'var(--info)' }}>{data.org_stats.total_employees || 0}</div>
+                </div>
+                <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', fontWeight: 600 }}>Total Requests</div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: 700, color: 'var(--accent)' }}>{data.org_stats.total_requests || 0}</div>
+                </div>
+              </div>
+              
+              {data.org_stats.department_breakdown && data.org_stats.department_breakdown.length > 0 && (
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '12px' }}>
+                    Department Breakdown
+                  </div>
+                  {data.org_stats.department_breakdown.map((dept, i) => (
+                    <div key={i} style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '12px 0', borderBottom: i < data.org_stats.department_breakdown.length - 1 ? '1px solid var(--border)' : 'none',
+                    }}>
+                      <span style={{ fontSize: '0.95rem', fontWeight: 500 }}>{dept.department}</span>
+                      <span style={{ fontSize: '0.9rem', fontWeight: 600, background: 'var(--bg-secondary)', padding: '4px 12px', borderRadius: '100px' }}>
+                        {dept.count}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
 }
+
