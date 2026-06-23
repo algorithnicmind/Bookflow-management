@@ -223,7 +223,7 @@ export default function LeadProfilePage() {
             <select
               id="lead-profile-status"
               value={lead.status}
-              disabled={isUpdatingStatus}
+              disabled={isUpdatingStatus || lead.status === 'approved' || lead.status === 'rejected'}
               onChange={(e) => handleStatusChange(e.target.value)}
               style={{
                 appearance: 'none',
@@ -236,14 +236,16 @@ export default function LeadProfilePage() {
                 color: statusMeta.color,
                 fontSize: '0.88rem',
                 fontWeight: 700,
-                cursor: isUpdatingStatus ? 'wait' : 'pointer',
+                cursor: (isUpdatingStatus || lead.status === 'approved' || lead.status === 'rejected') ? 'not-allowed' : 'pointer',
                 outline: 'none',
                 transition: 'all 0.2s',
-                opacity: isUpdatingStatus ? 0.6 : 1,
+                opacity: (isUpdatingStatus || lead.status === 'approved' || lead.status === 'rejected') ? 0.6 : 1,
                 minWidth: 180,
               }}
             >
-              {STATUS_OPTIONS.map((opt) => (
+              {STATUS_OPTIONS.filter(opt => 
+                (opt.value !== 'approved' && opt.value !== 'rejected') || opt.value === lead.status
+              ).map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
@@ -503,30 +505,31 @@ export default function LeadProfilePage() {
               <AppleEmoji char="🔄" /> Lead Pipeline
             </h3>
             <div style={{ display: 'flex', alignItems: 'center', gap: 0, overflowX: 'auto', padding: '8px 0' }}>
-              {STATUS_OPTIONS.map((opt, idx) => {
+              {STATUS_OPTIONS.filter(opt => opt.value !== 'approved' && opt.value !== 'rejected').map((opt, idx, arr) => {
                 const isActive = lead.status === opt.value
-                const isPast = STATUS_OPTIONS.findIndex((s) => s.value === lead.status) > idx
+                const isPast = arr.findIndex((s) => s.value === lead.status) > idx
                 return (
                   <div key={opt.value} style={{ display: 'flex', alignItems: 'center' }}>
                     <div
                       onClick={() => handleStatusChange(opt.value)}
                       style={{
                         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                        padding: '16px 20px', borderRadius: 14, cursor: 'pointer',
+                        padding: '16px 20px', borderRadius: 14, cursor: (lead.status === 'approved' || lead.status === 'rejected') ? 'not-allowed' : 'pointer',
                         background: isActive ? opt.bg : 'transparent',
                         border: isActive ? `1.5px solid ${opt.border}` : '1.5px solid transparent',
                         transition: 'all 0.25s ease',
                         minWidth: 100,
                         opacity: isPast ? 0.5 : 1,
+                        pointerEvents: (lead.status === 'approved' || lead.status === 'rejected') ? 'none' : 'auto',
                       }}
                       onMouseEnter={(e) => {
-                        if (!isActive) {
+                        if (!isActive && lead.status !== 'approved' && lead.status !== 'rejected') {
                           e.currentTarget.style.background = opt.bg
                           e.currentTarget.style.borderColor = opt.border
                         }
                       }}
                       onMouseLeave={(e) => {
-                        if (!isActive) {
+                        if (!isActive && lead.status !== 'approved' && lead.status !== 'rejected') {
                           e.currentTarget.style.background = 'transparent'
                           e.currentTarget.style.borderColor = 'transparent'
                         }
@@ -546,7 +549,7 @@ export default function LeadProfilePage() {
                         }} />
                       )}
                     </div>
-                    {idx < STATUS_OPTIONS.length - 1 && (
+                    {idx < arr.length - 1 && (
                       <div style={{
                         width: 32, height: 2,
                         background: isPast ? 'var(--accent)' : 'var(--border)',

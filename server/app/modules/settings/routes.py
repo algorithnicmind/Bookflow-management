@@ -26,6 +26,22 @@ async def update_settings(
     service = SettingsService(db, tenant.id)
     return await service.update_settings(request, current_user.id)
 
+from pydantic import BaseModel
+class OrgNameUpdate(BaseModel):
+    name: str
+
+@router.put("/organization-name")
+async def update_organization_name(
+    request: OrgNameUpdate,
+    db: AsyncSession = Depends(get_db),
+    tenant: Organization = Depends(get_current_tenant),
+    current_user: Employee = Depends(RoleChecker(["super_admin"]))
+):
+    tenant.name = request.name
+    db.add(tenant)
+    await db.commit()
+    return {"message": "Organization name updated", "name": tenant.name}
+
 @router.get("")
 async def get_settings(
     db: AsyncSession = Depends(get_db),

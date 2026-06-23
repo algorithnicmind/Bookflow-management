@@ -49,6 +49,29 @@ async def lifespan(app: FastAPI):
     if settings.ENVIRONMENT == "development":
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            
+            # Migration to add access_days and expires_at to organizations
+            from sqlalchemy import text
+            try:
+                res = await conn.execute(text("""
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name='organizations' AND column_name='access_days';
+                """))
+                if not res.scalar():
+                    print("Adding column access_days to organizations...")
+                    await conn.execute(text("ALTER TABLE organizations ADD COLUMN access_days INTEGER DEFAULT 30;"))
+                
+                res = await conn.execute(text("""
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name='organizations' AND column_name='expires_at';
+                """))
+                if not res.scalar():
+                    print("Adding column expires_at to organizations...")
+                    await conn.execute(text("ALTER TABLE organizations ADD COLUMN expires_at TIMESTAMP WITH TIME ZONE;"))
+            except Exception as e:
+                print(f"Migration error: {e}")
     
     from app.modules.leaves.cron import start_scheduler
     start_scheduler()

@@ -30,6 +30,7 @@ class EmployeeResponse(EmployeeBase):
     location: Optional[str] = None
     date_of_birth: Optional[date] = None
     phone_number: Optional[str] = None
+    organization_name: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

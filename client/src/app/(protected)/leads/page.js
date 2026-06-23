@@ -48,8 +48,22 @@ export default function LeadsPage() {
     try {
       const params = statusFilter ? { status: statusFilter } : {}
       const data = await onboardingApi.list(params)
-      setApplications(data.applications)
-      setCounts(data.counts)
+      
+      let finalApplications = data.applications || []
+      
+      // If viewing 'All', exclude 'connected' and 'approved' from the UI
+      if (!statusFilter) {
+        finalApplications = finalApplications.filter(app => app.status !== 'connected' && app.status !== 'approved')
+      }
+      
+      setApplications(finalApplications)
+      
+      // Adjust total count so it doesn't include connected or approved
+      const adjustedTotal = (data.counts.total || 0) 
+                            - (data.counts.connected || 0) 
+                            - (data.counts.approved || 0)
+      
+      setCounts({ ...data.counts, total: adjustedTotal })
     } catch (err) {
       setError(err.message || 'Failed to load applications.')
     } finally {
@@ -95,7 +109,6 @@ export default function LeadsPage() {
     { key: null, label: 'All', count: counts.total },
     { key: 'pending', label: 'Pending', count: counts.pending },
     { key: 'contacted', label: 'Contacted', count: counts.contacted },
-    { key: 'connected', label: 'Connected', count: counts.connected },
     { key: 'interested', label: 'Interested', count: counts.interested },
     { key: 'not_interested', label: 'Not Interested', count: counts.not_interested },
   ]
@@ -140,7 +153,6 @@ export default function LeadsPage() {
           { label: 'Total', value: counts.total, emoji: '📋', color: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.25)' },
           { label: 'Pending', value: counts.pending, emoji: '⏳', color: 'rgba(245, 158, 11, 0.15)', border: 'rgba(245, 158, 11, 0.25)' },
           { label: 'Contacted', value: counts.contacted, emoji: '📞', color: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.25)' },
-          { label: 'Connected', value: counts.connected, emoji: '🤝', color: 'rgba(14, 165, 233, 0.15)', border: 'rgba(14, 165, 233, 0.25)' },
           { label: 'Interested', value: counts.interested, emoji: '🌟', color: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.25)' },
           { label: 'Not Interested', value: counts.not_interested, emoji: '❌', color: 'rgba(239, 68, 68, 0.15)', border: 'rgba(239, 68, 68, 0.25)' },
         ].map((stat) => (
@@ -277,12 +289,7 @@ export default function LeadsPage() {
                       onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                     >
                       <td style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
-                        <div
-                          style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--accent)', cursor: 'pointer', textDecoration: 'none' }}
-                          onClick={() => router.push(`/leads/${app.id}`)}
-                          onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
-                          onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
-                        >
+                        <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)' }}>
                           {app.company_name}
                         </div>
                         {app.special_requirements && (
@@ -323,7 +330,7 @@ export default function LeadsPage() {
                             color: statusMeta.color,
                             fontSize: '0.8rem',
                             fontWeight: 600,
-                            cursor: updatingId === app.id ? 'wait' : 'pointer',
+                            cursor: updatingId === app.id ? 'not-allowed' : 'pointer',
                             outline: 'none',
                             transition: 'all 0.2s',
                             opacity: updatingId === app.id ? 0.6 : 1,

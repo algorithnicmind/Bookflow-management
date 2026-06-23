@@ -39,7 +39,13 @@ async def get_my_profile(
     from app.modules.employees.repositories import EmployeeRepository
     repo = EmployeeRepository(db, current_user.organization_id or 0)
     emp = await repo.get_by_id(current_user.id)
-    return EmployeeResponse.model_validate(emp or current_user)
+    
+    tenant = await get_current_tenant(current_user, db)
+    resp = EmployeeResponse.model_validate(emp or current_user)
+    if tenant:
+        resp.organization_name = tenant.name
+        
+    return resp
 
 from app.modules.employees.schemas import EmployeeProfileUpdate
 

@@ -55,6 +55,7 @@ export default function Sidebar({ isOpen, onClose }) {
       { href: '/leads', label: 'Leads', icon: <AppleEmoji char="🎯" /> },
       { href: '/owner-contacts', label: 'Contact Messages', icon: <AppleEmoji char="📨" /> },
       { href: '/platform-owners', label: 'Platform Owners', icon: <AppleEmoji char="👥" /> },
+      { href: '/tenants', label: 'Tenant', icon: <AppleEmoji char="🏢" /> },
     ]
   }
 

@@ -380,19 +380,10 @@
 │  │                    ┌─────────┐                              │   │
 │  │                    │    L    │  Logo (48x48, gradient)      │   │
 │  │                    └─────────┘                              │   │
-│  │               Welcome to LeaveFlow                          │   │
-│  │          Sign in or create an account                       │   │
+│  │                    Welcome back                             │   │
+│  │           Sign in to your LeaveFlow account                 │   │
 │  │                                                             │   │
 │  │  ┌── Glass Card (form) ───────────────────────────────┐    │   │
-│  │  │                                                     │    │   │
-│  │  │  ┌─────────────────────────────────────────────┐   │    │   │
-│  │  │  │         Continue with Google                 │   │    │   │
-│  │  │  └─────────────────────────────────────────────┘   │    │   │
-│  │  │  ┌─────────────────────────────────────────────┐   │    │   │
-│  │  │  │         Continue with Facebook               │   │    │   │
-│  │  │  └─────────────────────────────────────────────┘   │    │   │
-│  │  │                                                     │    │   │
-│  │  │  ----- OR ---------------------------------------   │    │   │
 │  │  │                                                     │    │   │
 │  │  │  EMAIL                                              │    │   │
 │  │  │  ┌─────────────────────────────────────────────┐   │    │   │
@@ -405,65 +396,59 @@
 │  │  │  └─────────────────────────────────────────────┘   │    │   │
 │  │  │                                                     │    │   │
 │  │  │  ┌─────────────────────────────────────────────┐   │    │   │
-│  │  │  │         Sign In / Register                   │   │    │   │
+│  │  │  │         Sign In                             │   │    │   │
 │  │  │  └─────────────────────────────────────────────┘   │    │   │
 │  │  └─────────────────────────────────────────────────────┘    │   │
 │  │                                                             │   │
 │  └──────────────────────────────────────────────────────────────┘   │
-│                                                                     │
-│  ┌── B2B Onboarding Flow Note ────────────────────────────────┐   │
-│  │ New users who are not yet provisioned will be redirected    │   │
-│  │ to /onboarding/apply after logging in.                      │   │
-│  └─────────────────────────────────────────────────────────────┘   │
 │                                                                     │
 │  Input Focus: border → accent, box-shadow: 0 0 0 3px accent-glow   │
 │  Loading State: Spinner + "Signing in..." text, btn opacity 0.7     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### 3.2b Onboarding Application Page (/onboarding/apply)
+### 3.2b Onboarding Lead Inquiry Modal (LeadModal - Public Landing Page)
+
+Instead of a standalone page, the onboarding application is integrated as a modal on the public landing page `/`.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  ONBOARDING PAGE — /onboarding/apply                                │
+│  ONBOARDING INQUIRY MODAL (LeadModal)                               │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  ┌──────────────────────────────────────────────────────────────┐   │
+│  ┌── Tell us about your organization ──────────────────────────┐   │
+│  │                                                       [✕]   │   │
 │  │                                                             │   │
-│  │               Set Up Your Workspace                         │   │
-│  │          Provide details for your organization              │   │
+│  │  COMPANY NAME *             COMPANY SIZE *                  │   │
+│  │  ┌──────────────────────┐  ┌──────────────────────────┐   │   │
+│  │  │ Acme Inc.            │  │ Select size              │   │   │
+│  │  └──────────────────────┘  └──────────────────────────┘   │   │
+│  │                            Options: 1-10, 11-50,          │   │
+│  │                            51-200, 201-500, 500+          │   │
 │  │                                                             │   │
-│  │  ┌── Glass Card (form) ───────────────────────────────┐    │   │
-│  │  │                                                     │    │   │
-│  │  │  COMPANY NAME                                       │    │   │
-│  │  │  ┌─────────────────────────────────────────────┐   │    │   │
-│  │  │  │  Acme Corp                                   │   │    │   │
-│  │  │  └─────────────────────────────────────────────┘   │    │   │
-│  │  │                                                     │    │   │
-│  │  │  COMPANY SIZE                                       │    │   │
-│  │  │  ┌─────────────────────────────────────────────┐   │    │   │
-│  │  │  │  10-50 Employees                             │   │    │   │
-│  │  │  └─────────────────────────────────────────────┘   │    │   │
-│  │  │                                                     │    │   │
-│  │  │  SPECIAL REQUIREMENTS                               │    │   │
-│  │  │  ┌─────────────────────────────────────────────┐   │    │   │
-│  │  │  │                                              │   │    │   │
-│  │  │  │                                              │   │    │   │
-│  │  │  └─────────────────────────────────────────────┘   │    │   │
-│  │  │                                                     │    │   │
-│  │  │  ┌─────────────────────────────────────────────┐   │    │   │
-│  │  │  │         Submit Application                   │   │    │   │
-│  │  │  └─────────────────────────────────────────────┘   │    │   │
-│  │  └─────────────────────────────────────────────────────┘    │   │
+│  │  ADMIN NAME *               ADMIN EMAIL *                   │   │
+│  │  ┌──────────────────────┐  ┌──────────────────────────┐   │   │
+│  │  │ Jane Doe             │  │ jane@acme.com            │   │   │
+│  │  └──────────────────────┘  └──────────────────────────┘   │   │
 │  │                                                             │   │
-│  └──────────────────────────────────────────────────────────────┘   │
+│  │  INDUSTRY *                 ADMIN PHONE *                   │   │
+│  │  ┌──────────────────────┐  ┌──────────────────────────┐   │   │
+│  │  │ e.g. Technology      │  │ e.g. +1 555-0199         │   │   │
+│  │  └──────────────────────┘  └──────────────────────────┘   │   │
+│  │                                                             │   │
+│  │  SPECIAL REQUIREMENTS (OPTIONAL)                            │   │
+│  │  ┌────────────────────────────────────────────────────────┐ │   │
+│  │  │ Any specific needs...                                  │ │   │
+│  │  └────────────────────────────────────────────────────────┘ │   │
+│  │                                                             │   │
+│  │  ┌────────────────────────────────────────────────────────┐ │   │
+│  │  │               Get Started  (btn-primary)               │ │   │
+│  │  └────────────────────────────────────────────────────────┘ │   │
+│  └─────────────────────────────────────────────────────────────┘   │
 │                                                                     │
-│  Post-Submission: Redirect to /onboarding/pending (Waiting for     │
-│  internal sales team to provision account).                        │
-└─────────────────────────────────────────────────────────────────────┘
-│                                                                     │
-│  Input Focus: border → accent, box-shadow: 0 0 0 3px accent-glow   │
-│  Loading State: Spinner + "Signing in..." text, btn opacity 0.7     │
+│  Success State:                                                     │
+│    Shows checkmark SVG + "Thank you!" + explanation that the sales  │
+│    team will get back to them to complete setup.                    │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -905,6 +890,92 @@
 │  └─────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+```
+
+### 3.8b Account Settings Page (/account-settings)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  ACCOUNT SETTINGS PAGE — /account-settings                          │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌── Page Header ──────────────────────────────────────────────┐   │
+│  │  Account Settings                                            │   │
+│  │  Update your personal information and preferences.            │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌── Profile Settings Form (Glass Card) ───────────────────────┐   │
+│  │                                                             │   │
+│  │  ┌── 2-Column Input Grid ─────────────────────────────────┐ │   │
+│  │  │  FULL NAME                 EMAIL ADDRESS               │ │   │
+│  │  │  ┌──────────────────────┐  ┌─────────────────────────┐ │ │   │
+│  │  │  │ John Doe             │  │ john@company.com        │ │ │   │
+│  │  │  └──────────────────────┘  └─────────────────────────┘ │ │   │
+│  │  │                                                        │ │   │
+│  │  │  LOCATION                  PHONE NUMBER                │ │   │
+│  │  │  ┌──────────────────────┐  ┌─────────────────────────┐ │ │   │
+│  │  │  │ New York, NY         │  │ +1 (555) 000-0000       │ │ │   │
+│  │  │  └──────────────────────┘  └─────────────────────────┘ │ │   │
+│  │  │                                                        │ │   │
+│  │  │  DATE OF BIRTH             CHANGE PASSWORD             │ │   │
+│  │  │  ┌──────────────────────┐  ┌─────────────────────────┐ │ │   │
+│  │  │  │ YYYY-MM-DD           │  │ Leave blank to keep ... │ │ │   │
+│  │  │  └──────────────────────┘  └─────────────────────────┘ │ │   │
+│  │  └────────────────────────────────────────────────────────┘ │   │
+│  │                                                             │   │
+│  │                                           [Save Changes]    │   │
+│  │                                           btn-primary       │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌── Calendar Integration Card (Glass Card) ──────────────────┐   │
+│  │  Calendar Integration                                      │   │
+│  │  Sync approved leaves to your work calendar and block OOO.  │   │
+│  │                                                             │   │
+│  │  [ Connect Google Calendar ]   [ Connect Outlook Calendar ] │   │
+│  │  (red gradient bg)             (blue gradient bg)           │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 3.8c Audit Logs Page (/audit-logs)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  AUDIT LOGS PAGE — /audit-logs                                      │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌── Page Header ──────────────────────────────────────────────┐   │
+│  │  Audit Logs                                                  │   │
+│  │  Track and inspect all organization policy adjustments        │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌── Search / Filter Panel ────────────────────────────────────┐   │
+│  │                                                             │   │
+│  │  SEARCH ACTOR      ACTION TYPE          TARGET CATEGORY     │   │
+│  │  ┌──────────────┐  ┌─────────────────┐  ┌────────────────┐  │   │
+│  │  │ e.g. John... │  │ All Actions   ▼ │  │ All Categories▼│  │   │
+│  │  └──────────────┘  └─────────────────┘  └────────────────┘  │   │
+│  │                                                             │   │
+│  │                                    [Reset]   [Search Logs]  │   │
+│  │                                    secondary btn-primary    │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌── Audit Logs Data Table ────────────────────────────────────┐   │
+│  │  ┌────────────────────────────────────────────────────────┐ │   │
+│  │  │ TIMESTAMP     ACTOR          ACTION          TARGET    │ │   │
+│  │  │────────────────────────────────────────────────────────│ │   │
+│  │  │ Jun 22, 10:30 John Admin     leave_approve   leave_req │ │   │
+│  │  │               john@co.com                    ID: 42    │ │   │
+│  │  │               (127.0.0.1)                              │ │   │
+│  │  │────────────────────────────────────────────────────────│ │   │
+│  │  │ Jun 22, 09:15 System         accrual_run     employee  │ │   │
+│  │  │               (Cron Job)                     ID: 15    │ │   │
+│  │  └────────────────────────────────────────────────────────┘ │   │
+│  │                                                             │   │
+│  │  [View Details] (ghost button) per row opens JSON payload   │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
 ### 3.9 System Settings Page (/system-settings)
 
@@ -1023,6 +1094,168 @@
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
+### 3.12 Platform Owner Portal (Exclusive CRM)
+
+The Platform Owner Portal is a restricted area dedicated to system-wide administration. It is accessible only to users with the department field set to `"System"`.
+
+Default Platform Owner login:
+- **Email:** `owner@leaveflow.com`
+- **Password:** `Owner@123!`
+
+#### 3.12a Leads Management Page (/leads)
+
+Displays a CRM-like board tracking all B2B organization onboarding registrations.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  LEADS MANAGEMENT PAGE — /leads                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌── Page Header ──────────────────────────────────────────────┐   │
+│  │  Leads Management                                            │   │
+│  │  Review and manage platform leads and onboarding inquiries   │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌── Stats Cards Grid ─────────────────────────────────────────┐   │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────┐ │   │
+│  │  │ Total    │ │ Pending  │ │ Connected│ │Interested│ │ Rejected │   │
+│  │  │   12     │ │   3      │ │   2      │ │   4      │ │   1    │   │
+│  │  │ (indigo) │ │ (amber)  │ │ (blue)   │ │ (yellow) │ │ (red)  │   │
+│  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └────────┘ │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌── Filter Tabs ──────────────────────────────────────────────┐   │
+│  │  (All) [12]  (Pending) [3]  (Connected) [2]  (Interested) [4]   │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌── Leads Data Table ─────────────────────────────────────────┐   │
+│  │  ┌──────────────────────────────────────────────────────┐   │   │
+│  │  │ COMPANY    INDUSTRY   ADMIN EMAIL     STATUS    DATE │   │   │
+│  │  │──────────────────────────────────────────────────────│   │   │
+│  │  │ Acme Corp  Tech       admin@acme.com  [Pending  ▼] Jun 22│   │   │
+│  │  │ Globex     Bio        ceo@globex.co   [Connected▼] Jun 21│   │   │
+│  │  └──────────────────────────────────────────────────────┘   │   │
+│  │                                                             │   │
+│  │  Status Dropdown Option Selector:                           │   │
+│  │    Pending | Contacted | Connected | Interested |           │   │
+│  │    Not Interested | Approved | Rejected                    │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+#### 3.12b Lead Profile Detail Page (/leads/[id])
+
+Detailed CRM workspace for reviewing an individual lead, recording interaction notes, and performing one-click organization provisioning.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  LEAD DETAIL PAGE — /leads/[id]                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  [← Back to Leads]                                                  │
+│                                                                     │
+│  ┌── Header Panel ─────────────────────────────────────────────┐   │
+│  │  Acme Corp (Industry: Technology)            [Status: Connected▼]│
+│  │  Submitted: Jun 22, 2026                                         │
+│  └──────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌── Conditional Action Banner ────────────────────────────────┐   │
+│  │  🤝 Connected & Ready for Portal Provisioning                   │   │
+│  │  Click approve to automatically create the organization         │   │
+│  │  profile, register their admin email, and set leave balances.   │   │
+│  │                                                                 │   │
+│  │                     [Reject]  [Approve & Create Profile]        │   │
+│  │                     danger     btn-primary                      │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌── 2-Column Detail & CRM Notes Layout ────────────────────────┐   │
+│  │                                                              │   │
+│  │  ┌── Left: Client Info ───────┐ ┌── Right: CRM Notes ──────┐ │   │
+│  │  │ 👤 Contact Information     │ │ 📒 Internal Notes        │ │   │
+│  │  │   Name: Jane Doe           │ │   [✓ Saved]              │ │   │
+│  │  │   Email: jane@acme.com     │ │ ┌──────────────────────┐ │ │   │
+│  │  │   Phone: +1 555-0199       │ │ │ Textarea containing  │ │ │   │
+│  │  │                            │ │ │ history of phone     │ │ │   │
+│  │  │ 🏢 Company Details         │ │ │ calls, pricing talks,│ │ │   │
+│  │  │   Name: Acme Corp          │ │ │ and follow-ups.      │ │ │   │
+│  │  │   Size: 11-50 employees    │ │ └──────────────────────┘ │ │   │
+│  │  │   Industry: Technology     │ │ (Visible only to owners) │ │   │
+│  │  └────────────────────────────┘ └──────────────────────────┘ │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌── Lead Pipeline/Timeline Progress Tracker ───────────────────┐   │
+│  │  ⏳ Pending ─── 📞 Contacted ─── 🤝 Connected ─── 🌟 Interested  │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+#### 3.12c Contact Messages Page (/owner-contacts)
+
+Inbox for message submissions received through the public marketing Landing Page contact form.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  CONTACT MESSAGES PAGE — /owner-contacts                            │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌── Page Header ──────────────────────────────────────────────┐   │
+│  │  Contact Messages                                            │   │
+│  │  Review messages submitted through the public contact form   │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌── Message Card ─────────────────────────────────────────────┐   │
+│  │  John Inquiry                                 Jun 22, 2026   │   │
+│  │  john@inquiry.com                                            │   │
+│  │  ┌────────────────────────────────────────────────────────┐  │   │
+│  │  │ Hello, we are interested in moving our 250-employee     │  │   │
+│  │  │ organization to LeaveFlow. Do you support SAML SSO?    │  │   │
+│  │  └────────────────────────────────────────────────────────┘  │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+#### 3.12d Platform Owners Directory Page (/platform-owners)
+
+Registry of Platform Owners. Includes a modal to invite/create new Platform Owners.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  PLATFORM OWNERS DIRECTORY — /platform-owners                       │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌── Page Header ──────────────────────────────────────────────┐   │
+│  │  Platform Owners                                             │   │
+│  │  Manage administrators who have system-wide access           │   │
+│  │                                        [+ Add Platform Owner]│   │
+│  └──────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌── Owners Table ─────────────────────────────────────────────┐   │
+│  │  ┌────────────────────────────────────────────────────────┐  │   │
+│  │  │ NAME                 EMAIL                 STATUS      │  │   │
+│  │  │────────────────────────────────────────────────────────│  │   │
+│  │  │ System Owner (You)   owner@leaveflow.com   ● active    │  │   │
+│  │  │ Alex Mercer          alex@leaveflow.com    ● active    │  │   │
+│  │  └────────────────────────────────────────────────────────┘  │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌── Add Owner Modal ──────────────────────────────────────────┐   │
+│  │  Add Platform Owner                           [✕]            │   │
+│  │  ────────────────────────────────────────────────────────    │   │
+│  │  FULL NAME                                                   │   │
+│  │  ┌────────────────────────────────────────────────────────┐  │   │
+│  │  │ Jane Doe                                               │  │   │
+│  │  └────────────────────────────────────────────────────────┐  │   │
+│  │  EMAIL ADDRESS                                               │   │
+│  │  ┌────────────────────────────────────────────────────────┐  │   │
+│  │  │ jane@leaveflow.com                                     │  │   │
+│  │  └────────────────────────────────────────────────────────┐  │   │
+│  │  ⚠️ Note: New owner is created with password: Owner@123!     │   │
+│  │                                                              │   │
+│  │                       [Cancel]  [Add Owner]                  │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
 ---
 
 ## 4. Sidebar Navigation (Role-Based)
@@ -1051,7 +1284,7 @@
 │  ┌── Admin Sidebar ────┐  ┌── Super Admin Sidebar ─┐               │
 │  │                      │  │                        │               │
 │  │  [L] LeaveFlow       │  │  [L] LeaveFlow         │               │
-│  │  ──── ADMIN ─────── │  │  ──── SUPER ADMIN ───  │               │
+│  │  ──── ADMIN ───────  │  │  ──── SUPER ADMIN ───  │               │
 │  │                      │  │                        │               │
 │  │  📊 Dashboard        │  │  📊 Dashboard          │               │
 │  │  👥 Employees        │  │  👥 Employees          │               │
@@ -1066,6 +1299,21 @@
 │  │     admin@co.com     │  │     sa@co.com           │               │
 │  │  [Sign Out]          │  │  [Sign Out]             │               │
 │  └──────────────────────┘  └────────────────────────┘               │
+│                                                                     │
+│  ┌── Platform Owner Sidebar ────────────────────────┐               │
+│  │                                                  │               │
+│  │  [L] LeaveFlow                                   │               │
+│  │  ──── PLATFORM OWNER ────                        │               │
+│  │                                                  │               │
+│  │  🎯 Leads                                        │               │
+│  │  📨 Contact Messages                             │               │
+│  │  👥 Platform Owners                              │               │
+│  │                                                  │               │
+│  │  ──────────────────────────────────────────────  │               │
+│  │  👤 Owner Name                                   │               │
+│  │     owner@leaveflow.com                          │               │
+│  │  [Sign Out]                                      │               │
+│  └──────────────────────────────────────────────────┘               │
 │                                                                     │
 │  Active State: accent-left-border + accent-glow bg + bold text      │
 │  Hover State: rgba(255,255,255,0.03) background                    │
@@ -1740,6 +1988,171 @@
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+## 12. End-to-End Role-Based Interaction Flows
+
+This section maps out the exact sequence of screens, clicks, input fields, backend triggers, and database outcomes for every role in the Leaveflow ecosystem.
+
+---
+
+### 12.1 Public Visitor / B2B Lead Flow
+
+#### Step 1: Landing Page Discovery
+* **Actor:** Public visitor (potential corporate client).
+* **Action:** Opens the landing page `/`.
+* **Flow:**
+  * Visitor reviews features, solutions, pricing, and contact sections.
+  * **Option A (Inquiry):** Visitor scrolls to the **Contact** form, fills in **First Name**, **Work Email**, and message, and clicks **Submit Request**.
+    * *Backend Trigger:* Calls `POST /api/contact`.
+    * *Database Outcome:* Saves a new record in the `contact_messages` table.
+    * *UI Response:* Button text changes to `Message Sent Successfully ✓`.
+  * **Option B (Onboarding Application):** Visitor clicks the **Get Started Now →** CTA button.
+    * *UI Response:* Opens the `LeadModal` overlay.
+
+#### Step 2: Onboarding Application Submission
+* **Actor:** Public visitor.
+* **Action:** Fills out the `LeadModal` form.
+* **Input Fields:**
+  * Company Name (`company_name`), Company Size dropdown (`company_size`), Admin Name (`admin_name`), Admin Email (`admin_email`), Admin Phone (`admin_phone`), Industry (`industry`), and Special Requirements (`special_requirements`).
+* **Interaction:** Visitor clicks **Get Started**.
+  * *Backend Trigger:* Calls `POST /api/onboarding/apply`.
+  * *Database Outcome:* Inserts a lead record into the `onboarding_applications` table with `status = "pending"`.
+  * *UI Response:* Displays a success checkmark modal stating: *"We've received your details. Our team will get back to you shortly."*
+
+---
+
+### 12.2 Platform Owner Flow (Exclusive CRM)
+
+#### Step 1: Login
+* **Actor:** Platform Owner (e.g. `owner@leaveflow.com`).
+* **Action:** Visits `/login`, enters email and password (`Owner@123!`), and clicks **Sign In**.
+  * *Backend Trigger:* Calls `POST /api/auth/login`. Returns JWT secure HttpOnly session cookie.
+  * *UI Response:* Frontend detects `department === 'System'` via `getProfile()` and redirects to `/leads`.
+  * *Sidebar Menu:* Rendered with `Leads` (🎯), `Contact Messages` (📨), and `Platform Owners` (👥) tabs.
+
+#### Step 2: Leads Pipeline Review
+* **Actor:** Platform Owner.
+* **Action:** Navigates the `/leads` page.
+  * *Flow:* Reviews counts in the status grid. Filters leads by clicking tabs (Pending, Contacted, Connected, Interested, Not Interested).
+  * *Interaction:* Clicks on a Lead's company name link.
+  * *UI Response:* Navigates to the Lead Details page `/leads/[id]`.
+
+#### Step 3: Interaction Tracking & Notes
+* **Actor:** Platform Owner.
+* **Action:** Reviews details and logs communication.
+  * *Flow:* Owner contacts the lead via phone or email. Updates status dropdown on `/leads/[id]` (e.g., to `contacted`, `connected`, or `interested`).
+  * *Interaction:* Types log details into the **Internal Notes** notepad textarea and clicks **Save Notes**.
+    * *Backend Trigger:* Calls `PATCH /api/onboarding/applications/[id]/notes` and `PATCH /api/onboarding/applications/[id]/status`.
+    * *Database Outcome:* Updates `status` and `internal_notes` in `onboarding_applications`.
+    * *UI Response:* Displays toast confirmation and tags notes as `✓ Saved`.
+
+#### Step 4: Workspace Provisioning & Approval
+* **Actor:** Platform Owner.
+* **Action:** Approves the onboarding application.
+  * *Precondition:* Lead status must be changed to `connected` or `interested` to activate the Action Banner.
+  * *Interaction:* Platform Owner clicks **Approve & Create Profile** inside the Onboarding Action Banner.
+  * *Confirmation Dialog:* Browser popup asks: *"Are you sure you want to approve? This will provision the workspace..."* Owner clicks **OK**.
+    * *Backend Trigger:* Calls `PUT /api/onboarding/applications/[id]/approve`.
+    * *Database Provisioning Sequence:*
+      1. Creates a new row in the `organizations` table.
+      2. Creates a super administrator employee account in the `employees` table mapped to the approved `admin_email`, assigning `role = "super_admin"`.
+      3. Automatically seeds the organization's settings with standard leave type allocations.
+      4. Initializes default `leave_balances` records for the new super administrator.
+      5. Updates lead status in `onboarding_applications` to `approved`.
+    * *UI Response:* The banner turns green with a checkmark, reading: *"Organization Portal Created. The tenant admin can now log in using the email..."*
+
+---
+
+### 12.3 Tenant Super Administrator Flow
+
+#### Step 1: Workspace Initialization
+* **Actor:** Tenant Superadmin (the company admin whose lead was approved).
+* **Action:** Logs in at `/login` using their admin email.
+  * *UI Response:* Redirected to `/dashboard` for the newly provisioned tenant.
+  * *Sidebar Menu:* Renders dashboard stats, employees list, settings, and standard request options.
+
+#### Step 2: Policy Customization
+* **Actor:** Tenant Superadmin.
+* **Action:** Navigates to `/system-settings` (⚙️).
+  * *Flow:* Inputs maximum allocations for Casual Leave (CL), Sick Leave (SL), and Earned Leave (EL/PL). Registers public holidays and custom approval hierarchies.
+  * *Interaction:* Clicks **Save Settings**.
+    * *Backend Trigger:* Calls `PUT /api/settings` and `/api/settings/leave-policies`.
+    * *Database Outcome:* Updates parameters in the `system_settings` and `leave_policies` tables.
+
+#### Step 3: Employee Registry
+* **Actor:** Tenant Superadmin.
+* **Action:** Navigates to `/employees` (👥) and clicks **+ Add Employee**.
+  * *Input Fields:* Full Name, Email, Password, Role (`employee` / `manager` / `admin`), Department, and direct Manager dropdown selection.
+  * *Interaction:* Clicks **Create Employee**.
+    * *Backend Trigger:* Calls `POST /api/employees`.
+    * *Database Outcome:* Adds employee under the tenant's `organization_id`, and automatically populates default allocations in `leave_balances`.
+    * *UI Response:* Closes modal and refreshes employees table.
+
+---
+
+### 12.4 Employee Leave Lifecycle Flow
+
+#### Step 1: Checking Quotas
+* **Actor:** Employee.
+* **Action:** Opens `/dashboard` (📊).
+  * *UI Response:* Reviews remaining balances shown in the **Leave Balances** card (e.g. *Casual: 12 Total, 0 Used, 12 Remaining*).
+
+#### Step 2: Leave Application
+* **Actor:** Employee.
+* **Action:** Navigates to `/apply-leave` (✏️).
+  * *Input Fields:* Selects Leave Type, picks Start and End dates via calendar inputs, and enters reason text.
+  * *Flow:* Frontend calculates duration (excluding public holidays and business days) and displays it in a badge (e.g. `Duration: 3 days`).
+  * *Interaction:* Clicks **Submit Leave Request**.
+    * *Frontend Validation:* Ensures dates are in the future, End >= Start, and the duration does not exceed the remaining category balance.
+    * *Backend Trigger:* Calls `POST /api/leaves`. Validates quotas, checks for overlapping requests, and creates request.
+    * *Database Outcome:* Adds a row in `leave_requests` with `status = "pending"`, and sends a notification.
+    * *UI Response:* Shows success toast, redirects to `/leave-history` within 1.5s.
+
+#### Step 3: History & Cancellation
+* **Actor:** Employee.
+* **Action:** Reviews `/leave-history` (📋).
+  * *Flow:* Reviews past applications in the data table.
+  * *Cancel Action:* If a request has a status of `pending`, the employee can click **Cancel**.
+    * *Backend Trigger:* Calls `PUT /api/leaves/[id]/cancel`.
+    * *Database Outcome:* Updates status to `cancelled` and restores balances.
+
+---
+
+### 12.5 Manager Review & Team Oversight Flow
+
+#### Step 1: Approval Alert
+* **Actor:** Manager.
+* **Action:** Opens the portal, seeing the pending approvals counter on the sidebar or `/dashboard`.
+  * *UI Response:* Navigates to `/pending-requests` (⏳).
+
+#### Step 2: Request Review
+* **Actor:** Manager.
+* **Action:** Identifies the employee's request row and selects an option:
+  * **Option A (Approval):** Clicks **Approve**.
+    * *UI Response:* Opens approval modal. Manager inputs optional comment and clicks **Yes, Approve**.
+      * *Backend Trigger:* Calls `PUT /api/leaves/[id]/approve`.
+      * *Database Outcome:* Updates `leave_requests.status` to `"approved"`, inserts approval log in `leave_approvals`, and sends notification.
+  * **Option B (Rejection):** Clicks **Reject**.
+    * *UI Response:* Opens rejection modal. Manager **must** enter a rejection reason (mandatory field validation) and clicks **Yes, Reject**.
+      * *Backend Trigger:* Calls `PUT /api/leaves/[id]/reject`.
+      * *Database Outcome:* Updates `leave_requests.status` to `"rejected"`, restores deducted days back to employee's `leave_balances`, logs reason, and sends notification.
+
+#### Step 3: Team Oversight
+* **Actor:** Manager.
+* **Action:** Opens `/team-overview` (👥) to review stats on who is currently out of office, preventing scheduling overlaps.
+
+---
+
+### 12.6 Conversational AI Chatbot Flow
+
+* **Actor:** Any authenticated portal user (Employee, Manager, Admin, Platform Owner).
+* **Action:** Clicks the chatbot floating icon in the bottom-right corner of any page.
+  * *UI Response:* Slides open the interactive chat drawer.
+* **Interaction:**
+  * User types: *"How many casual leaves do I have left?"* or *"What is our policy on maternity leave?"* and clicks send.
+  * *Backend Trigger:* Sends message context and session history to `POST /api/bot/chat`.
+  * *Gemini AI Processing:* LLM queries organization policy data, current user's leave balances, and public holidays, drafting a personalized reply.
+  * *Fallback Handler:* If Gemini API limits or network issues arise, the backend falls back to rule-based pattern matching (e.g., retrieving balance statistics via custom SQL).
+  * *UI Response:* Streams or displays the chatbot response in the drawer.
 
 ---
 
@@ -1748,3 +2161,4 @@
 > - [Low Level Design](06-LLD.md)  
 > - [User Flows](04-User-Flows.md)  
 > - [API Documentation](07-API-Documentation.md)
+

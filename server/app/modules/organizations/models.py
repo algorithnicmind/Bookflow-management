@@ -10,6 +10,8 @@ class Organization(Base):
     domain = Column(String(100), unique=True, index=True, nullable=True)
     plan_type = Column(String(20), default="starter", nullable=False) # starter, professional, enterprise
     is_active = Column(Boolean, default=True, nullable=False)
+    access_days = Column(Integer, default=30, nullable=True)
+    expires_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 class OnboardingApplication(Base):

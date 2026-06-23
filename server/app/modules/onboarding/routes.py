@@ -9,13 +9,13 @@ import asyncio
 from fastapi import APIRouter, Depends, status, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import func as sql_func
+from sqlalchemy import func as sql_func, delete
 from app.core.database import get_db
 from app.core.dependencies import RequireOwner
 from app.core.security import pwd_context
 from app.modules.organizations.models import Organization, OnboardingApplication
 from app.modules.employees.models import Employee
-from app.modules.leaves.models import LeaveBalance
+from app.modules.leaves.models import LeaveBalance, LeaveRequest
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 
@@ -129,6 +129,7 @@ async def list_applications(
                 "industry": app.industry,
                 "special_requirements": app.special_requirements,
                 "status": app.status,
+                "internal_notes": app.internal_notes,
                 "created_at": app.created_at.isoformat() if app.created_at else None,
             }
             for app in applications
@@ -195,6 +196,17 @@ async def get_application(
     if not application:
         raise HTTPException(status_code=404, detail="Application not found.")
 
+    expires_at = None
+    
+    # Check if they have an active organization to fetch expires_at
+    emp_result = await db.execute(select(Employee).where(Employee.email == application.admin_email))
+    admin_emp = emp_result.scalar_one_or_none()
+    if admin_emp:
+        org_result = await db.execute(select(Organization).where(Organization.id == admin_emp.organization_id))
+        org = org_result.scalar_one_or_none()
+        if org and org.expires_at:
+            expires_at = org.expires_at.isoformat()
+
     return {
         "id": application.id,
         "company_name": application.company_name,
@@ -207,6 +219,7 @@ async def get_application(
         "status": application.status,
         "internal_notes": application.internal_notes,
         "created_at": application.created_at.isoformat() if application.created_at else None,
+        "expires_at": expires_at,
     }
 
 
@@ -236,9 +249,16 @@ async def update_application_notes(
     return {"message": "Notes updated successfully.", "id": application.id}
 
 
+class ApproveApplicationRequest(BaseModel):
+    password: Optional[str] = None
+    access_days: Optional[int] = 30
+    internal_notes: Optional[str] = None
+
+
 @router.put("/applications/{application_id}/approve")
 async def approve_application(
     application_id: int,
+    body: Optional[ApproveApplicationRequest] = None,
     db: AsyncSession = Depends(get_db),
     current_user: Employee = Depends(RequireOwner),
 ):
@@ -253,40 +273,84 @@ async def approve_application(
     if not application:
         raise HTTPException(status_code=404, detail="Application not found.")
 
-    if application.status == "approved":
-        raise HTTPException(status_code=400, detail="Application is already approved.")
-
     if application.status == "rejected":
-        raise HTTPException(status_code=400, detail="Application was already rejected. Cannot approve a rejected application.")
+        raise HTTPException(status_code=400, detail="Application was already rejected. Cannot provision a rejected application.")
 
     if application.status == "not_interested":
-        raise HTTPException(status_code=400, detail="Cannot approve an application marked as 'not interested'. Update the status first.")
+        raise HTTPException(status_code=400, detail="Cannot provision an application marked as 'not interested'. Update the status first.")
 
-    # 2. Update application status
-    application.status = "approved"
+    # We do NOT set application.status = "approved". It remains whatever it is (e.g. connected).
+    
+    if body and body.internal_notes is not None:
+        application.internal_notes = body.internal_notes
 
-    # 3. Create Organization
+    from datetime import timedelta
+    access_days_val = 30
+    if body and body.access_days is not None:
+        access_days_val = body.access_days
+    expires_at_val = datetime.utcnow() + timedelta(days=access_days_val)
+
+    # UPSERT LOGIC: Check if admin employee already exists
+    emp_result = await db.execute(select(Employee).where(Employee.email == application.admin_email))
+    existing_admin = emp_result.scalar_one_or_none()
+
+    if existing_admin:
+        # Organization already exists, so update it
+        org_result = await db.execute(select(Organization).where(Organization.id == existing_admin.organization_id))
+        org = org_result.scalar_one_or_none()
+        
+        if org:
+            org.access_days = access_days_val
+            org.expires_at = expires_at_val
+            if body and body.password:
+                existing_admin.password_hash = await asyncio.to_thread(pwd_context.hash, body.password)
+                
+            await db.commit()
+            return {
+                "message": f"Tenant '{org.name}' configuration updated successfully.",
+                "organization": {"id": org.id, "name": org.name},
+                "admin": {"id": existing_admin.id, "email": existing_admin.email},
+            }
+
+    # If it does not exist, Create Organization
     domain = application.admin_email.split("@")[1] if "@" in application.admin_email else "unknown.com"
+    
+    access_days_val = 30
+    if body and body.access_days is not None:
+        access_days_val = body.access_days
+        
+    from datetime import timedelta
+    expires_at_val = datetime.utcnow() + timedelta(days=access_days_val)
+
     org = Organization(
         name=application.company_name,
         domain=domain,
         plan_type="enterprise",
         is_active=True,
+        access_days=access_days_val,
+        expires_at=expires_at_val,
     )
     db.add(org)
     await db.flush()  # flush to get org.id
 
     # 4. Create Employee (super_admin)
-    if not application.admin_password_hash:
+    password_hash = None
+    if body and body.password:
+        password_hash = await asyncio.to_thread(pwd_context.hash, body.password)
+    elif application.admin_password_hash:
+        password_hash = application.admin_password_hash
+        
+    if not password_hash:
         raise HTTPException(
             status_code=400,
-            detail="Cannot approve: applicant did not set a password during registration. Ask them to re-apply with a password."
+            detail="Cannot approve: no password set. Please provide a password in the request or ensure the lead has one."
         )
+
     admin_employee = Employee(
         organization_id=org.id,
         name=application.admin_name or "Admin User",
         email=application.admin_email,
-        password_hash=application.admin_password_hash,
+        password_hash=password_hash,
         role="super_admin",
         department="Management",
         gender="not_specified",
@@ -318,10 +382,42 @@ async def approve_application(
     await db.commit()
 
     return {
-        "message": f"Application approved. Organization '{org.name}' created.",
+        "message": f"Tenant '{org.name}' provisioned successfully.",
         "organization": {"id": org.id, "name": org.name},
         "admin": {"id": admin_employee.id, "email": admin_employee.email},
     }
+
+@router.delete("/applications/{application_id}/tenant")
+async def delete_tenant(
+    application_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(RequireOwner),
+):
+    """Completely delete an onboarding application and its associated Organization and Super Admin if provisioned."""
+    result = await db.execute(select(OnboardingApplication).where(OnboardingApplication.id == application_id))
+    app = result.scalar_one_or_none()
+    
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    # Check if an organization was provisioned
+    emp_result = await db.execute(select(Employee).where(Employee.email == app.admin_email))
+    admin_emp = emp_result.scalar_one_or_none()
+    
+    if admin_emp:
+            org_id = admin_emp.organization_id
+            
+            # Delete related data to maintain integrity
+            await db.execute(delete(LeaveRequest).where(LeaveRequest.organization_id == org_id))
+            await db.execute(delete(LeaveBalance).where(LeaveBalance.organization_id == org_id))
+            await db.execute(delete(Employee).where(Employee.organization_id == org_id))
+            await db.execute(delete(Organization).where(Organization.id == org_id))
+
+    # Delete the application itself
+    await db.execute(delete(OnboardingApplication).where(OnboardingApplication.id == application_id))
+    await db.commit()
+
+    return {"message": "Tenant and application successfully deleted."}
 
 
 @router.put("/applications/{application_id}/reject")

@@ -112,6 +112,7 @@ export const dashboardApi = {
 
 export const settingsApi = {
   update: (body) => request('/api/settings', { method: 'PUT', body }),
+  updateOrganizationName: (name) => request('/api/settings/organization-name', { method: 'PUT', body: { name } }),
   getHolidays: () => request('/api/settings/holidays'),
   createHoliday: (body) => request('/api/settings/holidays', { method: 'POST', body }),
   deleteHoliday: (id) => request(`/api/settings/holidays/${id}`, { method: 'DELETE' }),
@@ -159,8 +160,9 @@ export const onboardingApi = {
   get: (id) => request(`/api/onboarding/applications/${id}`),
   updateStatus: (id, status) => request(`/api/onboarding/applications/${id}/status`, { method: 'PATCH', body: { status } }),
   updateNotes: (id, notes) => request(`/api/onboarding/applications/${id}/notes`, { method: 'PATCH', body: { notes } }),
-  approve: (id) => request(`/api/onboarding/applications/${id}/approve`, { method: 'PUT', body: {} }),
+  approve: (id, body) => request(`/api/onboarding/applications/${id}/approve`, { method: 'PUT', body: body || {} }),
   reject: (id) => request(`/api/onboarding/applications/${id}/reject`, { method: 'PUT', body: {} }),
+  deleteTenant: (id) => request(`/api/onboarding/applications/${id}/tenant`, { method: 'DELETE' }),
 }
 
 export const integrationsApi = {
