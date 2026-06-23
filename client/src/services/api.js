@@ -156,8 +156,10 @@ export const contactApi = {
 export const onboardingApi = {
   apply: (body) => request('/api/onboarding/apply', { method: 'POST', body }),
   list: (params) => request('/api/onboarding/applications', { params }),
+  get: (id) => request(`/api/onboarding/applications/${id}`),
   updateStatus: (id, status) => request(`/api/onboarding/applications/${id}/status`, { method: 'PATCH', body: { status } }),
-  approve: (id) => request(`/api/onboarding/applications/${id}/approve`, { method: 'PUT', body: {} }), // Fix to send empty body or match endpoint
+  updateNotes: (id, notes) => request(`/api/onboarding/applications/${id}/notes`, { method: 'PATCH', body: { notes } }),
+  approve: (id) => request(`/api/onboarding/applications/${id}/approve`, { method: 'PUT', body: {} }),
   reject: (id) => request(`/api/onboarding/applications/${id}/reject`, { method: 'PUT', body: {} }),
 }
 

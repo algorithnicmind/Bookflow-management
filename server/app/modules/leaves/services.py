@@ -67,7 +67,11 @@ class LeaveService:
 
         # Fetch holidays
         from app.modules.settings.models import PublicHoliday
-        holiday_rows = await self.repo.db.execute(select(PublicHoliday.date).where(PublicHoliday.date >= request.start_date, PublicHoliday.date <= request.end_date))
+        holiday_rows = await self.repo.db.execute(select(PublicHoliday.date).where(
+            PublicHoliday.organization_id == self.repo.organization_id,
+            PublicHoliday.date >= request.start_date,
+            PublicHoliday.date <= request.end_date
+        ))
         holidays = [row[0] for row in holiday_rows.all()]
         
         requested_days = get_business_days(request.start_date, request.end_date)
@@ -264,10 +268,15 @@ class LeaveService:
         approver = await self._get_employee(manager_id)
 
         from app.modules.settings.models import ApprovalChain, ApprovalStep
-        chains_res = await self.repo.db.execute(select(ApprovalChain))
+        chains_res = await self.repo.db.execute(
+            select(ApprovalChain).where(ApprovalChain.organization_id == self.repo.organization_id)
+        )
         chains = chains_res.scalars().all()
-        steps_res = await self.repo.db.execute(select(ApprovalStep).order_by(ApprovalStep.step_order))
-        all_steps = steps_res.scalars().all()
+        chain_ids = [c.id for c in chains]
+        steps_res = await self.repo.db.execute(
+            select(ApprovalStep).where(ApprovalStep.chain_id.in_(chain_ids)).order_by(ApprovalStep.step_order)
+        ) if chain_ids else None
+        all_steps = steps_res.scalars().all() if steps_res else []
 
         chain_map = {c.department: c.id for c in chains}
         global_chain_id = chain_map.get(None)
@@ -335,10 +344,16 @@ class LeaveService:
         if leave.status != "pending":
             raise HTTPException(status_code=400, detail="Only pending leaves can be approved")
         from app.modules.settings.models import ApprovalChain, ApprovalStep
-        chain_res = await self.repo.db.execute(select(ApprovalChain).where(ApprovalChain.department == emp.department))
+        chain_res = await self.repo.db.execute(select(ApprovalChain).where(
+            ApprovalChain.organization_id == self.repo.organization_id,
+            ApprovalChain.department == emp.department
+        ))
         chain = chain_res.scalar_one_or_none()
         if not chain:
-            chain_res = await self.repo.db.execute(select(ApprovalChain).where(ApprovalChain.department == None))
+            chain_res = await self.repo.db.execute(select(ApprovalChain).where(
+                ApprovalChain.organization_id == self.repo.organization_id,
+                ApprovalChain.department == None
+            ))
             chain = chain_res.scalar_one_or_none()
 
         steps = []
@@ -448,10 +463,16 @@ class LeaveService:
         if leave.status != "pending":
             raise HTTPException(status_code=400, detail="Only pending leaves can be rejected")
         from app.modules.settings.models import ApprovalChain, ApprovalStep
-        chain_res = await self.repo.db.execute(select(ApprovalChain).where(ApprovalChain.department == emp.department))
+        chain_res = await self.repo.db.execute(select(ApprovalChain).where(
+            ApprovalChain.organization_id == self.repo.organization_id,
+            ApprovalChain.department == emp.department
+        ))
         chain = chain_res.scalar_one_or_none()
         if not chain:
-            chain_res = await self.repo.db.execute(select(ApprovalChain).where(ApprovalChain.department == None))
+            chain_res = await self.repo.db.execute(select(ApprovalChain).where(
+                ApprovalChain.organization_id == self.repo.organization_id,
+                ApprovalChain.department == None
+            ))
             chain = chain_res.scalar_one_or_none()
 
         steps = []

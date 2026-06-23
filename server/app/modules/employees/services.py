@@ -62,20 +62,25 @@ class EmployeeService:
         
         current_year = datetime.now().year
         
-        # Load defaults from global settings
-        from app.core.config import settings
+        # Load defaults from per-tenant SystemSetting (DB model, not config)
+        from sqlalchemy.future import select
+        from app.modules.settings.models import SystemSetting, LeavePolicy
+        settings_res = await self.repo.db.execute(
+            select(SystemSetting).where(SystemSetting.organization_id == self.repo.organization_id)
+        )
+        org_settings = settings_res.scalar_one_or_none()
         default_balances = {
-            "casual": settings.max_casual_leave,
-            "sick": settings.max_sick_leave,
-            "earned": settings.max_earned_leave,
-            "maternity": settings.max_maternity_leave,
-            "miscarriage": settings.max_miscarriage_leave
+            "casual": org_settings.max_casual_leave if org_settings else 12,
+            "sick": org_settings.max_sick_leave if org_settings else 12,
+            "earned": org_settings.max_earned_leave if org_settings else 18,
+            "maternity": org_settings.max_maternity_leave if org_settings else 182,
+            "miscarriage": org_settings.max_miscarriage_leave if org_settings else 42
         }
         
-        # Load custom policies
-        from sqlalchemy.future import select
-        from app.modules.settings.models import LeavePolicy
-        policies_res = await self.repo.db.execute(select(LeavePolicy))
+        # Load custom policies (filtered by organization)
+        policies_res = await self.repo.db.execute(
+            select(LeavePolicy).where(LeavePolicy.organization_id == self.repo.organization_id)
+        )
         policies = policies_res.scalars().all()
         
         # Apply policies (department-specific or role-specific overrides)

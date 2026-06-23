@@ -66,7 +66,12 @@ export default function PlatformOwnersPage() {
     setSubmitError(null)
     
     try {
-      const res = await systemOwnersApi.create(newOwner)
+      const res = await systemOwnersApi.create({
+        ...newOwner,
+        role: 'platform_owner',
+        department: 'System',
+        password: 'Owner@123!'
+      })
       showToast(res.message)
       setIsModalOpen(false)
       setNewOwner({ name: '', email: '' })

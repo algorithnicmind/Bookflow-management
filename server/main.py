@@ -15,6 +15,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from app.core.database import engine, Base
 from app.core.dependencies import limiter
+from app.core.config import settings
 
 # Import all models to ensure they are registered on Base.metadata
 from app.modules.organizations.models import Organization, OnboardingApplication
@@ -44,9 +45,10 @@ from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize DB (Creates tables automatically if they don't exist)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    # Initialize DB (Only auto-create tables in development; use Alembic migrations in production)
+    if settings.ENVIRONMENT == "development":
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
     
     from app.modules.leaves.cron import start_scheduler
     start_scheduler()

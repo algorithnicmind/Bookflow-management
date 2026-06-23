@@ -14,17 +14,7 @@ import { onboardingApi } from '@/services/api'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import AppleEmoji from '@/components/AppleEmoji'
-
-const STATUS_OPTIONS = [
-  { value: 'pending', label: 'Pending', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)', border: 'rgba(245, 158, 11, 0.35)' },
-  { value: 'contacted', label: 'Contacted', color: '#6366f1', bg: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.35)' },
-  { value: 'interested', label: 'Interested', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.35)' },
-  { value: 'not_interested', label: 'Not Interested', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)', border: 'rgba(239, 68, 68, 0.35)' },
-]
-
-function getStatusMeta(value) {
-  return STATUS_OPTIONS.find((s) => s.value === value) || STATUS_OPTIONS[0]
-}
+import { LEAD_STATUS_OPTIONS as STATUS_OPTIONS, getStatusMeta } from '@/lib/constants'
 
 export default function LeadsPage() {
   const { user } = useAuth()
@@ -33,7 +23,7 @@ export default function LeadsPage() {
   const statusParam = searchParams.get('status')
 
   const [applications, setApplications] = useState([])
-  const [counts, setCounts] = useState({ total: 0, pending: 0, contacted: 0, interested: 0, not_interested: 0 })
+  const [counts, setCounts] = useState({ total: 0, pending: 0, contacted: 0, connected: 0, interested: 0, not_interested: 0 })
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [activeFilter, setActiveFilter] = useState(statusParam || null)
@@ -105,6 +95,7 @@ export default function LeadsPage() {
     { key: null, label: 'All', count: counts.total },
     { key: 'pending', label: 'Pending', count: counts.pending },
     { key: 'contacted', label: 'Contacted', count: counts.contacted },
+    { key: 'connected', label: 'Connected', count: counts.connected },
     { key: 'interested', label: 'Interested', count: counts.interested },
     { key: 'not_interested', label: 'Not Interested', count: counts.not_interested },
   ]
@@ -149,6 +140,7 @@ export default function LeadsPage() {
           { label: 'Total', value: counts.total, emoji: '📋', color: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.25)' },
           { label: 'Pending', value: counts.pending, emoji: '⏳', color: 'rgba(245, 158, 11, 0.15)', border: 'rgba(245, 158, 11, 0.25)' },
           { label: 'Contacted', value: counts.contacted, emoji: '📞', color: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.25)' },
+          { label: 'Connected', value: counts.connected, emoji: '🤝', color: 'rgba(14, 165, 233, 0.15)', border: 'rgba(14, 165, 233, 0.25)' },
           { label: 'Interested', value: counts.interested, emoji: '🌟', color: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.25)' },
           { label: 'Not Interested', value: counts.not_interested, emoji: '❌', color: 'rgba(239, 68, 68, 0.15)', border: 'rgba(239, 68, 68, 0.25)' },
         ].map((stat) => (
@@ -285,7 +277,14 @@ export default function LeadsPage() {
                       onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                     >
                       <td style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
-                        <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{app.company_name}</div>
+                        <div
+                          style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--accent)', cursor: 'pointer', textDecoration: 'none' }}
+                          onClick={() => router.push(`/leads/${app.id}`)}
+                          onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                          onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+                        >
+                          {app.company_name}
+                        </div>
                         {app.special_requirements && (
                           <div style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginTop: 4, maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {app.special_requirements}

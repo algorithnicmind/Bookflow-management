@@ -7,6 +7,7 @@ and securely managing system owner accounts.
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
+import asyncio
 from app.core.database import get_db
 from app.core.dependencies import RoleChecker, get_current_user, RequireOwner
 from app.core.tenant import get_current_tenant
@@ -59,7 +60,8 @@ async def update_my_profile(
         if request.email is not None:
             current_user.email = request.email
         if request.password:
-            current_user.password_hash = pwd_context.hash(request.password)
+            hashed = await asyncio.to_thread(pwd_context.hash, request.password)
+            current_user.password_hash = hashed
         db.add(current_user)
         await db.commit()
         await db.refresh(current_user)
@@ -103,10 +105,11 @@ async def create_system_owner(
     if result.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Email already registered")
         
+    hashed_password = await asyncio.to_thread(pwd_context.hash, request.password)
     owner = PlatformOwner(
         name=request.name,
         email=request.email,
-        password_hash=pwd_context.hash("Owner@123!"),
+        password_hash=hashed_password,
         role="platform_owner",
         department="System",
         is_active=True
@@ -114,7 +117,7 @@ async def create_system_owner(
     db.add(owner)
     await db.commit()
     await db.refresh(owner)
-    return {"message": "Owner created successfully (Password: Owner@123!)", "owner": EmployeeResponse.model_validate(owner)}
+    return {"message": "Owner created successfully", "owner": EmployeeResponse.model_validate(owner)}
 
 @router.get("", response_model=dict)
 async def list_employees(

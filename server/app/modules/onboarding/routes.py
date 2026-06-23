@@ -5,6 +5,7 @@ Manages new organization signups. Platform Owners use this to review and approve
 which triggers the automatic creation of their tenant database schema and first admin account.
 """
 from datetime import datetime
+import asyncio
 from fastapi import APIRouter, Depends, status, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -55,7 +56,7 @@ async def submit_application(request: ApplicationRequest, db: AsyncSession = Dep
     # Create new application
     password_hash = None
     if request.admin_password:
-        password_hash = pwd_context.hash(request.admin_password)
+        password_hash = await asyncio.to_thread(pwd_context.hash, request.admin_password)
 
     new_app = OnboardingApplication(
         company_name=request.company_name,
@@ -97,7 +98,7 @@ async def list_applications(
     """List all onboarding applications, optionally filtered by status."""
     query = select(OnboardingApplication).order_by(OnboardingApplication.created_at.desc())
 
-    if status_filter and status_filter in ("pending", "contacted", "interested", "not_interested"):
+    if status_filter and status_filter in ("pending", "contacted", "connected", "interested", "not_interested"):
         query = query.where(OnboardingApplication.status == status_filter)
 
     result = await db.execute(query)
@@ -109,6 +110,7 @@ async def list_applications(
             sql_func.count(OnboardingApplication.id).label("total"),
             sql_func.count(OnboardingApplication.id).filter(OnboardingApplication.status == "pending").label("pending"),
             sql_func.count(OnboardingApplication.id).filter(OnboardingApplication.status == "contacted").label("contacted"),
+            sql_func.count(OnboardingApplication.id).filter(OnboardingApplication.status == "connected").label("connected"),
             sql_func.count(OnboardingApplication.id).filter(OnboardingApplication.status == "interested").label("interested"),
             sql_func.count(OnboardingApplication.id).filter(OnboardingApplication.status == "not_interested").label("not_interested"),
         )
@@ -135,13 +137,14 @@ async def list_applications(
             "total": counts.total,
             "pending": counts.pending,
             "contacted": counts.contacted,
+            "connected": counts.connected,
             "interested": counts.interested,
             "not_interested": counts.not_interested,
         },
     }
 
 
-VALID_LEAD_STATUSES = ["pending", "contacted", "interested", "not_interested"]
+VALID_LEAD_STATUSES = ["pending", "contacted", "connected", "interested", "not_interested"]
 
 
 class UpdateStatusRequest(BaseModel):
@@ -177,6 +180,62 @@ async def update_application_status(
     return {"message": f"Status updated to '{body.status}'.", "id": application.id, "status": body.status}
 
 
+@router.get("/applications/{application_id}")
+async def get_application(
+    application_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(RequireOwner),
+):
+    """Get a single onboarding application by ID (Platform Owner only)."""
+    result = await db.execute(
+        select(OnboardingApplication).where(OnboardingApplication.id == application_id)
+    )
+    application = result.scalar_one_or_none()
+
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found.")
+
+    return {
+        "id": application.id,
+        "company_name": application.company_name,
+        "company_size": application.company_size,
+        "admin_name": application.admin_name,
+        "admin_email": application.admin_email,
+        "admin_phone": application.admin_phone,
+        "industry": application.industry,
+        "special_requirements": application.special_requirements,
+        "status": application.status,
+        "internal_notes": application.internal_notes,
+        "created_at": application.created_at.isoformat() if application.created_at else None,
+    }
+
+
+class UpdateNotesRequest(BaseModel):
+    notes: str
+
+
+@router.patch("/applications/{application_id}/notes")
+async def update_application_notes(
+    application_id: int,
+    body: UpdateNotesRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(RequireOwner),
+):
+    """Update internal CRM notes for a lead (Platform Owner only)."""
+    result = await db.execute(
+        select(OnboardingApplication).where(OnboardingApplication.id == application_id)
+    )
+    application = result.scalar_one_or_none()
+
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found.")
+
+    application.internal_notes = body.notes
+    await db.commit()
+
+    return {"message": "Notes updated successfully.", "id": application.id}
+
+
 @router.put("/applications/{application_id}/approve")
 async def approve_application(
     application_id: int,
@@ -200,6 +259,9 @@ async def approve_application(
     if application.status == "rejected":
         raise HTTPException(status_code=400, detail="Application was already rejected. Cannot approve a rejected application.")
 
+    if application.status == "not_interested":
+        raise HTTPException(status_code=400, detail="Cannot approve an application marked as 'not interested'. Update the status first.")
+
     # 2. Update application status
     application.status = "approved"
 
@@ -215,11 +277,16 @@ async def approve_application(
     await db.flush()  # flush to get org.id
 
     # 4. Create Employee (super_admin)
+    if not application.admin_password_hash:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot approve: applicant did not set a password during registration. Ask them to re-apply with a password."
+        )
     admin_employee = Employee(
         organization_id=org.id,
-        name="Admin User",
+        name=application.admin_name or "Admin User",
         email=application.admin_email,
-        password_hash=application.admin_password_hash or pwd_context.hash("Welcome123!"),
+        password_hash=application.admin_password_hash,
         role="super_admin",
         department="Management",
         gender="not_specified",

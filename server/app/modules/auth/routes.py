@@ -55,7 +55,7 @@ async def oauth_login(request: OAuthRequest, response: Response, db: AsyncSessio
             key="access_token",
             value=access_token,
             httponly=True,
-            secure=True,
+            secure=settings.ENVIRONMENT != "development",
             samesite="lax",
             max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
         )
@@ -121,7 +121,7 @@ async def login_for_access_token(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=True,
+        secure=settings.ENVIRONMENT != "development",
         samesite="lax",
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
     )
@@ -141,12 +141,16 @@ async def login_for_access_token(
 import httpx
 from fastapi.responses import RedirectResponse
 import urllib.parse
+import os
+
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
+FRONTEND_URL = os.getenv("NEXT_PUBLIC_FRONTEND_URL", "http://localhost:3000")
 
 @router.get("/google/login")
 async def oauth_login():
     if not settings.GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=500, detail="Google Client ID is not configured.")
-    redirect_uri = "http://localhost:8000/api/auth/google/callback"
+    redirect_uri = f"{BACKEND_URL}/api/auth/google/callback"
     auth_url = (
         "https://accounts.google.com/o/oauth2/v2/auth?"
         f"client_id={settings.GOOGLE_CLIENT_ID}&"
@@ -158,7 +162,7 @@ async def oauth_login():
 
 @router.get("/google/callback")
 async def oauth_callback(code: str):
-    redirect_uri = "http://localhost:8000/api/auth/google/callback"
+    redirect_uri = f"{BACKEND_URL}/api/auth/google/callback"
     token_url = "https://oauth2.googleapis.com/token"
     async with httpx.AsyncClient() as client:
         resp = await client.post(token_url, data={
@@ -179,7 +183,7 @@ async def oauth_callback(code: str):
         raise HTTPException(status_code=400, detail="Could not retrieve email from Google")
 
     # Redirect to frontend with the email
-    frontend_url = f"http://localhost:3000/onboarding/oauth-callback?email={urllib.parse.quote(email)}&provider=google"
+    frontend_url = f"{FRONTEND_URL}/onboarding/oauth-callback?email={urllib.parse.quote(email)}&provider=google"
     return RedirectResponse(url=frontend_url)
 
 @router.post("/logout")
@@ -188,7 +192,7 @@ async def logout(response: Response):
     Logout Handler.
     Simply deletes the HttpOnly `access_token` cookie, terminating the user's session.
     """
-    response.delete_cookie(key="access_token", httponly=True, secure=True, samesite="lax")
+    response.delete_cookie(key="access_token", httponly=True, secure=settings.ENVIRONMENT != "development", samesite="lax")
     return {"message": "Logged out successfully"}
 
 @router.post("/register", response_model=dict, status_code=status.HTTP_201_CREATED)
