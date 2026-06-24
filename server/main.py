@@ -88,7 +88,7 @@ app = FastAPI(
 # Configure CORS (from TRD)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://leaveflow.com"], # Restrict to frontend domains
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "https://leaveflow.com"], # Restrict to frontend domains
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

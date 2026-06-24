@@ -34,12 +34,19 @@ from main import app
 
 # ─── Test Database (PostgreSQL) ───────────────────────────────────────
 
+from sqlalchemy.pool import NullPool
+
 TEST_DATABASE_URL = os.environ.get(
     "TEST_DATABASE_URL",
     settings.async_database_url
 )
 
-test_engine = create_async_engine(TEST_DATABASE_URL, echo=False)
+test_engine = create_async_engine(
+    TEST_DATABASE_URL, 
+    echo=False, 
+    poolclass=NullPool,
+    connect_args={"prepared_statement_cache_size": 0}
+)
 TestSessionLocal = async_sessionmaker(
     bind=test_engine,
     class_=AsyncSession,
@@ -58,13 +65,15 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
     Each test gets a completely clean database.
     """
     async with test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
-    async with TestSessionLocal() as session:
-        yield session
-
-    async with test_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+    try:
+        async with TestSessionLocal() as session:
+            yield session
+    finally:
+        async with test_engine.begin() as conn:
+            await conn.run_sync(Base.metadata.drop_all)
 
 
 # ─── FastAPI Test Client ──────────────────────────────────────────────
@@ -87,26 +96,10 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     app.dependency_overrides.clear()
 
 
-# ─── Test Organization ────────────────────────────────────────────────
-
-@pytest.fixture
-async def test_org(db_session: AsyncSession):
-    """Creates a test organization for multi-tenant isolation."""
-    org = Organization(
-        name="Test Corp",
-        domain="test.leaveflow.com",
-        plan_type="enterprise",
-        is_active=True,
-    )
-    db_session.add(org)
-    await db_session.flush()
-    return org
-
-
 # ─── User Factory ─────────────────────────────────────────────────────
 
 @pytest.fixture
-async def create_user(db_session: AsyncSession, test_org):
+def create_user(db_session: AsyncSession):
     """
     Factory fixture for creating test users with leave balances.
     All users are scoped to the test organization for tenant isolation.
@@ -124,8 +117,20 @@ async def create_user(db_session: AsyncSession, test_org):
         manager_id: int = None,
         is_active: bool = True,
     ) -> Employee:
+        from sqlalchemy.future import select
+        org = await db_session.scalar(select(Organization).limit(1))
+        if not org:
+            org = Organization(
+                name="Test Corp",
+                domain="test.leaveflow.com",
+                plan_type="enterprise",
+                is_active=True,
+            )
+            db_session.add(org)
+            await db_session.flush()
+
         employee = Employee(
-            organization_id=test_org.id,
+            organization_id=org.id,
             name=name,
             email=email,
             password_hash=pwd_context.hash(password),
@@ -145,7 +150,7 @@ async def create_user(db_session: AsyncSession, test_org):
             ("maternity", 182), ("miscarriage", 42),
         ]:
             balance = LeaveBalance(
-                organization_id=test_org.id,
+                organization_id=org.id,
                 employee_id=employee.id,
                 leave_type=leave_type,
                 total_days=days,

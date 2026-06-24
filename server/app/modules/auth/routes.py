@@ -9,9 +9,10 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, status, HTTPException, Response, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from app.core.database import get_db
 from app.core.config import settings
-from app.core.security import create_access_token
+from app.core.security import create_access_token, pwd_context
 from app.core.dependencies import RoleChecker
 from app.modules.employees.models import Employee
 from app.modules.auth.schemas import Token, AdminCreateRequest
@@ -23,6 +24,51 @@ from app.modules.organizations.models import Organization
 from app.core.dependencies import limiter
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+
+
+@router.get("/session")
+async def check_session(request: Request, db: AsyncSession = Depends(get_db)):
+    """
+    Lightweight session check endpoint.
+    Returns 200 with user data if logged in, or 200 with null if not.
+    Never returns 401, so the browser console stays clean.
+    """
+    from jose import jwt, JWTError
+    from app.modules.employees.models import PlatformOwner
+
+    token = request.cookies.get("access_token")
+    if not token:
+        return {"user": None}
+
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+        email = payload.get("sub")
+        if not email:
+            return {"user": None}
+    except JWTError:
+        return {"user": None}
+
+    result = await db.execute(select(Employee).where(Employee.email == email))
+    user = result.scalar_one_or_none()
+
+    if user is None:
+        po_res = await db.execute(select(PlatformOwner).where(PlatformOwner.email == email))
+        user = po_res.scalar_one_or_none()
+
+    if user is None or not user.is_active:
+        return {"user": None}
+
+    from app.modules.employees.schemas import EmployeeResponse
+    resp = EmployeeResponse.model_validate(user)
+
+    if user.organization_id:
+        try:
+            tenant = await get_current_tenant(user, db)
+            resp.organization_name = tenant.name
+        except Exception:
+            pass
+
+    return {"user": resp}
 
 class OAuthRequest(BaseModel):
     email: EmailStr

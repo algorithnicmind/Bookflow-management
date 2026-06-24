@@ -18,7 +18,8 @@ engine = create_async_engine(
     settings.async_database_url,
     echo=settings.ENVIRONMENT == "development",
     pool_pre_ping=True,
-    pool_recycle=300
+    pool_recycle=300,
+    connect_args={"prepared_statement_cache_size": 0}
 )
 
 # Async session factory
