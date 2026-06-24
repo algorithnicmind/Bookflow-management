@@ -14,13 +14,15 @@ import { motion } from 'framer-motion'
 import AppleEmoji from '@/components/AppleEmoji'
 import { contactApi, platformConfigApi } from '@/services/api'
 import LeadModal from '@/components/LeadModal'
-import OnboardingSection from '@/components/OnboardingSection'
+import OnboardingModal from '@/components/OnboardingModal'
 
 export default function LandingPage() {
   const router = useRouter()
   const { user, loading } = useAuth()
   const [mounted, setMounted] = useState(false)
   const [leadModalOpen, setLeadModalOpen] = useState(false)
+  const [onboardingModalOpen, setOnboardingModalOpen] = useState(false)
+  const [selectedPlan, setSelectedPlan] = useState('free_trial')
   const [platformConfig, setPlatformConfig] = useState({
     show_onboarding_section: true,
     onboarding_section_title: 'Get Started with LeaveFlow',
@@ -139,9 +141,6 @@ export default function LandingPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 32, color: '#a1a1aa', fontSize: '0.9rem', fontWeight: 600 }}>
           <a href="#features" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='#fff'} onMouseLeave={(e) => e.target.style.color='#a1a1aa'}>Features</a>
           <a href="#solutions" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='#fff'} onMouseLeave={(e) => e.target.style.color='#a1a1aa'}>Solutions</a>
-          {platformConfig.show_onboarding_section && (
-            <a href="#onboarding" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='#fff'} onMouseLeave={(e) => e.target.style.color='#a1a1aa'}>Get Started</a>
-          )}
           <a href="#contact" style={{ padding: '8px 18px', background: 'rgba(255,255,255,0.08)', borderRadius: 100, color: '#fff', textDecoration: 'none', transition: 'background 0.2s' }} onMouseEnter={(e) => e.target.style.background='rgba(255,255,255,0.12)'} onMouseLeave={(e) => e.target.style.background='rgba(255,255,255,0.08)'}>Contact</a>
           <a href="#pricing" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='#fff'} onMouseLeave={(e) => e.target.style.color='#a1a1aa'}>Pricing</a>
         </div>
@@ -222,14 +221,15 @@ export default function LandingPage() {
             lineHeight: 1.7,
             marginBottom: 48,
           }}>
-            LeaveFlow is the premium, enterprise-grade platform designed to bring peace of mind to your workforce. Request, approve, and track leaves effortlessly in one beautiful dashboard.
+            LeaveFlow is a complete multi-tenant leave management system built with Next.js and FastAPI. It empowers organizations with strict role-based access, custom multi-tier approval chains, real-time balance tracking, and an intelligent AI chatbot to handle all your HR policy queries in one beautiful dashboard.
           </motion.p>
 
           <motion.div variants={itemVariants} style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
             <button
               onClick={() => {
                 if (platformConfig.show_onboarding_section) {
-                  document.getElementById('onboarding').scrollIntoView({ behavior: 'smooth' })
+                  setSelectedPlan('professional')
+                  setOnboardingModalOpen(true)
                 } else {
                   setLeadModalOpen(true)
                 }
@@ -423,7 +423,8 @@ export default function LandingPage() {
               </ul>
               <button onClick={() => {
                 if (platformConfig.show_onboarding_section) {
-                  document.getElementById('onboarding').scrollIntoView({ behavior: 'smooth' })
+                  setSelectedPlan('free_trial')
+                  setOnboardingModalOpen(true)
                 } else {
                   setLeadModalOpen(true)
                 }
@@ -448,7 +449,8 @@ export default function LandingPage() {
               </ul>
               <button onClick={() => {
                 if (platformConfig.show_onboarding_section) {
-                  document.getElementById('onboarding').scrollIntoView({ behavior: 'smooth' })
+                  setSelectedPlan('professional')
+                  setOnboardingModalOpen(true)
                 } else {
                   setLeadModalOpen(true)
                 }
@@ -472,7 +474,8 @@ export default function LandingPage() {
               </ul>
               <button onClick={() => {
                 if (platformConfig.show_onboarding_section) {
-                  document.getElementById('onboarding').scrollIntoView({ behavior: 'smooth' })
+                  setSelectedPlan('enterprise')
+                  setOnboardingModalOpen(true)
                 } else {
                   document.getElementById('contact').scrollIntoView({ behavior: 'smooth' })
                 }
@@ -480,14 +483,6 @@ export default function LandingPage() {
             </motion.div>
           </div>
         </section>
-
-        {/* Onboarding Section (Optional - controlled by platform owner) */}
-        {platformConfig.show_onboarding_section && (
-          <OnboardingSection 
-            title={platformConfig.onboarding_section_title}
-            subtitle={platformConfig.onboarding_section_subtitle}
-          />
-        )}
 
         {/* Enterprise Contact Section */}
         <section id="contact" style={{ padding: '120px 24px', width: '100%', borderTop: '1px solid var(--border)', background: 'var(--bg-primary)', position: 'relative' }}>
@@ -661,6 +656,7 @@ export default function LandingPage() {
 
       </main>
       <LeadModal isOpen={leadModalOpen} onClose={() => setLeadModalOpen(false)} />
+      <OnboardingModal isOpen={onboardingModalOpen} onClose={() => setOnboardingModalOpen(false)} selectedPlan={selectedPlan} />
     </div>
   )
 }

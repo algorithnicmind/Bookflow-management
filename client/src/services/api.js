@@ -160,6 +160,7 @@ export const onboardingApi = {
   get: (id) => request(`/api/onboarding/applications/${id}`),
   updateStatus: (id, status) => request(`/api/onboarding/applications/${id}/status`, { method: 'PATCH', body: { status } }),
   updateNotes: (id, notes) => request(`/api/onboarding/applications/${id}/notes`, { method: 'PATCH', body: { notes } }),
+  updatePlan: (id, selected_plan) => request(`/api/onboarding/applications/${id}/plan`, { method: 'PATCH', body: { selected_plan } }),
   approve: (id, body) => request(`/api/onboarding/applications/${id}/approve`, { method: 'PUT', body: body || {} }),
   reject: (id) => request(`/api/onboarding/applications/${id}/reject`, { method: 'PUT', body: {} }),
   deleteTenant: (id) => request(`/api/onboarding/applications/${id}/tenant`, { method: 'DELETE' }),

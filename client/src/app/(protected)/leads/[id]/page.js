@@ -16,6 +16,18 @@ import Button from '@/components/ui/Button'
 import AppleEmoji from '@/components/AppleEmoji'
 import { LEAD_STATUS_OPTIONS as STATUS_OPTIONS, getStatusMeta } from '@/lib/constants'
 
+const PLAN_META = {
+  free_trial: { name: 'Free Trial', price: '$0/mo', color: '#a1a1aa', bg: 'rgba(161, 161, 161, 0.1)', border: 'rgba(161, 161, 161, 0.3)' },
+  professional: { name: 'Professional', price: '$5/user/mo', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)', border: 'rgba(16, 185, 129, 0.3)' },
+  enterprise: { name: 'Enterprise', price: 'Custom', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)', border: 'rgba(139, 92, 246, 0.3)' },
+}
+
+const PLAN_OPTIONS = [
+  { value: 'free_trial', label: 'Free Trial' },
+  { value: 'professional', label: 'Professional' },
+  { value: 'enterprise', label: 'Enterprise' },
+]
+
 export default function LeadProfilePage() {
   const { user } = useAuth()
   const router = useRouter()
@@ -28,6 +40,7 @@ export default function LeadProfilePage() {
   const [notes, setNotes] = useState('')
   const [isSavingNotes, setIsSavingNotes] = useState(false)
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
+  const [isUpdatingPlan, setIsUpdatingPlan] = useState(false)
   const [isApproving, setIsApproving] = useState(false)
   const [isRejecting, setIsRejecting] = useState(false)
   const [toast, setToast] = useState(null)
@@ -75,6 +88,19 @@ export default function LeadProfilePage() {
       showToast(err.message || 'Failed to update status.', 'error')
     } finally {
       setIsUpdatingStatus(false)
+    }
+  }
+
+  const handlePlanChange = async (newPlan) => {
+    setIsUpdatingPlan(true)
+    try {
+      await onboardingApi.updatePlan(leadId, newPlan)
+      setLead((prev) => ({ ...prev, selected_plan: newPlan }))
+      showToast(`Plan updated to "${PLAN_META[newPlan]?.name || newPlan}"`)
+    } catch (err) {
+      showToast(err.message || 'Failed to update plan.', 'error')
+    } finally {
+      setIsUpdatingPlan(false)
     }
   }
 
@@ -408,6 +434,85 @@ export default function LeadProfilePage() {
                   </div>
                 ))}
               </div>
+            </div>
+          </Card>
+
+          {/* Selected Plan Card */}
+          <Card>
+            <div style={{ padding: 28 }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10 }}>
+                <AppleEmoji char="💎" /> Selected Plan
+              </h3>
+
+              {(() => {
+                const currentPlan = PLAN_META[lead.selected_plan] || PLAN_META.free_trial
+                return (
+                  <div>
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16,
+                      padding: '14px 18px', borderRadius: 12,
+                      background: currentPlan.bg, border: `1px solid ${currentPlan.border}`,
+                    }}>
+                      <div style={{
+                        width: 36, height: 36, borderRadius: 8,
+                        background: currentPlan.color, color: '#000',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 800, fontSize: '0.8rem', flexShrink: 0,
+                      }}>
+                        {lead.selected_plan === 'free_trial' ? '0' : lead.selected_plan === 'professional' ? 'P' : 'E'}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '0.95rem', fontWeight: 700, color: currentPlan.color }}>{currentPlan.name}</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{currentPlan.price}</div>
+                      </div>
+                    </div>
+
+                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>
+                      Change Plan
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {PLAN_OPTIONS.map((opt) => {
+                        const meta = PLAN_META[opt.value]
+                        const isActive = lead.selected_plan === opt.value
+                        return (
+                          <button
+                            key={opt.value}
+                            onClick={() => handlePlanChange(opt.value)}
+                            disabled={isUpdatingPlan || isActive}
+                            style={{
+                              flex: 1, padding: '10px 8px', borderRadius: 8,
+                              background: isActive ? meta.bg : 'var(--bg-primary)',
+                              border: `1.5px solid ${isActive ? meta.border : 'var(--border)'}`,
+                              color: isActive ? meta.color : 'var(--text-muted)',
+                              fontSize: '0.8rem', fontWeight: isActive ? 700 : 500,
+                              cursor: isUpdatingPlan || isActive ? 'not-allowed' : 'pointer',
+                              transition: 'all 0.2s',
+                              opacity: isUpdatingPlan ? 0.6 : 1,
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isActive && !isUpdatingPlan) {
+                                e.currentTarget.style.borderColor = meta.border
+                                e.currentTarget.style.color = meta.color
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isActive && !isUpdatingPlan) {
+                                e.currentTarget.style.borderColor = 'var(--border)'
+                                e.currentTarget.style.color = 'var(--text-muted)'
+                              }
+                            }}
+                          >
+                            {opt.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                    <p style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: 10 }}>
+                      You can change the plan after discussing with the user during setup.
+                    </p>
+                  </div>
+                )
+              })()}
             </div>
           </Card>
 

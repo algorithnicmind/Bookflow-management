@@ -70,6 +70,15 @@ async def lifespan(app: FastAPI):
                 if not res.scalar():
                     print("Adding column expires_at to organizations...")
                     await conn.execute(text("ALTER TABLE organizations ADD COLUMN expires_at TIMESTAMP WITH TIME ZONE;"))
+
+                res = await conn.execute(text("""
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name='onboarding_applications' AND column_name='selected_plan';
+                """))
+                if not res.scalar():
+                    print("Adding column selected_plan to onboarding_applications...")
+                    await conn.execute(text("ALTER TABLE onboarding_applications ADD COLUMN selected_plan VARCHAR(50) DEFAULT 'free_trial';"))
             except Exception as e:
                 print(f"Migration error: {e}")
     

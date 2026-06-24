@@ -30,6 +30,7 @@ class ApplicationRequest(BaseModel):
     industry: str
     admin_password: Optional[str] = None
     special_requirements: str | None = None
+    selected_plan: Optional[str] = "free_trial"
 
 class ApplicationResponse(BaseModel):
     id: int
@@ -67,6 +68,7 @@ async def submit_application(request: ApplicationRequest, db: AsyncSession = Dep
         industry=request.industry,
         admin_password_hash=password_hash,
         special_requirements=request.special_requirements,
+        selected_plan=request.selected_plan or "free_trial",
         status="pending"
     )
     
@@ -81,6 +83,7 @@ async def submit_application(request: ApplicationRequest, db: AsyncSession = Dep
         "admin_email": new_app.admin_email,
         "admin_phone": new_app.admin_phone,
         "industry": new_app.industry,
+        "selected_plan": new_app.selected_plan,
         "status": new_app.status,
         "message": "Application submitted successfully. Our team will contact you shortly."
     }
@@ -137,6 +140,7 @@ async def list_applications(
                 "admin_phone": app.admin_phone,
                 "industry": app.industry,
                 "special_requirements": app.special_requirements,
+                "selected_plan": app.selected_plan or "free_trial",
                 "status": app.status,
                 "internal_notes": app.internal_notes,
                 "created_at": app.created_at.isoformat() if app.created_at else None,
@@ -221,6 +225,7 @@ async def get_application(
         "admin_phone": application.admin_phone,
         "industry": application.industry,
         "special_requirements": application.special_requirements,
+        "selected_plan": application.selected_plan or "free_trial",
         "status": application.status,
         "internal_notes": application.internal_notes,
         "created_at": application.created_at.isoformat() if application.created_at else None,
@@ -252,6 +257,42 @@ async def update_application_notes(
     await db.commit()
 
     return {"message": "Notes updated successfully.", "id": application.id}
+
+
+class UpdatePlanRequest(BaseModel):
+    selected_plan: str
+
+
+VALID_PLAN_OPTIONS = ["free_trial", "professional", "enterprise"]
+
+
+@router.patch("/applications/{application_id}/plan")
+async def update_application_plan(
+    application_id: int,
+    body: UpdatePlanRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(RequireOwner),
+):
+    """Update the selected plan for an onboarding application (Platform Owner only)."""
+
+    if body.selected_plan not in VALID_PLAN_OPTIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid plan '{body.selected_plan}'. Must be one of: {', '.join(VALID_PLAN_OPTIONS)}",
+        )
+
+    result = await db.execute(
+        select(OnboardingApplication).where(OnboardingApplication.id == application_id)
+    )
+    application = result.scalar_one_or_none()
+
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found.")
+
+    application.selected_plan = body.selected_plan
+    await db.commit()
+
+    return {"message": f"Plan updated to '{body.selected_plan}'.", "id": application.id, "selected_plan": application.selected_plan}
 
 
 class ApproveApplicationRequest(BaseModel):

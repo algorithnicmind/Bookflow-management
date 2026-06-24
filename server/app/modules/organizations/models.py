@@ -27,6 +27,7 @@ class OnboardingApplication(Base):
     industry = Column(String(100), nullable=True)
     admin_password_hash = Column(String(255), nullable=True)
     special_requirements = Column(Text, nullable=True)
+    selected_plan = Column(String(50), default="free_trial", nullable=True)
     status = Column(String(50), default="pending", nullable=False) # pending, contacted, interested_custom_pricing, not_interested
     internal_notes = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
