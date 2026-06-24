@@ -106,7 +106,7 @@ async def test_org(db_session: AsyncSession):
 # ─── User Factory ─────────────────────────────────────────────────────
 
 @pytest.fixture
-def create_user(db_session: AsyncSession, test_org):
+async def create_user(db_session: AsyncSession, test_org):
     """
     Factory fixture for creating test users with leave balances.
     All users are scoped to the test organization for tenant isolation.

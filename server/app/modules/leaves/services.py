@@ -74,7 +74,7 @@ class LeaveService:
         ))
         holidays = [row[0] for row in holiday_rows.all()]
         
-        requested_days = get_business_days(request.start_date, request.end_date)
+        requested_days = get_calendar_days(request.start_date, request.end_date)
         # Exclude holidays
         requested_days -= len(holidays)
         
@@ -184,7 +184,7 @@ class LeaveService:
                 "status": leave.status,
                 "created_at": leave.created_at,
                 "updated_at": leave.updated_at,
-                "days": get_business_days(leave.start_date, leave.end_date),
+                "days": get_calendar_days(leave.start_date, leave.end_date),
                 "approval": approval_data
             })
         return responses
@@ -215,7 +215,7 @@ class LeaveService:
 
         # Restore balance
         if leave.leave_type != "unpaid":
-            requested_days = get_business_days(leave.start_date, leave.end_date)
+            requested_days = get_calendar_days(leave.start_date, leave.end_date)
 
             current_year = leave.start_date.year
             balance = await self.repo.get_balance(leave.employee_id, leave.leave_type, current_year)
@@ -240,7 +240,7 @@ class LeaveService:
 
         employee = await self._get_employee(leave.employee_id)
         if employee and employee.manager_id:
-            days = get_business_days(leave.start_date, leave.end_date)
+            days = get_calendar_days(leave.start_date, leave.end_date)
 
             await self._create_notification(
                 user_id=employee.manager_id,
@@ -316,7 +316,7 @@ class LeaveService:
                 "status": leave.status,
                 "created_at": leave.created_at,
                 "updated_at": leave.updated_at,
-                "days": get_business_days(leave.start_date, leave.end_date),
+                "days": get_calendar_days(leave.start_date, leave.end_date),
 
                 "employee_name": emp.name,
                 "department": emp.department,
@@ -410,7 +410,7 @@ class LeaveService:
         await self.repo.commit()
 
         if is_final:
-            days = get_business_days(leave.start_date, leave.end_date)
+            days = get_calendar_days(leave.start_date, leave.end_date)
 
             await self._create_notification(
                 user_id=leave.employee_id,
@@ -507,7 +507,7 @@ class LeaveService:
 
         # Restore balance
         if leave.leave_type != "unpaid":
-            requested_days = get_business_days(leave.start_date, leave.end_date)
+            requested_days = get_calendar_days(leave.start_date, leave.end_date)
 
             current_year = leave.start_date.year
             balance = await self.repo.get_balance(leave.employee_id, leave.leave_type, current_year)
@@ -531,7 +531,7 @@ class LeaveService:
 
         await self.repo.commit()
 
-        days = get_business_days(leave.start_date, leave.end_date)
+        days = get_calendar_days(leave.start_date, leave.end_date)
 
         await self._create_notification(
             user_id=leave.employee_id,
