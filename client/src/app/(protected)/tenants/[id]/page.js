@@ -258,8 +258,8 @@ export default function SetupProfilePage() {
                   {application.admin_role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </span>
               ) : (
-                <span style={{ display: 'inline-block', background: 'rgba(100, 116, 139, 0.1)', color: 'var(--text-muted)', border: '1px solid rgba(100, 116, 139, 0.2)', padding: '4px 10px', borderRadius: 6, fontSize: '0.85rem', fontWeight: 700 }}>
-                  Pending
+                <span style={{ display: 'inline-block', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '4px 10px', borderRadius: 6, fontSize: '0.85rem', fontWeight: 700 }}>
+                  Super Admin
                 </span>
               )}
             </div>

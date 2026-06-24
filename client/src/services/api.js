@@ -47,7 +47,7 @@ export async function request(endpoint, options = {}) {
 
   const response = await fetch(url, config)
 
-  if (response.status === 401) {
+  if (response.status === 401 && !url.includes('/api/auth/login')) {
     localStorage.removeItem('user')
     throw new Error('Session expired. Please log in again.')
   }
@@ -186,5 +186,10 @@ export const integrationsApi = {
 export const systemOwnersApi = {
   list: () => request('/api/employees/system-owners'),
   create: (body) => request('/api/employees/system-owners', { method: 'POST', body }),
+}
+
+export const platformConfigApi = {
+  get: () => request('/api/settings/platform-config'),
+  update: (body) => request('/api/settings/platform-config', { method: 'PUT', body }),
 }
 

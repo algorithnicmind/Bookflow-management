@@ -12,20 +12,35 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { motion } from 'framer-motion'
 import AppleEmoji from '@/components/AppleEmoji'
-import { contactApi } from '@/services/api'
+import { contactApi, platformConfigApi } from '@/services/api'
 import LeadModal from '@/components/LeadModal'
+import OnboardingSection from '@/components/OnboardingSection'
 
 export default function LandingPage() {
   const router = useRouter()
   const { user, loading } = useAuth()
   const [mounted, setMounted] = useState(false)
   const [leadModalOpen, setLeadModalOpen] = useState(false)
+  const [platformConfig, setPlatformConfig] = useState({
+    show_onboarding_section: true,
+    onboarding_section_title: 'Get Started with LeaveFlow',
+    onboarding_section_subtitle: 'Fill out the form below and our team will set up your organization.'
+  })
   
   const [contactData, setContactData] = useState({ name: '', email: '', message: '' })
   const [contactStatus, setContactStatus] = useState(null)
 
   useEffect(() => {
     setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    // Fetch platform config (public endpoint)
+    platformConfigApi.get()
+      .then(config => setPlatformConfig(config))
+      .catch(() => {
+        // Use defaults if fetch fails
+      })
   }, [])
 
   useEffect(() => {
@@ -124,6 +139,9 @@ export default function LandingPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 32, color: '#a1a1aa', fontSize: '0.9rem', fontWeight: 600 }}>
           <a href="#features" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='#fff'} onMouseLeave={(e) => e.target.style.color='#a1a1aa'}>Features</a>
           <a href="#solutions" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='#fff'} onMouseLeave={(e) => e.target.style.color='#a1a1aa'}>Solutions</a>
+          {platformConfig.show_onboarding_section && (
+            <a href="#onboarding" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='#fff'} onMouseLeave={(e) => e.target.style.color='#a1a1aa'}>Get Started</a>
+          )}
           <a href="#contact" style={{ padding: '8px 18px', background: 'rgba(255,255,255,0.08)', borderRadius: 100, color: '#fff', textDecoration: 'none', transition: 'background 0.2s' }} onMouseEnter={(e) => e.target.style.background='rgba(255,255,255,0.12)'} onMouseLeave={(e) => e.target.style.background='rgba(255,255,255,0.08)'}>Contact</a>
           <a href="#pricing" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='#fff'} onMouseLeave={(e) => e.target.style.color='#a1a1aa'}>Pricing</a>
         </div>
@@ -209,7 +227,13 @@ export default function LandingPage() {
 
           <motion.div variants={itemVariants} style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
             <button
-              onClick={() => setLeadModalOpen(true)}
+              onClick={() => {
+                if (platformConfig.show_onboarding_section) {
+                  document.getElementById('onboarding').scrollIntoView({ behavior: 'smooth' })
+                } else {
+                  setLeadModalOpen(true)
+                }
+              }}
               style={{
                 padding: '16px 36px',
                 borderRadius: '100px',
@@ -397,7 +421,13 @@ export default function LandingPage() {
                 <li style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ color: 'var(--accent)' }}>✓</span> Basic leave tracking</li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ color: 'var(--accent)' }}>✓</span> Standard support</li>
               </ul>
-              <button onClick={() => setLeadModalOpen(true)} style={{ width: '100%', padding: '12px', borderRadius: 8, background: 'transparent', border: '1px solid var(--border)', color: '#fff', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => {e.target.style.borderColor='var(--accent)'; e.target.style.color='var(--accent)'}} onMouseLeave={e => {e.target.style.borderColor='var(--border)'; e.target.style.color='#fff'}}>Start Free Trial</button>
+              <button onClick={() => {
+                if (platformConfig.show_onboarding_section) {
+                  document.getElementById('onboarding').scrollIntoView({ behavior: 'smooth' })
+                } else {
+                  setLeadModalOpen(true)
+                }
+              }} style={{ width: '100%', padding: '12px', borderRadius: 8, background: 'transparent', border: '1px solid var(--border)', color: '#fff', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => {e.target.style.borderColor='var(--accent)'; e.target.style.color='var(--accent)'}} onMouseLeave={e => {e.target.style.borderColor='var(--border)'; e.target.style.color='#fff'}}>Start Free Trial</button>
             </motion.div>
 
             {/* Paid Plan */}
@@ -416,7 +446,13 @@ export default function LandingPage() {
                 <li style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ color: 'var(--accent)' }}>✓</span> Advanced reporting & analytics</li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ color: 'var(--accent)' }}>✓</span> Slack & Teams integrations</li>
               </ul>
-              <button onClick={() => setLeadModalOpen(true)} style={{ width: '100%', padding: '12px', borderRadius: 8, background: 'var(--accent)', border: 'none', color: '#000', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 14px var(--accent-glow)' }} onMouseEnter={e => e.target.style.background='var(--accent-hover)'} onMouseLeave={e => e.target.style.background='var(--accent)'}>Get Started</button>
+              <button onClick={() => {
+                if (platformConfig.show_onboarding_section) {
+                  document.getElementById('onboarding').scrollIntoView({ behavior: 'smooth' })
+                } else {
+                  setLeadModalOpen(true)
+                }
+              }} style={{ width: '100%', padding: '12px', borderRadius: 8, background: 'var(--accent)', border: 'none', color: '#000', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 14px var(--accent-glow)' }} onMouseEnter={e => e.target.style.background='var(--accent-hover)'} onMouseLeave={e => e.target.style.background='var(--accent)'}>Get Started</button>
             </motion.div>
 
             {/* Customization */}
@@ -434,10 +470,24 @@ export default function LandingPage() {
                 <li style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ color: 'var(--accent)' }}>✓</span> Dedicated Success Manager</li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ color: 'var(--accent)' }}>✓</span> Custom integrations</li>
               </ul>
-              <button onClick={() => document.getElementById('contact').scrollIntoView({ behavior: 'smooth' })} style={{ width: '100%', padding: '12px', borderRadius: 8, background: 'transparent', border: '1px solid var(--border)', color: '#fff', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => {e.target.style.borderColor='var(--accent)'; e.target.style.color='var(--accent)'}} onMouseLeave={e => {e.target.style.borderColor='var(--border)'; e.target.style.color='#fff'}}>Contact Sales</button>
+              <button onClick={() => {
+                if (platformConfig.show_onboarding_section) {
+                  document.getElementById('onboarding').scrollIntoView({ behavior: 'smooth' })
+                } else {
+                  document.getElementById('contact').scrollIntoView({ behavior: 'smooth' })
+                }
+              }} style={{ width: '100%', padding: '12px', borderRadius: 8, background: 'transparent', border: '1px solid var(--border)', color: '#fff', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => {e.target.style.borderColor='var(--accent)'; e.target.style.color='var(--accent)'}} onMouseLeave={e => {e.target.style.borderColor='var(--border)'; e.target.style.color='#fff'}}>Contact Sales</button>
             </motion.div>
           </div>
         </section>
+
+        {/* Onboarding Section (Optional - controlled by platform owner) */}
+        {platformConfig.show_onboarding_section && (
+          <OnboardingSection 
+            title={platformConfig.onboarding_section_title}
+            subtitle={platformConfig.onboarding_section_subtitle}
+          />
+        )}
 
         {/* Enterprise Contact Section */}
         <section id="contact" style={{ padding: '120px 24px', width: '100%', borderTop: '1px solid var(--border)', background: 'var(--bg-primary)', position: 'relative' }}>

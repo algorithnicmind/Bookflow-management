@@ -35,15 +35,25 @@ async def get_my_profile(
     """
     Get Current User Profile.
     Used by the frontend to hydrate the AuthContext state on mount.
+    Handles both regular Employees (who belong to an org) and PlatformOwners (who don't).
     """
-    from app.modules.employees.repositories import EmployeeRepository
-    repo = EmployeeRepository(db, current_user.organization_id or 0)
-    emp = await repo.get_by_id(current_user.id)
+    from app.modules.employees.models import PlatformOwner
     
-    tenant = await get_current_tenant(current_user, db)
-    resp = EmployeeResponse.model_validate(emp or current_user)
-    if tenant:
-        resp.organization_name = tenant.name
+    resp = EmployeeResponse.model_validate(current_user)
+    
+    # Only resolve tenant for users who actually belong to an organization
+    if current_user.organization_id:
+        from app.modules.employees.repositories import EmployeeRepository
+        repo = EmployeeRepository(db, current_user.organization_id)
+        emp = await repo.get_by_id(current_user.id)
+        if emp:
+            resp = EmployeeResponse.model_validate(emp)
+        
+        try:
+            tenant = await get_current_tenant(current_user, db)
+            resp.organization_name = tenant.name
+        except Exception:
+            pass  # Organization might be inactive or missing — still return the profile
         
     return resp
 

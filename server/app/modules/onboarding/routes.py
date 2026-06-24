@@ -318,8 +318,9 @@ async def approve_application(
                 "admin": {"id": existing_admin.id, "email": existing_admin.email},
             }
 
-    # If it does not exist, Create Organization
-    domain = application.admin_email.split("@")[1] if "@" in application.admin_email else "unknown.com"
+    import re
+    base_slug = re.sub(r'[^a-z0-9]+', '-', application.company_name.lower()).strip('-')
+    domain = f"{base_slug}-{application.id}.leaveflow.com"
     
     access_days_val = 30
     if body and body.access_days is not None:

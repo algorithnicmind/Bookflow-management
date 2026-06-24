@@ -167,11 +167,31 @@ export default function TenantsPage() {
                     </td>
                     <td style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
                       {app.admin_role ? (
-                        <Badge variant={app.admin_role === 'super_admin' ? 'success' : 'primary'}>
+                        <span style={{
+                          display: 'inline-block',
+                          background: app.admin_role === 'super_admin' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(79, 70, 229, 0.1)',
+                          color: app.admin_role === 'super_admin' ? '#10b981' : '#4f46e5',
+                          border: app.admin_role === 'super_admin' ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(79, 70, 229, 0.2)',
+                          padding: '4px 10px',
+                          borderRadius: 6,
+                          fontSize: '0.85rem',
+                          fontWeight: 700
+                        }}>
                           {app.admin_role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                        </Badge>
+                        </span>
                       ) : (
-                        <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Pending</span>
+                        <span style={{
+                          display: 'inline-block',
+                          background: 'rgba(16, 185, 129, 0.1)',
+                          color: '#10b981',
+                          border: '1px solid rgba(16, 185, 129, 0.2)',
+                          padding: '4px 10px',
+                          borderRadius: 6,
+                          fontSize: '0.85rem',
+                          fontWeight: 700
+                        }}>
+                          Super Admin
+                        </span>
                       )}
                     </td>
                     <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>

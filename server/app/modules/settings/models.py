@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float, DateTime
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float, DateTime, Boolean
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.core.database import Base
@@ -63,3 +63,12 @@ class AccrualLog(Base):
     run_date = Column(DateTime(timezone=True), default=func.now())
     status = Column(String(20), nullable=False) # 'success', 'failed'
     details = Column(String(255), nullable=True)
+
+class PlatformConfig(Base):
+    __tablename__ = "platform_config"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    show_onboarding_section = Column(Boolean, default=True, nullable=False)
+    onboarding_section_title = Column(String(200), default="Get Started with LeaveFlow", nullable=True)
+    onboarding_section_subtitle = Column(String(500), default="Fill out the form below and our team will set up your organization.", nullable=True)
+    updated_at = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())

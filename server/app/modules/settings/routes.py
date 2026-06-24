@@ -6,13 +6,16 @@ Restricted to system administrators.
 """
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from typing import List, Optional
 from app.core.database import get_db
-from app.core.dependencies import RoleChecker
+from app.core.dependencies import RoleChecker, RequireOwner
 from app.core.tenant import get_current_tenant
 from app.modules.organizations.models import Organization
 from app.modules.employees.models import Employee
 from app.modules.settings.schemas import SettingsUpdate
 from app.modules.settings.services import SettingsService
+from app.modules.settings.models import PlatformConfig
 
 router = APIRouter(prefix="/api/settings", tags=["settings"])
 
@@ -162,3 +165,64 @@ async def trigger_monthly_accrual(current_user: Employee = Depends(RoleChecker([
 async def trigger_yearly_carry_forward(current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))):
     await run_yearly_carry_forward()
     return {"message": "Yearly carry forward job completed"}
+
+
+# ─── Platform Config Endpoints (Public read, Owner write) ──────────────────
+
+@router.get("/platform-config")
+async def get_platform_config(db: AsyncSession = Depends(get_db)):
+    """Public endpoint to get platform configuration (e.g., whether onboarding section is visible)."""
+    result = await db.execute(select(PlatformConfig).limit(1))
+    config = result.scalar_one_or_none()
+    
+    if not config:
+        # Create default config
+        config = PlatformConfig(show_onboarding_section=True)
+        db.add(config)
+        await db.commit()
+        await db.refresh(config)
+    
+    return {
+        "show_onboarding_section": config.show_onboarding_section,
+        "onboarding_section_title": config.onboarding_section_title,
+        "onboarding_section_subtitle": config.onboarding_section_subtitle,
+    }
+
+
+class PlatformConfigUpdate(BaseModel):
+    show_onboarding_section: Optional[bool] = None
+    onboarding_section_title: Optional[str] = None
+    onboarding_section_subtitle: Optional[str] = None
+
+
+@router.put("/platform-config")
+async def update_platform_config(
+    request: PlatformConfigUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(RequireOwner),
+):
+    """Update platform configuration (Platform Owner only)."""
+    result = await db.execute(select(PlatformConfig).limit(1))
+    config = result.scalar_one_or_none()
+    
+    if not config:
+        config = PlatformConfig(show_onboarding_section=True)
+        db.add(config)
+        await db.flush()
+    
+    if request.show_onboarding_section is not None:
+        config.show_onboarding_section = request.show_onboarding_section
+    if request.onboarding_section_title is not None:
+        config.onboarding_section_title = request.onboarding_section_title
+    if request.onboarding_section_subtitle is not None:
+        config.onboarding_section_subtitle = request.onboarding_section_subtitle
+    
+    await db.commit()
+    await db.refresh(config)
+    
+    return {
+        "message": "Platform config updated successfully",
+        "show_onboarding_section": config.show_onboarding_section,
+        "onboarding_section_title": config.onboarding_section_title,
+        "onboarding_section_subtitle": config.onboarding_section_subtitle,
+    }
