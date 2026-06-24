@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey
 from sqlalchemy.sql import func
 from app.core.database import Base
 
@@ -18,6 +18,7 @@ class OnboardingApplication(Base):
     __tablename__ = "onboarding_applications"
 
     id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="SET NULL"), nullable=True)
     company_name = Column(String(100), nullable=False)
     company_size = Column(String(50), nullable=False)
     admin_email = Column(String(255), nullable=False, index=True)

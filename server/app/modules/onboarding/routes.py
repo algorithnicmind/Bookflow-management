@@ -96,13 +96,21 @@ async def list_applications(
     current_user: Employee = Depends(RequireOwner),
 ):
     """List all onboarding applications, optionally filtered by status."""
-    query = select(OnboardingApplication).order_by(OnboardingApplication.created_at.desc())
+    query = (
+        select(OnboardingApplication, Employee)
+        .outerjoin(
+            Employee,
+            (Employee.organization_id == OnboardingApplication.organization_id) &
+            (Employee.email == OnboardingApplication.admin_email)
+        )
+        .order_by(OnboardingApplication.created_at.desc())
+    )
 
     if status_filter and status_filter in ("pending", "contacted", "connected", "interested", "not_interested"):
         query = query.where(OnboardingApplication.status == status_filter)
 
     result = await db.execute(query)
-    applications = result.scalars().all()
+    applications = result.all()
 
     # Compute summary counts
     count_result = await db.execute(
@@ -123,8 +131,9 @@ async def list_applications(
                 "id": app.id,
                 "company_name": app.company_name,
                 "company_size": app.company_size,
-                "admin_name": app.admin_name,
-                "admin_email": app.admin_email,
+                "admin_name": emp.name if emp else app.admin_name,
+                "admin_email": emp.email if emp else app.admin_email,
+                "admin_role": emp.role if emp else None,
                 "admin_phone": app.admin_phone,
                 "industry": app.industry,
                 "special_requirements": app.special_requirements,
@@ -132,7 +141,7 @@ async def list_applications(
                 "internal_notes": app.internal_notes,
                 "created_at": app.created_at.isoformat() if app.created_at else None,
             }
-            for app in applications
+            for app, emp in applications
         ],
         "counts": {
             "total": counts.total,
@@ -189,30 +198,26 @@ async def get_application(
 ):
     """Get a single onboarding application by ID (Platform Owner only)."""
     result = await db.execute(
-        select(OnboardingApplication).where(OnboardingApplication.id == application_id)
+        select(OnboardingApplication, Employee, Organization)
+        .outerjoin(Organization, Organization.id == OnboardingApplication.organization_id)
+        .outerjoin(Employee, (Employee.organization_id == OnboardingApplication.organization_id) & (Employee.email == OnboardingApplication.admin_email))
+        .where(OnboardingApplication.id == application_id)
     )
-    application = result.scalar_one_or_none()
+    row = result.first()
 
-    if not application:
+    if not row:
         raise HTTPException(status_code=404, detail="Application not found.")
 
-    expires_at = None
-    
-    # Check if they have an active organization to fetch expires_at
-    emp_result = await db.execute(select(Employee).where(Employee.email == application.admin_email))
-    admin_emp = emp_result.scalar_one_or_none()
-    if admin_emp:
-        org_result = await db.execute(select(Organization).where(Organization.id == admin_emp.organization_id))
-        org = org_result.scalar_one_or_none()
-        if org and org.expires_at:
-            expires_at = org.expires_at.isoformat()
+    application, emp, org = row
+    expires_at = org.expires_at.isoformat() if org and org.expires_at else None
 
     return {
         "id": application.id,
         "company_name": application.company_name,
         "company_size": application.company_size,
-        "admin_name": application.admin_name,
-        "admin_email": application.admin_email,
+        "admin_name": emp.name if emp else application.admin_name,
+        "admin_email": emp.email if emp else application.admin_email,
+        "admin_role": emp.role if emp else None,
         "admin_phone": application.admin_phone,
         "industry": application.industry,
         "special_requirements": application.special_requirements,
@@ -302,6 +307,7 @@ async def approve_application(
         if org:
             org.access_days = access_days_val
             org.expires_at = expires_at_val
+            application.organization_id = org.id
             if body and body.password:
                 existing_admin.password_hash = await asyncio.to_thread(pwd_context.hash, body.password)
                 
@@ -332,6 +338,7 @@ async def approve_application(
     )
     db.add(org)
     await db.flush()  # flush to get org.id
+    application.organization_id = org.id
 
     # 4. Create Employee (super_admin)
     password_hash = None

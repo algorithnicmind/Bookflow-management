@@ -128,7 +128,7 @@ export default function TenantsPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
-                  {['Company', 'Industry', 'Admin Email', 'Admin Name', 'Phone', 'Setup Profile'].map((col) => (
+                  {['Company', 'Industry', 'Super Admin Email', 'Super Admin Name', 'Role', 'Phone', 'Setup Profile'].map((col) => (
                     <th key={col} style={{
                       textAlign: 'left',
                       padding: '12px 16px',
@@ -164,6 +164,15 @@ export default function TenantsPage() {
                     </td>
                     <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
                       {app.admin_name || '—'}
+                    </td>
+                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
+                      {app.admin_role ? (
+                        <Badge variant={app.admin_role === 'super_admin' ? 'success' : 'primary'}>
+                          {app.admin_role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        </Badge>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Pending</span>
+                      )}
                     </td>
                     <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
                       {app.admin_phone || '—'}

@@ -242,13 +242,26 @@ export default function SetupProfilePage() {
             </div>
             
             <div>
-              <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, marginBottom: 4 }}>Admin Name</span>
+              <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, marginBottom: 4 }}>Super Admin Name</span>
               <span style={{ color: 'var(--text-main)', fontSize: '1.1rem', fontWeight: 500 }}>{application.admin_name}</span>
             </div>
             
             <div>
-              <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, marginBottom: 4 }}>Admin Email</span>
+              <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, marginBottom: 4 }}>Super Admin Email</span>
               <span style={{ color: 'var(--text-main)', fontSize: '1.1rem', fontWeight: 500 }}>{application.admin_email}</span>
+            </div>
+            
+            <div>
+              <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, marginBottom: 4 }}>Role</span>
+              {application.admin_role ? (
+                <span style={{ display: 'inline-block', background: application.admin_role === 'super_admin' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(79, 70, 229, 0.1)', color: application.admin_role === 'super_admin' ? '#10b981' : '#4f46e5', border: application.admin_role === 'super_admin' ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(79, 70, 229, 0.2)', padding: '4px 10px', borderRadius: 6, fontSize: '0.85rem', fontWeight: 700 }}>
+                  {application.admin_role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </span>
+              ) : (
+                <span style={{ display: 'inline-block', background: 'rgba(100, 116, 139, 0.1)', color: 'var(--text-muted)', border: '1px solid rgba(100, 116, 139, 0.2)', padding: '4px 10px', borderRadius: 6, fontSize: '0.85rem', fontWeight: 700 }}>
+                  Pending
+                </span>
+              )}
             </div>
             
             <div>
@@ -299,7 +312,8 @@ export default function SetupProfilePage() {
               {/* Billing & Access Configuration */}
               <div>
                 <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '16px' }}>Access & Configuration</h3>
-                
+
+
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 24 }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: 8, color: 'var(--text-secondary)' }}>
