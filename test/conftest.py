@@ -25,6 +25,7 @@ from app.core.database import Base, get_db
 from app.core.security import pwd_context, create_access_token
 from app.core.config import settings
 from app.modules.employees.models import Employee
+from app.modules.organizations.models import Organization
 from app.modules.leaves.models import LeaveRequest, LeaveBalance, LeaveApproval
 from app.modules.settings.models import SystemSetting
 from app.modules.notifications.models import Notification
@@ -86,12 +87,29 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     app.dependency_overrides.clear()
 
 
+# ─── Test Organization ────────────────────────────────────────────────
+
+@pytest.fixture
+async def test_org(db_session: AsyncSession):
+    """Creates a test organization for multi-tenant isolation."""
+    org = Organization(
+        name="Test Corp",
+        domain="test.leaveflow.com",
+        plan_type="enterprise",
+        is_active=True,
+    )
+    db_session.add(org)
+    await db_session.flush()
+    return org
+
+
 # ─── User Factory ─────────────────────────────────────────────────────
 
 @pytest.fixture
-def create_user(db_session: AsyncSession):
+def create_user(db_session: AsyncSession, test_org):
     """
     Factory fixture for creating test users with leave balances.
+    All users are scoped to the test organization for tenant isolation.
 
     Usage:
         user = await create_user(email="test@co.com", role="employee")
@@ -107,6 +125,7 @@ def create_user(db_session: AsyncSession):
         is_active: bool = True,
     ) -> Employee:
         employee = Employee(
+            organization_id=test_org.id,
             name=name,
             email=email,
             password_hash=pwd_context.hash(password),
@@ -126,6 +145,7 @@ def create_user(db_session: AsyncSession):
             ("maternity", 182), ("miscarriage", 42),
         ]:
             balance = LeaveBalance(
+                organization_id=test_org.id,
                 employee_id=employee.id,
                 leave_type=leave_type,
                 total_days=days,

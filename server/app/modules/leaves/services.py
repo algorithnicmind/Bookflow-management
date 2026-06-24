@@ -2,7 +2,7 @@ from datetime import datetime
 from fastapi import HTTPException
 from typing import List, Optional
 from sqlalchemy.future import select
-from app.core.utils import get_business_days
+from app.core.utils import get_calendar_days
 from app.modules.leaves.repositories import LeaveRepository
 from app.modules.leaves.models import LeaveRequest, LeaveApproval
 from app.modules.leaves.schemas import LeaveApplication, LeaveApprovalAction
@@ -125,7 +125,7 @@ class LeaveService:
 
         employee = await self._get_employee(employee_id)
         if employee and employee.manager_id:
-            days = get_business_days(request.start_date, request.end_date)
+            days = get_calendar_days(request.start_date, request.end_date)
 
             await self._create_notification(
                 user_id=employee.manager_id,

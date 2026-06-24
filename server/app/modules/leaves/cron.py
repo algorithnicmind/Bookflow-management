@@ -35,9 +35,10 @@ async def run_monthly_accruals():
             emp_balance_map[b.employee_id][b.leave_type] = b
             
         for emp in employees:
-            # Find applicable policy
+            # Find applicable policy — must match the employee's organization
             for p in policies:
-                if (p.department is None or p.department == emp.department) and \
+                if p.organization_id == emp.organization_id and \
+                   (p.department is None or p.department == emp.department) and \
                    (p.role is None or p.role == emp.role):
                     
                     b = emp_balance_map.get(emp.id, {}).get(p.leave_type)
@@ -72,10 +73,20 @@ async def run_yearly_carry_forward():
                 emp_balance_map[b.employee_id] = {}
             emp_balance_map[b.employee_id][b.leave_type] = b
             
+        # Also fetch existing current-year balances to avoid duplicate inserts
+        existing_res = await db.execute(select(LeaveBalance).where(LeaveBalance.year == current_year))
+        existing_balances = existing_res.scalars().all()
+        existing_keys = {(b.employee_id, b.leave_type, b.organization_id) for b in existing_balances}
+        
         for emp in employees:
             for p in policies:
-                if (p.department is None or p.department == emp.department) and \
+                if p.organization_id == emp.organization_id and \
+                   (p.department is None or p.department == emp.department) and \
                    (p.role is None or p.role == emp.role):
+                    
+                    # Skip if balance already exists for this year
+                    if (emp.id, p.leave_type, emp.organization_id) in existing_keys:
+                        continue
                     
                     prev_b = emp_balance_map.get(emp.id, {}).get(p.leave_type)
                     carry_forward = 0
@@ -84,8 +95,9 @@ async def run_yearly_carry_forward():
                         if remaining > 0:
                             carry_forward = min(remaining, p.max_carry_forward)
                             
-                    # Create new balance for current year
+                    # Create new balance for current year with organization_id
                     new_balance = LeaveBalance(
+                        organization_id=emp.organization_id,
                         employee_id=emp.id,
                         leave_type=p.leave_type,
                         total_days=p.base_days + carry_forward,

@@ -5,7 +5,7 @@ from sqlalchemy import func
 from app.modules.employees.models import Employee
 from app.modules.leaves.models import LeaveRequest, LeaveBalance
 from app.modules.dashboard.schemas import DashboardResponse, DashboardStats
-from app.core.utils import get_business_days
+from app.core.utils import get_calendar_days
 
 class DashboardService:
     def __init__(self, db: AsyncSession):
@@ -41,7 +41,7 @@ class DashboardService:
                 "status": leave.status,
                 "created_at": leave.created_at,
                 "updated_at": leave.updated_at,
-                "days": get_business_days(leave.start_date, leave.end_date)
+                "days": get_calendar_days(leave.start_date, leave.end_date)
             })
             
         current_year = datetime.today().year
