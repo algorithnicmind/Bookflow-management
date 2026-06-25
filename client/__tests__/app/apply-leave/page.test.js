@@ -8,9 +8,19 @@ jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
 }))
 
+jest.mock('react-hot-toast', () => ({
+  toast: {
+    success: jest.fn(),
+    error: jest.fn(),
+  },
+}))
+
 jest.mock('@/services/api', () => ({
   leavesApi: {
     apply: jest.fn(),
+  },
+  settingsApi: {
+    getHolidays: jest.fn().mockResolvedValue([]),
   },
 }))
 

@@ -10,13 +10,22 @@ from app.modules.employees.services import EmployeeService
 from app.modules.employees.schemas import EmployeeCreate, EmployeeUpdate
 
 
+from unittest.mock import AsyncMock, MagicMock, patch
+
 def _make_service(repo_mock=None):
     """Create an EmployeeService with a mocked repository."""
     if repo_mock is None:
         repo_mock = AsyncMock()
+        repo_mock.organization_id = 1
         repo_mock.db = AsyncMock()
         repo_mock.db.add = MagicMock()
     return EmployeeService(repo_mock), repo_mock
+    
+# We must mock AuditLogService.log_action for all tests in this module
+# to prevent "coroutine was never awaited" warnings.
+pytestmark = pytest.mark.filterwarnings("ignore::RuntimeWarning")
+patcher = patch("app.modules.employees.services.AuditLogService.log_action", new_callable=AsyncMock)
+patcher.start()
 
 
 # ─── list_employees ───────────────────────────────────────────────────

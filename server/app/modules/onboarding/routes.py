@@ -100,12 +100,7 @@ async def list_applications(
 ):
     """List all onboarding applications, optionally filtered by status."""
     query = (
-        select(OnboardingApplication, Employee)
-        .outerjoin(
-            Employee,
-            (Employee.organization_id == OnboardingApplication.organization_id) &
-            (Employee.email == OnboardingApplication.super_admin_email)
-        )
+        select(OnboardingApplication)
         .order_by(OnboardingApplication.created_at.desc())
     )
 
@@ -113,7 +108,7 @@ async def list_applications(
         query = query.where(OnboardingApplication.status == status_filter)
 
     result = await db.execute(query)
-    applications = result.all()
+    applications = result.scalars().all()
 
     # Compute summary counts
     count_result = await db.execute(
@@ -134,18 +129,18 @@ async def list_applications(
                 "id": app.id,
                 "company_name": app.company_name,
                 "company_size": app.company_size,
-                "super_admin_name": emp.name if emp else app.super_admin_name,
-                "super_admin_email": emp.email if emp else app.super_admin_email,
-                "admin_role": emp.role if emp else None,
+                "super_admin_name": app.super_admin_name,
+                "super_admin_email": app.super_admin_email,
                 "super_admin_phone": app.super_admin_phone,
                 "industry": app.industry,
                 "special_requirements": app.special_requirements,
                 "selected_plan": app.selected_plan or "free_trial",
                 "status": app.status,
                 "internal_notes": app.internal_notes,
+                "organization_id": app.organization_id,
                 "created_at": app.created_at.isoformat() if app.created_at else None,
             }
-            for app, emp in applications
+            for app in applications
         ],
         "counts": {
             "total": counts.total,
@@ -201,18 +196,28 @@ async def get_application(
     current_user: Employee = Depends(RequireOwner),
 ):
     """Get a single onboarding application by ID (Platform Owner only)."""
-    result = await db.execute(
-        select(OnboardingApplication, Employee, Organization)
-        .outerjoin(Organization, Organization.id == OnboardingApplication.organization_id)
-        .outerjoin(Employee, (Employee.organization_id == OnboardingApplication.organization_id) & (Employee.email == OnboardingApplication.super_admin_email))
+    app_result = await db.execute(
+        select(OnboardingApplication)
         .where(OnboardingApplication.id == application_id)
     )
-    row = result.first()
+    application = app_result.scalar_one_or_none()
 
-    if not row:
+    if not application:
         raise HTTPException(status_code=404, detail="Application not found.")
 
-    application, emp, org = row
+    org = None
+    if application.organization_id:
+        org_result = await db.execute(
+            select(Organization).where(Organization.id == application.organization_id)
+        )
+        org = org_result.scalar_one_or_none()
+
+    emp = None
+    emp_result = await db.execute(
+        select(Employee).where(Employee.email == application.super_admin_email)
+    )
+    emp = emp_result.scalar_one_or_none()
+
     expires_at = org.expires_at.isoformat() if org and org.expires_at else None
 
     return {
@@ -228,8 +233,126 @@ async def get_application(
         "selected_plan": application.selected_plan or "free_trial",
         "status": application.status,
         "internal_notes": application.internal_notes,
+        "organization_id": application.organization_id,
         "created_at": application.created_at.isoformat() if application.created_at else None,
         "expires_at": expires_at,
+    }
+
+
+@router.get("/applications/{application_id}/dashboard")
+async def get_application_dashboard(
+    application_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(RequireOwner),
+):
+    """Get the full hierarchical structure and recent activity for a tenant."""
+    from app.modules.audit.models import AuditLog
+    
+    # 1. Fetch Application & Organization
+    app_result = await db.execute(
+        select(OnboardingApplication)
+        .where(OnboardingApplication.id == application_id)
+    )
+    app_record = app_result.scalar_one_or_none()
+    if not app_record:
+        raise HTTPException(status_code=404, detail="Application not found.")
+
+    org = None
+    if app_record.organization_id:
+        org_result = await db.execute(
+            select(Organization).where(Organization.id == app_record.organization_id)
+        )
+        org = org_result.scalar_one_or_none()
+
+    if not org:
+        raise HTTPException(status_code=400, detail="Tenant has not been provisioned yet.")
+        
+    # 2. Fetch all Employees
+    emp_result = await db.execute(select(Employee).where(Employee.organization_id == org.id))
+    employees = emp_result.scalars().all()
+    
+    # 3. Build Hierarchy & Stats
+    total_super_admins = 0
+    total_admins = 0
+    total_managers = 0
+    total_employees = 0
+    
+    # Map employees by id
+    emp_dict = {}
+    for e in employees:
+        emp_dict[e.id] = {
+            "id": e.id,
+            "name": e.name,
+            "email": e.email,
+            "role": e.role,
+            "department": e.department,
+            "last_login": e.last_login.isoformat() if e.last_login else None,
+            "profile_image_url": e.profile_image_url,
+            "reports": []
+        }
+        if e.role == 'super_admin':
+            total_super_admins += 1
+        elif e.role == 'admin':
+            total_admins += 1
+        elif e.role == 'manager':
+            total_managers += 1
+        else:
+            total_employees += 1
+
+    # Attach reports
+    hierarchy = []
+    unassigned = []
+    for e in employees:
+        node = emp_dict[e.id]
+        if e.manager_id and e.manager_id in emp_dict:
+            emp_dict[e.manager_id]["reports"].append(node)
+        elif e.role in ('admin', 'super_admin'):
+            hierarchy.append(node)
+        else:
+            unassigned.append(node)
+            
+    # Add unassigned to hierarchy if they don't have a manager and aren't admins
+    if unassigned:
+        hierarchy.append({
+            "id": "unassigned",
+            "name": "Unassigned / Direct Reports",
+            "role": "group",
+            "reports": unassigned
+        })
+
+    # 4. Fetch Recent Audit Logs
+    audit_result = await db.execute(
+        select(AuditLog)
+        .join(Employee, Employee.id == AuditLog.actor_id)
+        .where(Employee.organization_id == org.id)
+        .order_by(AuditLog.created_at.desc())
+        .limit(50)
+    )
+    audit_logs = audit_result.scalars().all()
+    
+    recent_activity = [
+        {
+            "id": log.id,
+            "actor_name": log.actor_name,
+            "action": log.action,
+            "target_type": log.target_type,
+            "details": log.details,
+            "created_at": log.created_at.isoformat()
+        }
+        for log in audit_logs
+    ]
+
+    return {
+        "tenant_id": org.id,
+        "company_name": org.name,
+        "stats": {
+            "total_employees": total_employees,
+            "total_managers": total_managers,
+            "total_super_admins": total_super_admins,
+            "total_admins": total_admins,
+        },
+        "hierarchy": hierarchy,
+        "recent_activity": recent_activity
     }
 
 

@@ -109,7 +109,19 @@ async def list_system_owners(
         select(PlatformOwner).where(PlatformOwner.is_active == True)
     )
     owners = result.scalars().all()
-    return {"owners": [EmployeeResponse.model_validate(o) for o in owners]}
+    return {"owners": [
+        {
+            "id": o.id,
+            "name": o.name,
+            "email": o.email,
+            "role": o.role,
+            "department": o.department,
+            "is_active": o.is_active,
+            "created_at": o.created_at.isoformat() if o.created_at else None,
+            "profile_image_url": o.profile_image_url,
+        }
+        for o in owners
+    ]}
 
 @router.post("/system-owners", status_code=status.HTTP_201_CREATED)
 async def create_system_owner(

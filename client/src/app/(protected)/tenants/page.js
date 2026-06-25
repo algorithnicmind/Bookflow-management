@@ -153,8 +153,14 @@ export default function TenantsPage() {
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
                     <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-main)' }}>
-                      {app.company_name}
-                      <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: 2 }}>{app.company_size} employees</span>
+                      <span 
+                        style={{ cursor: 'pointer', color: 'var(--accent)', textDecoration: 'underline' }}
+                        onClick={() => router.push(`/tenants/${app.id}/dashboard`)}
+                        title="View Tenant Dashboard"
+                      >
+                        {app.company_name}
+                      </span>
+                      <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: 4 }}>{app.company_size} employees</span>
                     </td>
                     <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
                       {app.industry || '—'}

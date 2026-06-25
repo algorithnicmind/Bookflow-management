@@ -56,7 +56,6 @@ export default function Sidebar({ isOpen, onClose }) {
       { href: '/owner-contacts', label: 'Contact Messages', icon: <AppleEmoji char="📨" /> },
       { href: '/platform-owners', label: 'Platform Owners', icon: <AppleEmoji char="👥" /> },
       { href: '/tenants', label: 'Tenant', icon: <AppleEmoji char="🏢" /> },
-      { href: '/platform-settings', label: 'Platform Settings', icon: <AppleEmoji char="⚙️" /> },
     ]
   }
 
@@ -157,14 +156,22 @@ export default function Sidebar({ isOpen, onClose }) {
 
         <div style={{ padding: '16px', borderTop: '1px solid var(--border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '0.75rem', fontWeight: 700, color: '#fff', flexShrink: 0,
-            }}>
-              {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-            </div>
+            {user?.profile_image_url ? (
+              <img 
+                src={user.profile_image_url} 
+                alt="Avatar" 
+                style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} 
+              />
+            ) : (
+              <div style={{
+                width: 32, height: 32, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '0.75rem', fontWeight: 700, color: '#fff', flexShrink: 0,
+              }}>
+                {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+              </div>
+            )}
             <div style={{ minWidth: 0 }}>
               <div style={{ fontSize: '0.82rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {user?.name || 'User'}

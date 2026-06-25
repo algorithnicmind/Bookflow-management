@@ -1,34 +1,43 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+/**
+ * Notification Context
+ * --------------------
+ * Provides real-time notification state to all components in the app.
+ * 
+ * Uses exponential backoff when the backend is unreachable to avoid
+ * spamming ECONNREFUSED errors every 30 seconds.
+ */
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from './AuthContext'
 import { notificationsApi } from '@/services/api'
 
 const NotificationContext = createContext(null)
 
+const POLL_INTERVAL = 30000
+const BACKOFF_INTERVAL = 120000
+
 export function NotificationProvider({ children }) {
   const { user } = useAuth()
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
+  const consecutiveFailures = useRef(0)
+  const timerRef = useRef(null)
 
   const fetchNotifications = useCallback(async () => {
-    if (!user) {
-      setNotifications([])
-      setUnreadCount(0)
-      return
-    }
+    if (!user) return
     try {
       const data = await notificationsApi.list()
       const list = data.notifications || []
       setNotifications(list)
       setUnreadCount(list.filter(n => !n.is_read).length)
+      consecutiveFailures.current = 0
     } catch (err) {
       if (err.message?.includes('Session expired')) {
         setNotifications([])
         setUnreadCount(0)
-        return
       }
-      console.error("Error loading notifications:", err)
+      consecutiveFailures.current += 1
     }
   }, [user])
 
@@ -39,9 +48,7 @@ export function NotificationProvider({ children }) {
         prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
       )
       setUnreadCount(prev => Math.max(0, prev - 1))
-    } catch (err) {
-      console.error("Error marking notification as read:", err)
-    }
+    } catch (err) {}
   }, [])
 
   const markAllAsRead = useCallback(async () => {
@@ -49,16 +56,28 @@ export function NotificationProvider({ children }) {
       await notificationsApi.markAllRead()
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
       setUnreadCount(0)
-    } catch (err) {
-      console.error("Error marking all notifications as read:", err)
-    }
+    } catch (err) {}
   }, [])
 
   useEffect(() => {
+    if (timerRef.current) clearInterval(timerRef.current)
+
+    if (!user) {
+      setNotifications([])
+      setUnreadCount(0)
+      consecutiveFailures.current = 0
+      return
+    }
+
     fetchNotifications()
-    const interval = setInterval(fetchNotifications, 30000)
-    return () => clearInterval(interval)
-  }, [fetchNotifications])
+
+    timerRef.current = setInterval(() => {
+      const delay = consecutiveFailures.current > 0 ? BACKOFF_INTERVAL : POLL_INTERVAL
+      fetchNotifications()
+    }, consecutiveFailures.current > 0 ? BACKOFF_INTERVAL : POLL_INTERVAL)
+
+    return () => { if (timerRef.current) clearInterval(timerRef.current) }
+  }, [user, fetchNotifications])
 
   return (
     <NotificationContext.Provider value={{

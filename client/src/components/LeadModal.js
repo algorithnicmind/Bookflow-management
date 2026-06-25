@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Modal from '@/components/ui/Modal'
 import { onboardingApi } from '@/services/api'
 import Button from '@/components/ui/Button'
+import { toast } from 'react-hot-toast'
 
 export default function LeadModal({ isOpen, onClose }) {
   const [formData, setFormData] = useState({
@@ -32,8 +33,11 @@ export default function LeadModal({ isOpen, onClose }) {
     try {
       await onboardingApi.apply(formData)
       setSuccess(true)
+      toast.success('Inquiry submitted successfully!')
     } catch (err) {
-      setError(err.data?.detail || err.message || 'Failed to submit inquiry. Please try again.')
+      const msg = err.data?.detail || err.message || 'Failed to submit inquiry. Please try again.'
+      setError(msg)
+      toast.error(msg)
     } finally {
       setLoading(false)
     }

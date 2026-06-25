@@ -24,6 +24,12 @@ class Settings(BaseSettings):
             url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
         elif url.startswith("postgres://"):
             url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+        
+        if "?sslmode=" in url:
+            url = url.replace("?sslmode=", "?ssl=")
+        elif "&sslmode=" in url:
+            url = url.replace("&sslmode=", "&ssl=")
+            
         return url
 
     # Look for .env in the workspace root and the server/ folder

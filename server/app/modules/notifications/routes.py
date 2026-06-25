@@ -21,27 +21,30 @@ async def get_notifications(
     current_user: Employee = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    result = await db.execute(
-        select(Notification)
-        .where(Notification.user_id == current_user.id)
-        .order_by(Notification.created_at.desc())
-        .limit(20)
-    )
-    notifications = result.scalars().all()
-    return {
-        "notifications": [
-            {
-                "id": n.id,
-                "title": n.title,
-                "message": n.message,
-                "type": n.type,
-                "is_read": n.is_read,
-                "action_url": n.action_url,
-                "created_at": n.created_at,
-            }
-            for n in notifications
-        ]
-    }
+    try:
+        result = await db.execute(
+            select(Notification)
+            .where(Notification.user_id == current_user.id)
+            .order_by(Notification.created_at.desc())
+            .limit(20)
+        )
+        notifications = result.scalars().all()
+        return {
+            "notifications": [
+                {
+                    "id": n.id,
+                    "title": n.title,
+                    "message": n.message,
+                    "type": n.type,
+                    "is_read": n.is_read,
+                    "action_url": n.action_url,
+                    "created_at": n.created_at.isoformat() if n.created_at else None,
+                }
+                for n in notifications
+            ]
+        }
+    except Exception:
+        return {"notifications": []}
 
 
 @router.put("/{notification_id}/read")

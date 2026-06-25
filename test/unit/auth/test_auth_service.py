@@ -112,7 +112,7 @@ async def test_register_admin_user_success():
 
     with patch("app.modules.auth.services.pwd_context") as mock_pwd:
         mock_pwd.hash.return_value = "$2b$12$hashed"
-        result = await register_admin_user(request, mock_db)
+        result = await register_admin_user(request, 1, mock_db)
 
     assert result.role == "admin"
     assert result.email == "newadmin@company.com"
@@ -136,7 +136,7 @@ async def test_register_admin_user_duplicate_email():
     )
 
     with pytest.raises(HTTPException) as exc_info:
-        await register_admin_user(request, mock_db)
+        await register_admin_user(request, 1, mock_db)
     assert exc_info.value.status_code == 409
     assert "already registered" in exc_info.value.detail.lower()
 
@@ -160,7 +160,7 @@ async def test_register_admin_creates_correct_leave_balances():
 
     with patch("app.modules.auth.services.pwd_context") as mock_pwd:
         mock_pwd.hash.return_value = "$2b$12$hashed"
-        await register_admin_user(request, mock_db)
+        await register_admin_user(request, 1, mock_db)
 
     # Filter only LeaveBalance objects
     from app.modules.leaves.models import LeaveBalance

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { useNotifications } from '@/context/NotificationContext'
 import { settingsApi } from '@/services/api'
+import LiveClock from '@/components/Layout/LiveClock'
 
 function timeAgo(dateStr) {
   const now = new Date()
@@ -206,6 +207,7 @@ export default function Header({ onToggleSidebar }) {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <LiveClock />
         {/* Notification Bell */}
         <div ref={notifRef} style={{ position: 'relative' }}>
           <button
@@ -383,15 +385,23 @@ export default function Header({ onToggleSidebar }) {
             onMouseEnter={(e) => { if (!showProfileMenu) e.currentTarget.style.borderColor = 'var(--border-hover)' }}
             onMouseLeave={(e) => { if (!showProfileMenu) e.currentTarget.style.borderColor = 'transparent' }}
           >
-            <div style={{
-              width: 28, height: 28, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '0.7rem', fontWeight: 700, color: '#fff',
-              flexShrink: 0,
-            }}>
-              {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-            </div>
+            {user?.profile_image_url ? (
+              <img 
+                src={user.profile_image_url} 
+                alt="Avatar" 
+                style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} 
+              />
+            ) : (
+              <div style={{
+                width: 28, height: 28, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '0.7rem', fontWeight: 700, color: '#fff',
+                flexShrink: 0,
+              }}>
+                {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+              </div>
+            )}
             <div>
               <div style={{ fontSize: '0.82rem', fontWeight: 600, lineHeight: 1.2 }}>{user?.name || 'User'}</div>
               <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'capitalize', lineHeight: 1.2 }}>

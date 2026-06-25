@@ -218,7 +218,7 @@ describe('NotificationContext', () => {
     expect(fetch).toHaveBeenCalledTimes(1)
   })
 
-  test('fetch error handled', async () => {
+  test('fetch error handled silently', async () => {
     useAuthMock.mockReturnValue({ user: { id: 1 } })
     fetch.mockRejectedValueOnce(new Error('Network error'))
 
@@ -229,7 +229,9 @@ describe('NotificationContext', () => {
     )
 
     await waitFor(() => {
-      expect(console.error).toHaveBeenCalledWith('Error loading notifications:', expect.any(Error))
+      expect(screen.getByTestId('count')).toHaveTextContent('0')
+      expect(screen.getByTestId('list')).toHaveTextContent('[]')
     })
+    expect(console.error).not.toHaveBeenCalled()
   })
 })

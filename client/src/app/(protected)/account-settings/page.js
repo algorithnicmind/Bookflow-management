@@ -11,12 +11,14 @@ import { authApi, integrationsApi } from '@/services/api'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import { useAuth } from '@/context/AuthContext'
+import { toast } from 'react-hot-toast'
 
 export default function AccountSettingsPage() {
   const { user, updateUser } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState({ text: '', type: '' })
+  const [showPassword, setShowPassword] = useState(false)
   
   const [form, setForm] = useState({
     name: '',
@@ -71,7 +73,9 @@ export default function AccountSettingsPage() {
         window.location.href = data.auth_url
       }
     } catch (err) {
-      setMessage({ text: err.message || 'Failed to get connection link', type: 'error' })
+      const msg = err.message || 'Failed to get connection link'
+      setMessage({ text: msg, type: 'error' })
+      toast.error(msg)
     }
   }
 
@@ -94,8 +98,11 @@ export default function AccountSettingsPage() {
       
       setForm(prev => ({ ...prev, password: '' })) // Clear password field
       setMessage({ text: 'Profile updated successfully!', type: 'success' })
+      toast.success('Profile updated successfully!')
     } catch (err) {
-      setMessage({ text: err.message || 'Failed to update profile', type: 'error' })
+      const msg = err.message || 'Failed to update profile'
+      setMessage({ text: msg, type: 'error' })
+      toast.error(msg)
     } finally {
       setSaving(false)
     }
@@ -111,6 +118,68 @@ export default function AccountSettingsPage() {
       </div>
 
       <Card>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 24 }}>
+          <div style={{ position: 'relative' }}>
+            {user?.profile_image_url ? (
+              <img 
+                src={user.profile_image_url} 
+                alt="Profile" 
+                style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border)' }} 
+              />
+            ) : (
+              <div style={{
+                width: 80, height: 80, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '2rem', fontWeight: 700, color: '#fff'
+              }}>
+                {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+              </div>
+            )}
+            <input 
+              type="file" 
+              id="avatarUpload" 
+              accept="image/*" 
+              style={{ display: 'none' }} 
+              onChange={async (e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                try {
+                  setSaving(true)
+                  const res = await authApi.uploadAvatar(file)
+                  updateUser({ profile_image_url: res.profile_image_url })
+                  toast.success('Profile picture updated!')
+                } catch (err) {
+                  toast.error(err.message || 'Failed to upload image')
+                } finally {
+                  setSaving(false)
+                }
+              }}
+            />
+            <button 
+              onClick={() => document.getElementById('avatarUpload').click()}
+              disabled={saving}
+              style={{
+                position: 'absolute', bottom: 0, right: 0,
+                background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+                borderRadius: '50%', width: 28, height: 28,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', boxShadow: 'var(--shadow-sm)',
+                fontSize: '0.8rem'
+              }}
+              title="Upload new picture"
+            >
+              📷
+            </button>
+          </div>
+          <div>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 600, margin: 0 }}>{user?.name}</h2>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'capitalize' }}>
+              {user?.role?.replace('_', ' ')}
+            </div>
+          </div>
+        </div>
+
         {message.text && (
           <div style={{
             padding: 12,
@@ -176,12 +245,45 @@ export default function AccountSettingsPage() {
 
             <div className="form-group">
               <label>Change Password</label>
-              <input 
-                type="password"
-                value={form.password} 
-                onChange={e => setForm({...form, password: e.target.value})} 
-                placeholder="Leave blank to keep current" 
-              />
+              <div style={{ position: 'relative' }}>
+                <input 
+                  type={showPassword ? "text" : "password"}
+                  value={form.password} 
+                  onChange={e => setForm({...form, password: e.target.value})} 
+                  placeholder="Leave blank to keep current" 
+                  style={{ width: '100%', paddingRight: '40px' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-muted)',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {showPassword ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                      <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
           

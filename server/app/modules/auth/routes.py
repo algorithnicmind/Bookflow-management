@@ -5,9 +5,12 @@ This module defines the API endpoints responsible for logging users in,
 registering new tenant administrators, and managing HTTP-only session cookies.
 It includes rate-limiting to prevent brute force attacks.
 """
-from datetime import timedelta
-from fastapi import APIRouter, Depends, status, HTTPException, Response, Request
+from datetime import timedelta, datetime, timezone
+from fastapi import APIRouter, Depends, status, HTTPException, Response, Request, UploadFile, File
 from fastapi.security import OAuth2PasswordRequestForm
+import os
+import shutil
+import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.core.database import get_db
@@ -97,6 +100,9 @@ async def oauth_login(request: OAuthRequest, response: Response, db: AsyncSessio
             data={"sub": user.email, "id": user.id, "role": user.role},
             expires_delta=access_token_expires
         )
+        
+        user.last_login = datetime.now(timezone.utc)
+        await db.commit()
         response.set_cookie(
             key="access_token",
             value=access_token,
@@ -113,7 +119,8 @@ async def oauth_login(request: OAuthRequest, response: Response, db: AsyncSessio
                 "name": user.name,
                 "email": user.email,
                 "role": user.role,
-                "department": user.department
+                "department": user.department,
+                "profile_image_url": getattr(user, "profile_image_url", None)
             }
         }
         
@@ -163,6 +170,9 @@ async def login_for_access_token(
         expires_delta=access_token_expires
     )
     
+    user.last_login = datetime.now(timezone.utc)
+    await db.commit()
+    
     response.set_cookie(
         key="access_token",
         value=access_token,
@@ -180,9 +190,48 @@ async def login_for_access_token(
             "name": user.name,
             "email": user.email,
             "role": user.role,
-            "department": user.department
+            "department": user.department,
+            "profile_image_url": getattr(user, "profile_image_url", None)
         }
     }
+
+from app.core.dependencies import get_current_user
+from app.modules.employees.models import PlatformOwner
+
+@router.post("/upload-avatar")
+async def upload_avatar(
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(get_current_user)
+):
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image")
+    
+    ext = file.filename.split(".")[-1]
+    new_filename = f"{uuid.uuid4()}.{ext}"
+    os.makedirs("uploads", exist_ok=True)
+    filepath = os.path.join("uploads", new_filename)
+    
+    with open(filepath, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    url = f"{BACKEND_URL}/uploads/{new_filename}"
+    
+    # Update user
+    # Check if PlatformOwner or Employee
+    po_res = await db.execute(select(PlatformOwner).where(PlatformOwner.id == current_user.id))
+    po_user = po_res.scalar_one_or_none()
+    
+    if po_user and po_user.email == current_user.email:
+        po_user.profile_image_url = url
+    else:
+        emp_res = await db.execute(select(Employee).where(Employee.id == current_user.id))
+        emp_user = emp_res.scalar_one_or_none()
+        if emp_user:
+            emp_user.profile_image_url = url
+            
+    await db.commit()
+    return {"profile_image_url": url}
 
 import httpx
 from fastapi.responses import RedirectResponse

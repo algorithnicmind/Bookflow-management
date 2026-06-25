@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Modal from '@/components/ui/Modal'
 import { onboardingApi } from '@/services/api'
 import Button from '@/components/ui/Button'
+import { toast } from 'react-hot-toast'
 
 const PLAN_META = {
   free_trial: {
@@ -33,6 +34,7 @@ const PLAN_META = {
 }
 
 export default function OnboardingModal({ isOpen, onClose, selectedPlan = 'free_trial' }) {
+  const [currentPlan, setCurrentPlan] = useState(selectedPlan)
   const [formData, setFormData] = useState({
     company_name: '',
     company_size: '',
@@ -49,6 +51,7 @@ export default function OnboardingModal({ isOpen, onClose, selectedPlan = 'free_
 
   useEffect(() => {
     if (isOpen) {
+      setCurrentPlan(selectedPlan)
       setSuccess(false)
       setError(null)
       setFormData({
@@ -61,7 +64,7 @@ export default function OnboardingModal({ isOpen, onClose, selectedPlan = 'free_
         special_requirements: '',
       })
     }
-  }, [isOpen])
+  }, [isOpen, selectedPlan])
 
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -79,16 +82,19 @@ export default function OnboardingModal({ isOpen, onClose, selectedPlan = 'free_
     setError(null)
 
     try {
-      await onboardingApi.apply({ ...formData, selected_plan: selectedPlan })
+      await onboardingApi.apply({ ...formData, selected_plan: currentPlan })
       setSuccess(true)
+      toast.success('Application submitted successfully!')
     } catch (err) {
-      setError(err.data?.detail || err.message || 'Failed to submit application. Please try again.')
+      const msg = err.data?.detail || err.message || 'Failed to submit application. Please try again.'
+      setError(msg)
+      toast.error(msg)
     } finally {
       setLoading(false)
     }
   }
 
-  const plan = PLAN_META[selectedPlan] || PLAN_META.free_trial
+  const plan = PLAN_META[currentPlan] || PLAN_META.free_trial
 
   const inputStyle = {
     width: '100%',
@@ -143,28 +149,32 @@ export default function OnboardingModal({ isOpen, onClose, selectedPlan = 'free_
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Get Started with LeaveFlow" width="580px">
-      {/* Selected Plan Badge */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20,
-        padding: '14px 18px', borderRadius: 12,
-        background: plan.bg, border: `1px solid ${plan.border}`,
-        animation: 'slideDown 0.3s ease',
-      }}>
-        <div style={{
-          width: 40, height: 40, borderRadius: 10,
-          background: plan.color, color: '#000',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontWeight: 800, fontSize: '0.85rem', flexShrink: 0,
-        }}>
-          {selectedPlan === 'free_trial' ? '0' : selectedPlan === 'professional' ? 'P' : 'E'}
-        </div>
-        <div>
-          <div style={{ fontSize: '0.95rem', fontWeight: 700, color: plan.color }}>{plan.name}</div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{plan.price}</div>
-        </div>
-      </div>
-
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ marginBottom: 6 }}>
+          <label style={labelStyle}>Selected Plan *</label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+            {Object.keys(PLAN_META).map(key => {
+              const p = PLAN_META[key]
+              const isSelected = currentPlan === key
+              return (
+                <div 
+                  key={key}
+                  onClick={() => setCurrentPlan(key)}
+                  style={{
+                    padding: '12px', borderRadius: 8, cursor: 'pointer',
+                    border: `1px solid ${isSelected ? p.color : 'var(--border)'}`,
+                    background: isSelected ? p.bg : 'var(--bg-secondary)',
+                    textAlign: 'center', transition: 'all 0.2s',
+                    boxShadow: isSelected ? `0 0 10px ${p.color}33` : 'none'
+                  }}
+                >
+                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: isSelected ? p.color : 'var(--text-main)', marginBottom: 4 }}>{p.name}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{p.price}</div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
         {error && (
           <div style={{
             padding: 12, borderRadius: 8, background: 'var(--danger-bg)',

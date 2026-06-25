@@ -11,6 +11,7 @@ from datetime import datetime
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from app.core.database import engine, Base
@@ -79,6 +80,42 @@ async def lifespan(app: FastAPI):
                 if not res.scalar():
                     print("Adding column selected_plan to onboarding_applications...")
                     await conn.execute(text("ALTER TABLE onboarding_applications ADD COLUMN selected_plan VARCHAR(50) DEFAULT 'free_trial';"))
+
+                res = await conn.execute(text("""
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name='employees' AND column_name='profile_image_url';
+                """))
+                if not res.scalar():
+                    print("Adding column profile_image_url to employees...")
+                    await conn.execute(text("ALTER TABLE employees ADD COLUMN profile_image_url VARCHAR(255);"))
+
+                res = await conn.execute(text("""
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name='platform_owners' AND column_name='profile_image_url';
+                """))
+                if not res.scalar():
+                    print("Adding column profile_image_url to platform_owners...")
+                    await conn.execute(text("ALTER TABLE platform_owners ADD COLUMN profile_image_url VARCHAR(255);"))
+                    
+                res = await conn.execute(text("""
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name='employees' AND column_name='last_login';
+                """))
+                if not res.scalar():
+                    print("Adding column last_login to employees...")
+                    await conn.execute(text("ALTER TABLE employees ADD COLUMN last_login TIMESTAMP WITH TIME ZONE;"))
+                    
+                res = await conn.execute(text("""
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name='platform_owners' AND column_name='last_login';
+                """))
+                if not res.scalar():
+                    print("Adding column last_login to platform_owners...")
+                    await conn.execute(text("ALTER TABLE platform_owners ADD COLUMN last_login TIMESTAMP WITH TIME ZONE;"))
             except Exception as e:
                 print(f"Migration error: {e}")
                 
@@ -117,6 +154,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+os.makedirs("uploads", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)

@@ -6,7 +6,7 @@ class EmployeeBase(BaseModel):
     name: str
     email: EmailStr
     role: str
-    department: str
+    department: Optional[str] = "General"
     manager_id: Optional[int] = None
     gender: Optional[str] = None
 
@@ -31,6 +31,7 @@ class EmployeeResponse(EmployeeBase):
     date_of_birth: Optional[date] = None
     phone_number: Optional[str] = None
     organization_name: Optional[str] = None
+    profile_image_url: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

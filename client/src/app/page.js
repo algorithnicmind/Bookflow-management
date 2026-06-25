@@ -12,9 +12,11 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { motion } from 'motion/react'
 import AppleEmoji from '@/components/AppleEmoji'
+import LiveClock from '@/components/Layout/LiveClock'
 import { contactApi, platformConfigApi } from '@/services/api'
 import LeadModal from '@/components/LeadModal'
 import OnboardingModal from '@/components/OnboardingModal'
+import { toast } from 'react-hot-toast'
 
 export default function LandingPage() {
   const router = useRouter()
@@ -77,10 +79,12 @@ export default function LandingPage() {
     try {
       await contactApi.submit(contactData)
       setContactStatus('success')
+      toast.success('Message sent successfully!')
       setContactData({ name: '', email: '', message: '' })
       setTimeout(() => setContactStatus(null), 3000)
     } catch (error) {
       setContactStatus('error')
+      toast.error('Failed to send message. Try again.')
       setTimeout(() => setContactStatus(null), 3000)
     }
   }
@@ -141,7 +145,8 @@ export default function LandingPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 32, color: '#a1a1aa', fontSize: '0.9rem', fontWeight: 600 }}>
           <a href="#features" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='#fff'} onMouseLeave={(e) => e.target.style.color='#a1a1aa'}>Features</a>
           <a href="#solutions" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='#fff'} onMouseLeave={(e) => e.target.style.color='#a1a1aa'}>Solutions</a>
-          <a href="#contact" style={{ padding: '8px 18px', background: 'rgba(255,255,255,0.08)', borderRadius: 100, color: '#fff', textDecoration: 'none', transition: 'background 0.2s' }} onMouseEnter={(e) => e.target.style.background='rgba(255,255,255,0.12)'} onMouseLeave={(e) => e.target.style.background='rgba(255,255,255,0.08)'}>Contact</a>
+          <LiveClock compact />
+          <a href="#contact" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='#fff'} onMouseLeave={(e) => e.target.style.color='#a1a1aa'}>Contact</a>
           <a href="#pricing" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='#fff'} onMouseLeave={(e) => e.target.style.color='#a1a1aa'}>Pricing</a>
         </div>
 

@@ -19,7 +19,9 @@ class Employee(Base):
     location = Column(String(255), nullable=True)
     date_of_birth = Column(Date, nullable=True)
     phone_number = Column(String(50), nullable=True)
+    profile_image_url = Column(String(255), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
+    last_login = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     __table_args__ = (
@@ -43,5 +45,7 @@ class PlatformOwner(Base):
     role = Column(String(20), nullable=False, default="platform_owner")
     department = Column(String(100), nullable=True, default="System")
     organization_id = Column(Integer, nullable=True, default=None)
+    profile_image_url = Column(String(255), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
+    last_login = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

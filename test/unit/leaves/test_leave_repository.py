@@ -11,7 +11,7 @@ from app.modules.leaves.repositories import LeaveRepository
 def _make_repo():
     mock_db = AsyncMock()
     mock_db.add = MagicMock()
-    return LeaveRepository(mock_db), mock_db
+    return LeaveRepository(mock_db, organization_id=1), mock_db
 
 
 @pytest.mark.asyncio

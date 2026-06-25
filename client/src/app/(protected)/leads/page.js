@@ -51,20 +51,8 @@ export default function LeadsPage() {
       const data = await onboardingApi.list(params)
       
       let finalApplications = data.applications || []
-      
-      // If viewing 'All', exclude 'connected' and 'approved' from the UI
-      if (!statusFilter) {
-        finalApplications = finalApplications.filter(app => app.status !== 'connected' && app.status !== 'approved')
-      }
-      
       setApplications(finalApplications)
-      
-      // Adjust total count so it doesn't include connected or approved
-      const adjustedTotal = (data.counts.total || 0) 
-                            - (data.counts.connected || 0) 
-                            - (data.counts.approved || 0)
-      
-      setCounts({ ...data.counts, total: adjustedTotal })
+      setCounts(data.counts || { total: 0, pending: 0, contacted: 0, connected: 0, interested: 0, not_interested: 0 })
     } catch (err) {
       setError(err.message || 'Failed to load applications.')
     } finally {
@@ -107,11 +95,12 @@ export default function LeadsPage() {
   }
 
   const filterTabs = [
-    { key: null, label: 'All', count: counts.total },
-    { key: 'pending', label: 'Pending', count: counts.pending },
-    { key: 'contacted', label: 'Contacted', count: counts.contacted },
-    { key: 'interested', label: 'Interested', count: counts.interested },
-    { key: 'not_interested', label: 'Not Interested', count: counts.not_interested },
+    { key: null, label: 'All', count: counts.total || 0 },
+    { key: 'pending', label: 'Pending', count: counts.pending || 0 },
+    { key: 'contacted', label: 'Contacted', count: counts.contacted || 0 },
+    { key: 'interested', label: 'Interested', count: counts.interested || 0 },
+    { key: 'connected', label: 'Connected', count: counts.connected || 0 },
+    { key: 'not_interested', label: 'Not Interested', count: counts.not_interested || 0 },
   ]
 
   if (user?.department !== 'System') return null
@@ -151,11 +140,12 @@ export default function LeadsPage() {
         marginBottom: 32,
       }} className="animate-in">
         {[
-          { label: 'Total', value: counts.total, emoji: '📋', color: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.25)' },
-          { label: 'Pending', value: counts.pending, emoji: '⏳', color: 'rgba(245, 158, 11, 0.15)', border: 'rgba(245, 158, 11, 0.25)' },
-          { label: 'Contacted', value: counts.contacted, emoji: '📞', color: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.25)' },
-          { label: 'Interested', value: counts.interested, emoji: '🌟', color: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.25)' },
-          { label: 'Not Interested', value: counts.not_interested, emoji: '❌', color: 'rgba(239, 68, 68, 0.15)', border: 'rgba(239, 68, 68, 0.25)' },
+          { label: 'Total', value: counts.total || 0, emoji: '📋', color: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.25)' },
+          { label: 'Pending', value: counts.pending || 0, emoji: '⏳', color: 'rgba(245, 158, 11, 0.15)', border: 'rgba(245, 158, 11, 0.25)' },
+          { label: 'Contacted', value: counts.contacted || 0, emoji: '📞', color: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.25)' },
+          { label: 'Interested', value: counts.interested || 0, emoji: '🌟', color: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.25)' },
+          { label: 'Connected', value: counts.connected || 0, emoji: '🤝', color: 'rgba(14, 165, 233, 0.15)', border: 'rgba(14, 165, 233, 0.25)' },
+          { label: 'Not Interested', value: counts.not_interested || 0, emoji: '❌', color: 'rgba(239, 68, 68, 0.15)', border: 'rgba(239, 68, 68, 0.25)' },
         ].map((stat) => (
           <div key={stat.label} style={{
             background: stat.color,
@@ -318,7 +308,7 @@ export default function LeadsPage() {
                         <select
                           id={`status-select-${app.id}`}
                           value={app.status}
-                          disabled={updatingId === app.id}
+                          disabled={updatingId === app.id || app.status === 'connected'}
                           onChange={(e) => handleStatusChange(app.id, e.target.value)}
                           style={{
                             appearance: 'none',
@@ -331,10 +321,10 @@ export default function LeadsPage() {
                             color: statusMeta.color,
                             fontSize: '0.8rem',
                             fontWeight: 600,
-                            cursor: updatingId === app.id ? 'not-allowed' : 'pointer',
+                            cursor: (updatingId === app.id || app.status === 'connected') ? 'not-allowed' : 'pointer',
                             outline: 'none',
                             transition: 'all 0.2s',
-                            opacity: updatingId === app.id ? 0.6 : 1,
+                            opacity: (updatingId === app.id || app.status === 'connected') ? 0.6 : 1,
                             minWidth: 160,
                           }}
                         >

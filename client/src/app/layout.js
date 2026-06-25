@@ -1,5 +1,6 @@
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { AuthProvider } from '@/context/AuthContext'
+import { Toaster } from 'react-hot-toast'
 import '@/app.css'
 
 export const metadata = {
@@ -16,6 +17,7 @@ export default function RootLayout({ children }) {
       <body>
         <ErrorBoundary>
           <AuthProvider>
+            <Toaster position="top-center" toastOptions={{ duration: 4000 }} />
             {children}
           </AuthProvider>
         </ErrorBoundary>

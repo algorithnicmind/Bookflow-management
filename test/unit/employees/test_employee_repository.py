@@ -12,7 +12,8 @@ def _make_repo():
     """Create an EmployeeRepository with a mocked DB session."""
     mock_db = AsyncMock()
     mock_db.add = MagicMock()
-    return EmployeeRepository(mock_db), mock_db
+    # Pass 1 as organization_id for multi-tenant isolation testing
+    return EmployeeRepository(mock_db, organization_id=1), mock_db
 
 
 @pytest.mark.asyncio

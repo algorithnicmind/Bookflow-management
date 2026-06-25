@@ -47,7 +47,15 @@ export async function request(endpoint, options = {}) {
     if (qs) url += `?${qs}`
   }
 
-  const response = await fetch(url, config)
+  // Wrap fetch in try/catch to gracefully handle network errors
+  // (e.g., ECONNREFUSED when backend isn't running, ECONNRESET when backend restarts).
+  // Without this, the Next.js proxy dumps ugly stack traces to the terminal.
+  let response
+  try {
+    response = await fetch(url, config)
+  } catch (networkErr) {
+    throw new Error('Unable to connect to server. Please ensure the backend is running.')
+  }
 
   if (response.status === 401 && !url.includes('/api/auth/login') && !url.includes('/api/auth/session')) {
     if (typeof window !== 'undefined') {
@@ -101,6 +109,24 @@ export const authApi = {
   getProfile: () => request('/api/employees/me'),
   updateProfile: (body) => request('/api/employees/me', { method: 'PUT', body }),
   logout: () => request('/api/auth/logout', { method: 'POST' }),
+  uploadAvatar: async (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const token = document.cookie.split('; ').find(row => row.startsWith('access_token='))?.split('=')[1]
+    const headers = {}
+    // Next.js client uses credentials: 'include' by default in our wrapper, 
+    // but here we must use raw fetch to avoid JSON stringification
+    const response = await fetch(`${API_BASE}/api/auth/upload-avatar`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData
+    })
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}))
+      throw new Error(error.detail || 'Failed to upload avatar')
+    }
+    return response.json()
+  },
 }
 
 export const leavesApi = {
@@ -180,6 +206,7 @@ export const onboardingApi = {
   approve: (id, body) => request(`/api/onboarding/applications/${id}/approve`, { method: 'PUT', body: body || {} }),
   reject: (id) => request(`/api/onboarding/applications/${id}/reject`, { method: 'PUT', body: {} }),
   deleteTenant: (id) => request(`/api/onboarding/applications/${id}/tenant`, { method: 'DELETE' }),
+  getDashboard: (id) => request(`/api/onboarding/applications/${id}/dashboard`),
 }
 
 export const integrationsApi = {

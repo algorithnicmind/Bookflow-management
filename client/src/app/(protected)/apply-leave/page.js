@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation'
 import { leavesApi, settingsApi } from '@/services/api'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
+import { toast } from 'react-hot-toast'
 
 const leaveTypes = [
   { value: 'casual', label: 'Casual Leave (CL)', quota: 12 },
@@ -67,16 +68,19 @@ export default function ApplyLeavePage() {
 
     if (!form.start_date || !form.end_date || !form.reason.trim()) {
       setError('All fields are required')
+      toast.error('All fields are required')
       return
     }
 
     if (new Date(form.end_date) < new Date(form.start_date)) {
       setError('End date must be on or after start date')
+      toast.error('End date must be on or after start date')
       return
     }
 
     if (new Date(form.start_date) < new Date(new Date().toDateString())) {
       setError('Start date cannot be in the past')
+      toast.error('Start date cannot be in the past')
       return
     }
 
@@ -88,11 +92,14 @@ export default function ApplyLeavePage() {
         end_date: form.end_date,
         reason: form.reason.trim(),
       })
-      setSuccess(res.message || 'Leave application submitted successfully!')
+      const msg = res.message || 'Leave application submitted successfully!'
+      setSuccess(msg)
+      toast.success(msg)
       setForm({ leave_type: 'casual', start_date: '', end_date: '', reason: '' })
       setTimeout(() => router.push('/leave-history'), 1500)
     } catch (err) {
       setError(err.message)
+      toast.error(err.message)
     } finally {
       setLoading(false)
     }
