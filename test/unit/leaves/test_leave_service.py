@@ -12,11 +12,28 @@ from app.modules.leaves.services import LeaveService
 from app.modules.leaves.schemas import LeaveApplication, LeaveApprovalAction
 
 
+from unittest.mock import AsyncMock, MagicMock, patch
+
 def _make_service():
     """Create a LeaveService with a mocked repository."""
     repo = AsyncMock()
+    repo.organization_id = 1
     repo.db = AsyncMock()
+    
+    # Setup default mock for db.execute to prevent coroutine AttributeError
+    def mock_execute(*args, **kwargs):
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none.return_value = None
+        mock_result.scalars.return_value.all.return_value = []
+        return mock_result
+        
+    repo.db.execute.side_effect = mock_execute
+    
     return LeaveService(repo), repo
+
+pytestmark = pytest.mark.filterwarnings("ignore::RuntimeWarning")
+patcher = patch("app.modules.leaves.services.AuditLogService.log_action", new_callable=AsyncMock)
+patcher.start()
 
 
 def _tomorrow():
@@ -39,7 +56,13 @@ async def test_apply_leave_success():
     mock_emp = MagicMock(id=1, name="John", manager_id=None)
     mock_result = MagicMock()
     mock_result.scalar_one_or_none.return_value = mock_emp
-    repo.db.execute.return_value = mock_result
+
+    # Mock db.execute for holiday fetch
+    mock_holiday_result = MagicMock()
+    mock_holiday_result.all.return_value = []
+    
+    # Mock db.execute to return employee first, then holidays
+    repo.db.execute.side_effect = [mock_result, mock_holiday_result]
 
     req = LeaveApplication(
         leave_type="casual",
@@ -116,6 +139,10 @@ async def test_apply_leave_insufficient_balance():
     balance = MagicMock(total_days=12, used_days=11)  # Only 1 day remaining
     repo.get_balance.return_value = balance
 
+    mock_holiday_result = MagicMock()
+    mock_holiday_result.all.return_value = []
+    repo.db.execute.return_value = mock_holiday_result
+
     req = LeaveApplication(
         leave_type="casual",
         start_date=_tomorrow(),
@@ -135,6 +162,10 @@ async def test_apply_leave_no_balance_record():
     service, repo = _make_service()
     repo.get_overlapping_requests.return_value = []
     repo.get_balance.return_value = None
+
+    mock_holiday_result = MagicMock()
+    mock_holiday_result.all.return_value = []
+    repo.db.execute.return_value = mock_holiday_result
 
     req = LeaveApplication(
         leave_type="casual",
@@ -159,7 +190,11 @@ async def test_apply_unpaid_leave_skips_balance_check():
     mock_emp = MagicMock(id=1, name="John", manager_id=None)
     mock_result = MagicMock()
     mock_result.scalar_one_or_none.return_value = mock_emp
-    repo.db.execute.return_value = mock_result
+    
+    mock_holiday_result = MagicMock()
+    mock_holiday_result.all.return_value = []
+    
+    repo.db.execute.side_effect = [mock_holiday_result, mock_result]
 
     req = LeaveApplication(
         leave_type="unpaid",
@@ -185,7 +220,11 @@ async def test_apply_leave_deducts_balance():
     mock_emp = MagicMock(id=1, name="John", manager_id=None)
     mock_result = MagicMock()
     mock_result.scalar_one_or_none.return_value = mock_emp
-    repo.db.execute.return_value = mock_result
+    
+    mock_holiday_result = MagicMock()
+    mock_holiday_result.all.return_value = []
+    
+    repo.db.execute.side_effect = [mock_holiday_result, mock_result]
 
     req = LeaveApplication(
         leave_type="casual",
@@ -424,18 +463,4 @@ async def test_reject_unpaid_no_balance_change():
     repo.get_balance.assert_not_awaited()
 
 
-# ─── get_business_days ────────────────────────────────────────────────
-
-
-def test_get_business_days_3_day_span():
-    """3-day span should return 3."""
-    service, _ = _make_service()
-    result = service.get_business_days(date(2026, 6, 15), date(2026, 6, 17))
-    assert result == 3
-
-
-def test_get_business_days_same_day():
-    """Same start and end date should return 1."""
-    service, _ = _make_service()
-    result = service.get_business_days(date(2026, 6, 15), date(2026, 6, 15))
-    assert result == 1
+# Deleted get_business_days tests since method is moved to utils

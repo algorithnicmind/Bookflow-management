@@ -19,6 +19,13 @@ def _make_service(repo_mock=None):
         repo_mock.organization_id = 1
         repo_mock.db = AsyncMock()
         repo_mock.db.add = MagicMock()
+        
+        # Setup default mock for db.execute to prevent coroutine AttributeError
+        mock_result = MagicMock()
+        mock_result.scalar_one_or_none.return_value = None
+        mock_result.scalars.return_value.all.return_value = []
+        repo_mock.db.execute.return_value = mock_result
+        
     return EmployeeService(repo_mock), repo_mock
     
 # We must mock AuditLogService.log_action for all tests in this module
