@@ -11,7 +11,7 @@ from app.modules.settings.schemas import SettingsUpdate
 
 def _make_service():
     mock_db = AsyncMock()
-    return SettingsService(mock_db), mock_db
+    return SettingsService(mock_db, organization_id=1), mock_db
 
 
 @pytest.mark.asyncio
