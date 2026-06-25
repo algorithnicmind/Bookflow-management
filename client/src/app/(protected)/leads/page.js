@@ -43,6 +43,7 @@ export default function LeadsPage() {
   }, [user, router])
 
   const fetchApplications = async (statusFilter = null) => {
+    if (!user) return
     setIsLoading(true)
     setError(null)
     try {

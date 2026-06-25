@@ -23,6 +23,11 @@ export function NotificationProvider({ children }) {
       setNotifications(list)
       setUnreadCount(list.filter(n => !n.is_read).length)
     } catch (err) {
+      if (err.message?.includes('Session expired')) {
+        setNotifications([])
+        setUnreadCount(0)
+        return
+      }
       console.error("Error loading notifications:", err)
     }
   }, [user])

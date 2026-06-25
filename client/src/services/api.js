@@ -6,23 +6,26 @@
  * and session management across the entire application.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_BASE = ''
 
 /**
  * Core HTTP Request Wrapper
  * 
  * Architectural Flow:
- * 1. Sets default headers (application/json).
+ * 1. Sets default headers (application/json for non-GET requests).
  * 2. Enforces `credentials: 'include'` so that secure HttpOnly cookies (like `access_token`)
  *    are automatically attached to cross-origin requests.
  * 3. Serializes the request body and URL parameters.
- * 4. Intercepts 401 Unauthorized responses to clear local state and trigger a re-login.
+ * 4. Intercepts 401 Unauthorized responses to redirect to login and prevent cascading errors.
  * 5. Parses and normalizes error messages from the backend so components can easily display them.
  */
 export async function request(endpoint, options = {}) {
   const headers = {
-    'Content-Type': 'application/json',
     ...options.headers,
+  }
+
+  if (options.body) {
+    headers['Content-Type'] = 'application/json'
   }
 
   const config = {
@@ -31,7 +34,6 @@ export async function request(endpoint, options = {}) {
     credentials: 'include',
     ...(options.body ? { body: JSON.stringify(options.body) } : {}),
   }
-
 
   let url = `${API_BASE}${endpoint}`
   if (options.params) {
@@ -47,8 +49,10 @@ export async function request(endpoint, options = {}) {
 
   const response = await fetch(url, config)
 
-  if (response.status === 401 && !url.includes('/api/auth/login')) {
-    localStorage.removeItem('user')
+  if (response.status === 401 && !url.includes('/api/auth/login') && !url.includes('/api/auth/session')) {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('auth:unauthorized'))
+    }
     throw new Error('Session expired. Please log in again.')
   }
 

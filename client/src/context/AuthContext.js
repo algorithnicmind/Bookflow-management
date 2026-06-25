@@ -24,8 +24,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     async function fetchLocalProfile() {
       try {
-        const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-        const res = await fetch(`${API_BASE}/api/auth/session`, {
+        const res = await fetch('/api/auth/session', {
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
         })
@@ -38,6 +37,14 @@ export function AuthProvider({ children }) {
       }
     }
     fetchLocalProfile()
+  }, [])
+
+  useEffect(() => {
+    function handleUnauthorized() {
+      setUser(null)
+    }
+    window.addEventListener('auth:unauthorized', handleUnauthorized)
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized)
   }, [])
 
   const login = useCallback((userData) => {
