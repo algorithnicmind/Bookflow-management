@@ -36,9 +36,9 @@ export default function OnboardingModal({ isOpen, onClose, selectedPlan = 'free_
   const [formData, setFormData] = useState({
     company_name: '',
     company_size: '',
-    admin_name: '',
-    admin_email: '',
-    admin_phone: '',
+    super_admin_name: '',
+    super_admin_email: '',
+    super_admin_phone: '',
     industry: '',
     special_requirements: '',
   })
@@ -54,9 +54,9 @@ export default function OnboardingModal({ isOpen, onClose, selectedPlan = 'free_
       setFormData({
         company_name: '',
         company_size: '',
-        admin_name: '',
-        admin_email: '',
-        admin_phone: '',
+        super_admin_name: '',
+        super_admin_email: '',
+        super_admin_phone: '',
         industry: '',
         special_requirements: '',
       })
@@ -199,14 +199,14 @@ export default function OnboardingModal({ isOpen, onClose, selectedPlan = 'free_
         <div style={{ display: 'flex', gap: 14 }}>
           <div style={{ flex: 1 }}>
             <label style={labelStyle}>Your Name *</label>
-            <input required name="admin_name" value={formData.admin_name} onChange={handleChange} style={inputStyle} placeholder="Jane Doe"
+            <input required name="super_admin_name" value={formData.super_admin_name} onChange={handleChange} style={inputStyle} placeholder="Jane Doe"
               onFocus={(e) => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 2px rgba(16, 185, 129, 0.2)' }}
               onBlur={(e) => { e.target.style.borderColor = 'var(--border)'; e.target.style.boxShadow = 'none' }}
             />
           </div>
           <div style={{ flex: 1 }}>
             <label style={labelStyle}>Work Email *</label>
-            <input required type="email" name="admin_email" value={formData.admin_email} onChange={handleChange} style={inputStyle} placeholder="jane@acme.com"
+            <input required type="email" name="super_admin_email" value={formData.super_admin_email} onChange={handleChange} style={inputStyle} placeholder="jane@acme.com"
               onFocus={(e) => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 2px rgba(16, 185, 129, 0.2)' }}
               onBlur={(e) => { e.target.style.borderColor = 'var(--border)'; e.target.style.boxShadow = 'none' }}
             />
@@ -223,7 +223,7 @@ export default function OnboardingModal({ isOpen, onClose, selectedPlan = 'free_
           </div>
           <div style={{ flex: 1 }}>
             <label style={labelStyle}>Phone Number *</label>
-            <input required type="tel" name="admin_phone" value={formData.admin_phone} onChange={handleChange} style={inputStyle} placeholder="e.g. +1 555-0199"
+            <input required type="tel" name="super_admin_phone" value={formData.super_admin_phone} onChange={handleChange} style={inputStyle} placeholder="e.g. +1 555-0199"
               onFocus={(e) => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 2px rgba(16, 185, 129, 0.2)' }}
               onBlur={(e) => { e.target.style.borderColor = 'var(--border)'; e.target.style.boxShadow = 'none' }}
             />

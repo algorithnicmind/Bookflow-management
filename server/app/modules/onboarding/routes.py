@@ -24,9 +24,9 @@ router = APIRouter(prefix="/api/onboarding", tags=["onboarding"])
 class ApplicationRequest(BaseModel):
     company_name: str
     company_size: str
-    admin_name: str
-    admin_email: EmailStr
-    admin_phone: Optional[str] = None
+    super_admin_name: str
+    super_admin_email: EmailStr
+    super_admin_phone: Optional[str] = None
     industry: str
     admin_password: Optional[str] = None
     special_requirements: str | None = None
@@ -35,9 +35,9 @@ class ApplicationRequest(BaseModel):
 class ApplicationResponse(BaseModel):
     id: int
     company_name: str
-    admin_name: str
-    admin_email: str
-    admin_phone: Optional[str] = None
+    super_admin_name: str
+    super_admin_email: str
+    super_admin_phone: Optional[str] = None
     industry: str
     status: str
     message: str
@@ -45,7 +45,7 @@ class ApplicationResponse(BaseModel):
 @router.post("/apply", response_model=ApplicationResponse, status_code=status.HTTP_201_CREATED)
 async def submit_application(request: ApplicationRequest, db: AsyncSession = Depends(get_db)):
     # Check if application already exists
-    result = await db.execute(select(OnboardingApplication).where(OnboardingApplication.admin_email == request.admin_email))
+    result = await db.execute(select(OnboardingApplication).where(OnboardingApplication.super_admin_email == request.super_admin_email))
     existing_app = result.scalar_one_or_none()
     
     if existing_app:
@@ -62,11 +62,11 @@ async def submit_application(request: ApplicationRequest, db: AsyncSession = Dep
     new_app = OnboardingApplication(
         company_name=request.company_name,
         company_size=request.company_size,
-        admin_name=request.admin_name,
-        admin_email=request.admin_email,
-        admin_phone=request.admin_phone,
+        super_admin_name=request.super_admin_name,
+        super_admin_email=request.super_admin_email,
+        super_admin_phone=request.super_admin_phone,
         industry=request.industry,
-        admin_password_hash=password_hash,
+        super_admin_password_hash=password_hash,
         special_requirements=request.special_requirements,
         selected_plan=request.selected_plan or "free_trial",
         status="pending"
@@ -79,9 +79,9 @@ async def submit_application(request: ApplicationRequest, db: AsyncSession = Dep
     return {
         "id": new_app.id,
         "company_name": new_app.company_name,
-        "admin_name": new_app.admin_name,
-        "admin_email": new_app.admin_email,
-        "admin_phone": new_app.admin_phone,
+        "super_admin_name": new_app.super_admin_name,
+        "super_admin_email": new_app.super_admin_email,
+        "super_admin_phone": new_app.super_admin_phone,
         "industry": new_app.industry,
         "selected_plan": new_app.selected_plan,
         "status": new_app.status,
@@ -104,7 +104,7 @@ async def list_applications(
         .outerjoin(
             Employee,
             (Employee.organization_id == OnboardingApplication.organization_id) &
-            (Employee.email == OnboardingApplication.admin_email)
+            (Employee.email == OnboardingApplication.super_admin_email)
         )
         .order_by(OnboardingApplication.created_at.desc())
     )
@@ -134,10 +134,10 @@ async def list_applications(
                 "id": app.id,
                 "company_name": app.company_name,
                 "company_size": app.company_size,
-                "admin_name": emp.name if emp else app.admin_name,
-                "admin_email": emp.email if emp else app.admin_email,
+                "super_admin_name": emp.name if emp else app.super_admin_name,
+                "super_admin_email": emp.email if emp else app.super_admin_email,
                 "admin_role": emp.role if emp else None,
-                "admin_phone": app.admin_phone,
+                "super_admin_phone": app.super_admin_phone,
                 "industry": app.industry,
                 "special_requirements": app.special_requirements,
                 "selected_plan": app.selected_plan or "free_trial",
@@ -204,7 +204,7 @@ async def get_application(
     result = await db.execute(
         select(OnboardingApplication, Employee, Organization)
         .outerjoin(Organization, Organization.id == OnboardingApplication.organization_id)
-        .outerjoin(Employee, (Employee.organization_id == OnboardingApplication.organization_id) & (Employee.email == OnboardingApplication.admin_email))
+        .outerjoin(Employee, (Employee.organization_id == OnboardingApplication.organization_id) & (Employee.email == OnboardingApplication.super_admin_email))
         .where(OnboardingApplication.id == application_id)
     )
     row = result.first()
@@ -219,10 +219,10 @@ async def get_application(
         "id": application.id,
         "company_name": application.company_name,
         "company_size": application.company_size,
-        "admin_name": emp.name if emp else application.admin_name,
-        "admin_email": emp.email if emp else application.admin_email,
+        "super_admin_name": emp.name if emp else application.super_admin_name,
+        "super_admin_email": emp.email if emp else application.super_admin_email,
         "admin_role": emp.role if emp else None,
-        "admin_phone": application.admin_phone,
+        "super_admin_phone": application.super_admin_phone,
         "industry": application.industry,
         "special_requirements": application.special_requirements,
         "selected_plan": application.selected_plan or "free_trial",
@@ -337,7 +337,7 @@ async def approve_application(
     expires_at_val = datetime.utcnow() + timedelta(days=access_days_val)
 
     # UPSERT LOGIC: Check if admin employee already exists
-    emp_result = await db.execute(select(Employee).where(Employee.email == application.admin_email))
+    emp_result = await db.execute(select(Employee).where(Employee.email == application.super_admin_email))
     existing_admin = emp_result.scalar_one_or_none()
 
     if existing_admin:
@@ -386,8 +386,8 @@ async def approve_application(
     password_hash = None
     if body and body.password:
         password_hash = await asyncio.to_thread(pwd_context.hash, body.password)
-    elif application.admin_password_hash:
-        password_hash = application.admin_password_hash
+    elif application.super_admin_password_hash:
+        password_hash = application.super_admin_password_hash
         
     if not password_hash:
         raise HTTPException(
@@ -397,8 +397,8 @@ async def approve_application(
 
     admin_employee = Employee(
         organization_id=org.id,
-        name=application.admin_name or "Admin User",
-        email=application.admin_email,
+        name=application.super_admin_name or "Admin User",
+        email=application.super_admin_email,
         password_hash=password_hash,
         role="super_admin",
         department="Management",
@@ -450,7 +450,7 @@ async def delete_tenant(
         raise HTTPException(status_code=404, detail="Application not found")
 
     # Check if an organization was provisioned
-    emp_result = await db.execute(select(Employee).where(Employee.email == app.admin_email))
+    emp_result = await db.execute(select(Employee).where(Employee.email == app.super_admin_email))
     admin_emp = emp_result.scalar_one_or_none()
     
     if admin_emp:

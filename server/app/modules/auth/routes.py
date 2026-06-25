@@ -118,7 +118,7 @@ async def oauth_login(request: OAuthRequest, response: Response, db: AsyncSessio
         }
         
     # 2. Check if they have a pending application
-    app_res = await db.execute(select(OnboardingApplication).where(OnboardingApplication.admin_email == request.email))
+    app_res = await db.execute(select(OnboardingApplication).where(OnboardingApplication.super_admin_email == request.email))
     application = app_res.scalar_one_or_none()
     
     if application:

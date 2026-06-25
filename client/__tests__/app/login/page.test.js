@@ -71,7 +71,7 @@ describe('LoginPage', () => {
       expect(authApi.login).toHaveBeenCalledWith('alice@company.com', 'password123')
     })
     
-    expect(mockLogin).toHaveBeenCalledWith('fake-token', { id: 1, name: 'Alice' })
+    expect(mockLogin).toHaveBeenCalledWith({ id: 1, name: 'Alice' })
     expect(mockRouter.push).toHaveBeenCalledWith('/dashboard')
   })
 

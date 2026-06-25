@@ -288,7 +288,7 @@ export default function LeadProfilePage() {
               <div>
                 <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#10b981', marginBottom: 4 }}>Organization Portal Created</h4>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  The organization portal and super administrator profile are active. The tenant admin can now log in using the email <b>{lead.admin_email}</b>.
+                  The organization portal and super administrator profile are active. The tenant admin can now log in using the email <b>{lead.super_admin_email}</b>.
                 </p>
               </div>
             </div>
@@ -380,9 +380,9 @@ export default function LeadProfilePage() {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 {[
-                  { label: 'Name', value: lead.admin_name, icon: '🏷️' },
-                  { label: 'Email', value: lead.admin_email, icon: '📧', isEmail: true },
-                  { label: 'Phone', value: lead.admin_phone, icon: '📱' },
+                  { label: 'Name', value: lead.super_admin_name, icon: '🏷️' },
+                  { label: 'Email', value: lead.super_admin_email, icon: '📧', isEmail: true },
+                  { label: 'Phone', value: lead.super_admin_phone, icon: '📱' },
                 ].map((field) => (
                   <div key={field.label}>
                     <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>

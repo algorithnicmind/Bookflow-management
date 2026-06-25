@@ -263,7 +263,7 @@ export default function LeadsPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
-                  {['Company', 'Industry', 'Admin Name', 'Admin Email', 'Phone', 'Size', 'Status', 'Submitted'].map((col) => (
+                  {['Company', 'Industry', 'Super Admin Name', 'Super Admin Email', 'Phone', 'Size', 'Status', 'Submitted'].map((col) => (
                     <th key={col} style={{
                       textAlign: 'left',
                       padding: '12px 16px',
@@ -303,13 +303,13 @@ export default function LeadsPage() {
                         {app.industry || '—'}
                       </td>
                       <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
-                        {app.admin_name || '—'}
+                        {app.super_admin_name || '—'}
                       </td>
                       <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
-                        {app.admin_email}
+                        {app.super_admin_email}
                       </td>
                       <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
-                        {app.admin_phone || '—'}
+                        {app.super_admin_phone || '—'}
                       </td>
                       <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
                         {app.company_size}

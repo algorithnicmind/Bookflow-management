@@ -28,6 +28,15 @@ export function AuthProvider({ children }) {
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
         })
+        if (!res.ok) {
+          setUser(null)
+          return
+        }
+        const contentType = res.headers.get('content-type') || ''
+        if (!contentType.includes('application/json')) {
+          setUser(null)
+          return
+        }
         const data = await res.json()
         setUser(data.user)
       } catch (err) {

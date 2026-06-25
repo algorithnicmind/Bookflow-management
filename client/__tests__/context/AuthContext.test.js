@@ -1,17 +1,28 @@
-import { render, screen, act } from '@testing-library/react'
+import { render, screen, act, waitFor } from '@testing-library/react'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
 import React from 'react'
 
-// No window location mock needed
+// Mock fetch globally
+global.fetch = jest.fn()
 
 beforeEach(() => {
-  localStorage.clear()
+  fetch.mockClear()
   jest.spyOn(console, 'error').mockImplementation(() => {})
 })
 
 afterEach(() => {
   console.error.mockRestore()
 })
+
+function mockSession(user = null) {
+  fetch.mockResolvedValueOnce({
+    ok: true,
+    status: 200,
+    statusText: 'OK',
+    headers: { get: (key) => key === 'content-type' ? 'application/json' : null },
+    json: async () => ({ user }),
+  })
+}
 
 const TestComponent = () => {
   const { user, loading, login, logout, updateUser } = useAuth()
@@ -21,7 +32,7 @@ const TestComponent = () => {
   return (
     <div>
       <div data-testid="user">{user ? JSON.stringify(user) : 'No user'}</div>
-      <button onClick={() => login('fake-token', { id: 1, name: 'John', department: 'IT' })}>Login</button>
+      <button onClick={() => login({ id: 1, name: 'John', department: 'IT' })}>Login</button>
       <button onClick={() => logout()}>Logout</button>
       <button onClick={() => updateUser({ department: 'Design' })}>Update</button>
     </div>
@@ -30,21 +41,16 @@ const TestComponent = () => {
 
 describe('AuthContext', () => {
   test('initial state loading', () => {
-    // In React 18, useEffect runs after paint, but loading state starts as true.
-    // By the time TestComponent renders, it might be in Loading state or finished.
-    // A trick to test initial state is to observe the 'Loading...' text if we don't await anything.
+    mockSession(null)
     render(
       <AuthProvider>
         <TestComponent />
       </AuthProvider>
     )
-    // Actually, because TestComponent returns early on loading:
-    // We expect it NOT to crash.
   })
 
-  test('loads user from localStorage', () => {
-    localStorage.setItem('token', 'fake')
-    localStorage.setItem('user', JSON.stringify({ name: 'Alice' }))
+  test('loads user from session endpoint', async () => {
+    mockSession({ name: 'Alice', department: 'HR' })
 
     render(
       <AuthProvider>
@@ -52,54 +58,38 @@ describe('AuthContext', () => {
       </AuthProvider>
     )
     
-    expect(screen.getByTestId('user').textContent).toContain('Alice')
+    await waitFor(() => {
+      expect(screen.getByTestId('user').textContent).toContain('Alice')
+    })
   })
 
-  test('no stored user', () => {
-    render(
-      <AuthProvider>
-        <TestComponent />
-      </AuthProvider>
-    )
-    expect(screen.getByTestId('user').textContent).toBe('No user')
-  })
+  test('no stored session shows no user', async () => {
+    mockSession(null)
 
-  test('login stores token', () => {
     render(
       <AuthProvider>
         <TestComponent />
       </AuthProvider>
     )
     
-    act(() => {
-      screen.getByText('Login').click()
+    await waitFor(() => {
+      expect(screen.getByTestId('user').textContent).toBe('No user')
+    })
+  })
+
+  test('login updates state', async () => {
+    mockSession(null)
+
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>
+    )
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('user').textContent).toBe('No user')
     })
 
-    expect(localStorage.getItem('token')).toBe('fake-token')
-  })
-
-  test('login stores user', () => {
-    render(
-      <AuthProvider>
-        <TestComponent />
-      </AuthProvider>
-    )
-    
-    act(() => {
-      screen.getByText('Login').click()
-    })
-
-    const user = JSON.parse(localStorage.getItem('user'))
-    expect(user.name).toBe('John')
-  })
-
-  test('login updates state', () => {
-    render(
-      <AuthProvider>
-        <TestComponent />
-      </AuthProvider>
-    )
-    
     act(() => {
       screen.getByText('Login').click()
     })
@@ -107,9 +97,8 @@ describe('AuthContext', () => {
     expect(screen.getByTestId('user').textContent).toContain('John')
   })
 
-  test('logout clears storage', () => {
-    localStorage.setItem('token', 'fake')
-    localStorage.setItem('user', JSON.stringify({ name: 'Alice' }))
+  test('logout clears user state', async () => {
+    mockSession({ name: 'Alice' })
 
     render(
       <AuthProvider>
@@ -117,34 +106,27 @@ describe('AuthContext', () => {
       </AuthProvider>
     )
     
-    act(() => {
-      screen.getByText('Logout').click()
+    await waitFor(() => {
+      expect(screen.getByTestId('user').textContent).toContain('Alice')
     })
 
-    expect(localStorage.getItem('token')).toBeNull()
-    expect(localStorage.getItem('user')).toBeNull()
-  })
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      headers: { get: () => 'application/json' },
+      json: async () => ({ message: 'Logged out' }),
+    })
 
-  test('logout clears user state', () => {
-    localStorage.setItem('token', 'fake')
-    localStorage.setItem('user', JSON.stringify({ name: 'Alice' }))
-
-    render(
-      <AuthProvider>
-        <TestComponent />
-      </AuthProvider>
-    )
-    
-    act(() => {
+    await act(async () => {
       screen.getByText('Logout').click()
     })
 
     expect(screen.getByTestId('user').textContent).toBe('No user')
   })
 
-  test('updateUser merges data', () => {
-    localStorage.setItem('token', 'fake')
-    localStorage.setItem('user', JSON.stringify({ id: 1, name: 'Alice', department: 'IT' }))
+  test('updateUser merges data', async () => {
+    mockSession({ id: 1, name: 'Alice', department: 'IT' })
 
     render(
       <AuthProvider>
@@ -152,21 +134,25 @@ describe('AuthContext', () => {
       </AuthProvider>
     )
     
+    await waitFor(() => {
+      expect(screen.getByTestId('user').textContent).toContain('Alice')
+    })
+
     act(() => {
       screen.getByText('Update').click()
     })
 
     expect(screen.getByTestId('user').textContent).toContain('Design')
     expect(screen.getByTestId('user').textContent).toContain('Alice')
-    
-    const stored = JSON.parse(localStorage.getItem('user'))
-    expect(stored.department).toBe('Design')
-    expect(stored.name).toBe('Alice')
   })
 
-  test('corrupt localStorage handled', () => {
-    localStorage.setItem('token', 'fake')
-    localStorage.setItem('user', 'invalid-json')
+  test('session endpoint 404 handled gracefully', async () => {
+    fetch.mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      statusText: 'Not Found',
+      headers: { get: () => 'text/html' },
+    })
 
     render(
       <AuthProvider>
@@ -174,13 +160,26 @@ describe('AuthContext', () => {
       </AuthProvider>
     )
     
-    expect(screen.getByTestId('user').textContent).toBe('No user')
-    expect(localStorage.getItem('token')).toBeNull()
-    expect(localStorage.getItem('user')).toBeNull()
+    await waitFor(() => {
+      expect(screen.getByTestId('user').textContent).toBe('No user')
+    })
+  })
+
+  test('network error handled gracefully', async () => {
+    fetch.mockRejectedValueOnce(new Error('Network error'))
+
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>
+    )
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('user').textContent).toBe('No user')
+    })
   })
 
   test('useAuth outside provider throws', () => {
-    // Disable error boundary output for this expected error test
     const originalError = console.error
     console.error = jest.fn()
     

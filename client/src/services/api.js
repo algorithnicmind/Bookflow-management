@@ -56,7 +56,13 @@ export async function request(endpoint, options = {}) {
     throw new Error('Session expired. Please log in again.')
   }
 
-  const data = await response.json()
+  let data
+  const contentType = response.headers.get('content-type') || ''
+  if (contentType.includes('application/json')) {
+    data = await response.json()
+  } else {
+    data = { detail: response.statusText || 'An error occurred' }
+  }
 
   if (!response.ok) {
     const error = new Error(typeof data.detail === 'string' ? data.detail : (data.error || 'An error occurred'))
@@ -79,9 +85,15 @@ export const authApi = {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: formData.toString(),
     })
-    const data = await response.json()
+    const contentType = response.headers.get('content-type') || ''
+    let data
+    if (contentType.includes('application/json')) {
+      data = await response.json()
+    } else {
+      data = { detail: response.statusText || 'Login failed' }
+    }
     if (!response.ok) {
-      throw new Error(data.detail || 'Login failed')
+      throw new Error(typeof data.detail === 'string' ? data.detail : 'Login failed')
     }
     return data
   },
@@ -183,7 +195,11 @@ export const integrationsApi = {
       },
       body: formData.toString()
     })
-    return response.json()
+    const contentType = response.headers.get('content-type') || ''
+    if (contentType.includes('application/json')) {
+      return response.json()
+    }
+    return { detail: response.statusText || 'Action failed' }
   },
   simulateTeamsAction: (payload) => request('/api/integrations/teams/actions', { method: 'POST', body: payload })
 }

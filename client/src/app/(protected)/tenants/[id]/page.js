@@ -129,7 +129,7 @@ export default function SetupProfilePage() {
       // Show credentials success dialog
       setCreatedCredentials({
         company: application.company_name,
-        adminEmail: application.admin_email,
+        superAdminEmail: application.super_admin_email,
         password: password,
         accessDays: accessDays,
         message: result.message,
@@ -144,7 +144,7 @@ export default function SetupProfilePage() {
 
   const handleCopyCredentials = () => {
     if (!createdCredentials) return
-    const text = `LeaveFlow Tenant Credentials\n------------------------------\nCompany: ${createdCredentials.company}\nAdmin Email: ${createdCredentials.adminEmail}\nPassword: ${createdCredentials.password}\nAccess Period: ${createdCredentials.accessDays} days\n------------------------------\nYou can log in at: ${window.location.origin}/login`
+    const text = `LeaveFlow Tenant Credentials\n------------------------------\nCompany: ${createdCredentials.company}\nSuper Admin Email: ${createdCredentials.superAdminEmail}\nPassword: ${createdCredentials.password}\nAccess Period: ${createdCredentials.accessDays} days\n------------------------------\nYou can log in at: ${window.location.origin}/login`
     
     navigator.clipboard.writeText(text)
     showToast('Credentials copied to clipboard!')
@@ -242,13 +242,13 @@ export default function SetupProfilePage() {
             </div>
             
             <div>
-              <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, marginBottom: 4 }}>Super Admin Name</span>
-              <span style={{ color: 'var(--text-main)', fontSize: '1.1rem', fontWeight: 500 }}>{application.admin_name}</span>
+              <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, marginBottom: 4 }}>Super Super Admin Name</span>
+              <span style={{ color: 'var(--text-main)', fontSize: '1.1rem', fontWeight: 500 }}>{application.super_admin_name}</span>
             </div>
             
             <div>
-              <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, marginBottom: 4 }}>Super Admin Email</span>
-              <span style={{ color: 'var(--text-main)', fontSize: '1.1rem', fontWeight: 500 }}>{application.admin_email}</span>
+              <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, marginBottom: 4 }}>Super Super Admin Email</span>
+              <span style={{ color: 'var(--text-main)', fontSize: '1.1rem', fontWeight: 500 }}>{application.super_admin_email}</span>
             </div>
             
             <div>
@@ -266,7 +266,7 @@ export default function SetupProfilePage() {
             
             <div>
               <span style={{ color: 'var(--text-dim)', display: 'block', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, marginBottom: 4 }}>Phone</span>
-              <span style={{ color: 'var(--text-main)', fontSize: '1.1rem', fontWeight: 500 }}>{application.admin_phone || '—'}</span>
+              <span style={{ color: 'var(--text-main)', fontSize: '1.1rem', fontWeight: 500 }}>{application.super_admin_phone || '—'}</span>
             </div>
           </div>
         </Card>
@@ -450,7 +450,7 @@ export default function SetupProfilePage() {
               marginBottom: 24,
             }}>
               <div style={{ marginBottom: 12 }}><span style={{ color: 'var(--text-dim)' }}>Company:</span> {createdCredentials.company}</div>
-              <div style={{ marginBottom: 12 }}><span style={{ color: 'var(--text-dim)' }}>Admin Email:</span> {createdCredentials.adminEmail}</div>
+              <div style={{ marginBottom: 12 }}><span style={{ color: 'var(--text-dim)' }}>Super Admin Email:</span> {createdCredentials.superAdminEmail}</div>
               <div style={{ marginBottom: 12 }}><span style={{ color: 'var(--text-dim)' }}>Password:</span> {createdCredentials.password}</div>
               <div><span style={{ color: 'var(--text-dim)' }}>Access Duration:</span> {createdCredentials.accessDays} days</div>
             </div>

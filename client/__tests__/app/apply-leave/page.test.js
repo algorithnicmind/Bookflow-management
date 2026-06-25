@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import ApplyLeavePage from '@/app/apply-leave/page'
+import ApplyLeavePage from '@/app/(protected)/apply-leave/page'
 import { useRouter } from 'next/navigation'
 import { leavesApi } from '@/services/api'
 import React from 'react'

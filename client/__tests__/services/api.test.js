@@ -3,6 +3,22 @@ import { request, authApi, leavesApi, employeesApi, dashboardApi, adminsApi, set
 // Mock global fetch
 global.fetch = jest.fn()
 
+// Helper to create a mock response with headers
+function mockFetchResponse(data, options = {}) {
+  return {
+    ok: options.ok !== undefined ? options.ok : true,
+    status: options.status || 200,
+    statusText: options.statusText || 'OK',
+    headers: {
+      get: (key) => {
+        if (key === 'content-type') return 'application/json'
+        return null
+      }
+    },
+    json: async () => data,
+  }
+}
+
 // No window location mock needed
 
 beforeEach(() => {
@@ -11,53 +27,13 @@ beforeEach(() => {
 })
 
 describe('Core request() function', () => {
-  test('adds auth header if token exists', async () => {
-    localStorage.setItem('token', 'fake-token')
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ success: true })
-    })
-
-    await request('/test')
-    
-    expect(fetch).toHaveBeenCalledWith(
-      'http://localhost:8000/test',
-      expect.objectContaining({
-        headers: expect.objectContaining({
-          'Authorization': 'Bearer fake-token'
-        })
-      })
-    )
-  })
-
-  test('no auth header if no token', async () => {
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ success: true })
-    })
-
-    await request('/test')
-    
-    expect(fetch).toHaveBeenCalledWith(
-      'http://localhost:8000/test',
-      expect.objectContaining({
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-    )
-  })
-
   test('uses GET method by default', async () => {
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ success: true })
-    })
+    fetch.mockResolvedValueOnce(mockFetchResponse({ success: true }))
 
     await request('/test')
     
     expect(fetch).toHaveBeenCalledWith(
-      'http://localhost:8000/test',
+      '/test',
       expect.objectContaining({
         method: 'GET'
       })
@@ -65,16 +41,13 @@ describe('Core request() function', () => {
   })
 
   test('post method with body stringifies payload', async () => {
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ success: true })
-    })
+    fetch.mockResolvedValueOnce(mockFetchResponse({ success: true }))
 
     const body = { key: 'value' }
     await request('/test', { method: 'POST', body })
     
     expect(fetch).toHaveBeenCalledWith(
-      'http://localhost:8000/test',
+      '/test',
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify(body)
@@ -83,10 +56,7 @@ describe('Core request() function', () => {
   })
 
   test('appends query params correctly', async () => {
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ success: true })
-    })
+    fetch.mockResolvedValueOnce(mockFetchResponse({ success: true }))
 
     await request('/test', { params: { search: 'john', status: 'pending' } })
     
@@ -97,10 +67,7 @@ describe('Core request() function', () => {
   })
 
   test('filters empty query params', async () => {
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ success: true })
-    })
+    fetch.mockResolvedValueOnce(mockFetchResponse({ success: true }))
 
     await request('/test', { params: { search: 'john', status: null, filter: '' } })
     
@@ -115,36 +82,43 @@ describe('Core request() function', () => {
   })
 
   test('401 redirects to login and clears storage', async () => {
-    localStorage.setItem('token', 'fake')
-    localStorage.setItem('user', '{}')
-    
     fetch.mockResolvedValueOnce({
       status: 401,
       ok: false,
+      statusText: 'Unauthorized',
+      headers: { get: () => 'application/json' },
       json: async () => ({})
     })
 
     await expect(request('/test')).rejects.toThrow('Session expired. Please log in again.')
-    
-    expect(localStorage.getItem('token')).toBeNull()
-    expect(localStorage.getItem('user')).toBeNull()
   })
 
   test('error response throws detail message', async () => {
     fetch.mockResolvedValueOnce({
       ok: false,
+      status: 400,
+      statusText: 'Bad Request',
+      headers: { get: () => 'application/json' },
       json: async () => ({ detail: 'Custom error message' })
     })
 
     await expect(request('/test')).rejects.toThrow('Custom error message')
   })
 
+  test('non-JSON error response handles gracefully', async () => {
+    fetch.mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      statusText: 'Not Found',
+      headers: { get: () => 'text/html' },
+    })
+
+    await expect(request('/test')).rejects.toThrow('Not Found')
+  })
+
   test('success returns parsed json', async () => {
     const mockData = { id: 1, name: 'Test' }
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockData
-    })
+    fetch.mockResolvedValueOnce(mockFetchResponse(mockData))
 
     const result = await request('/test')
     expect(result).toEqual(mockData)
@@ -155,13 +129,16 @@ describe('authApi', () => {
   test('login sends form data', async () => {
     fetch.mockResolvedValueOnce({
       ok: true,
+      status: 200,
+      statusText: 'OK',
+      headers: { get: () => 'application/json' },
       json: async () => ({ access_token: '123' })
     })
 
     await authApi.login('test@example.com', 'password123')
 
     expect(fetch).toHaveBeenCalledWith(
-      'http://localhost:8000/api/auth/login',
+      '/api/auth/login',
       expect.objectContaining({
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -173,6 +150,9 @@ describe('authApi', () => {
   test('login failure throws custom error', async () => {
     fetch.mockResolvedValueOnce({
       ok: false,
+      status: 401,
+      statusText: 'Unauthorized',
+      headers: { get: () => 'application/json' },
       json: async () => ({ detail: 'Invalid credentials' })
     })
 
@@ -180,20 +160,20 @@ describe('authApi', () => {
   })
 
   test('register calls request correctly', async () => {
-    fetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) })
+    fetch.mockResolvedValueOnce(mockFetchResponse({}))
     await authApi.register({ email: 'test@example.com' })
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/api/auth/register', expect.objectContaining({ method: 'POST' }))
+    expect(fetch).toHaveBeenCalledWith('/api/auth/register', expect.objectContaining({ method: 'POST' }))
   })
 })
 
 describe('leavesApi', () => {
   beforeEach(() => {
-    fetch.mockResolvedValue({ ok: true, json: async () => ({}) })
+    fetch.mockResolvedValue(mockFetchResponse({}))
   })
 
   test('apply', async () => {
     await leavesApi.apply({ type: 'sick' })
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/api/leaves', expect.objectContaining({ method: 'POST' }))
+    expect(fetch).toHaveBeenCalledWith('/api/leaves', expect.objectContaining({ method: 'POST' }))
   })
 
   test('history', async () => {
@@ -203,33 +183,33 @@ describe('leavesApi', () => {
 
   test('balance', async () => {
     await leavesApi.balance()
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/api/leaves/balance', expect.any(Object))
+    expect(fetch).toHaveBeenCalledWith('/api/leaves/balance', expect.any(Object))
   })
 
   test('cancel', async () => {
     await leavesApi.cancel(5)
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/api/leaves/5/cancel', expect.objectContaining({ method: 'PUT' }))
+    expect(fetch).toHaveBeenCalledWith('/api/leaves/5/cancel', expect.objectContaining({ method: 'PUT' }))
   })
 
   test('pending', async () => {
     await leavesApi.pending()
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/api/leaves/pending', expect.any(Object))
+    expect(fetch).toHaveBeenCalledWith('/api/leaves/pending', expect.any(Object))
   })
 
   test('approve', async () => {
     await leavesApi.approve(5, 'OK')
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/api/leaves/5/approve', expect.objectContaining({ method: 'PUT', body: JSON.stringify({ comments: 'OK' }) }))
+    expect(fetch).toHaveBeenCalledWith('/api/leaves/5/approve', expect.objectContaining({ method: 'PUT', body: JSON.stringify({ comments: 'OK' }) }))
   })
 
   test('reject', async () => {
     await leavesApi.reject(5, 'No')
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/api/leaves/5/reject', expect.objectContaining({ method: 'PUT', body: JSON.stringify({ comments: 'No' }) }))
+    expect(fetch).toHaveBeenCalledWith('/api/leaves/5/reject', expect.objectContaining({ method: 'PUT', body: JSON.stringify({ comments: 'No' }) }))
   })
 })
 
 describe('Other APIs', () => {
   beforeEach(() => {
-    fetch.mockResolvedValue({ ok: true, json: async () => ({}) })
+    fetch.mockResolvedValue(mockFetchResponse({}))
   })
 
   test('employeesApi.list', async () => {
@@ -239,46 +219,46 @@ describe('Other APIs', () => {
 
   test('employeesApi.create', async () => {
     await employeesApi.create({ name: 'John' })
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/api/employees', expect.objectContaining({ method: 'POST' }))
+    expect(fetch).toHaveBeenCalledWith('/api/employees', expect.objectContaining({ method: 'POST' }))
   })
 
   test('employeesApi.update', async () => {
     await employeesApi.update(1, { name: 'John' })
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/api/employees/1', expect.objectContaining({ method: 'PUT' }))
+    expect(fetch).toHaveBeenCalledWith('/api/employees/1', expect.objectContaining({ method: 'PUT' }))
   })
 
   test('employeesApi.deactivate', async () => {
     await employeesApi.deactivate(1)
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/api/employees/1', expect.objectContaining({ method: 'DELETE' }))
+    expect(fetch).toHaveBeenCalledWith('/api/employees/1', expect.objectContaining({ method: 'DELETE' }))
   })
 
   test('dashboardApi.stats', async () => {
     await dashboardApi.stats()
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/api/dashboard/stats', expect.any(Object))
+    expect(fetch).toHaveBeenCalledWith('/api/dashboard/stats', expect.any(Object))
   })
 
   test('settingsApi.update', async () => {
     await settingsApi.update({ theme: 'dark' })
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/api/settings', expect.objectContaining({ method: 'PUT' }))
+    expect(fetch).toHaveBeenCalledWith('/api/settings', expect.objectContaining({ method: 'PUT' }))
   })
 
   test('reportsApi.organization', async () => {
     await reportsApi.organization()
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/api/reports/organization', expect.any(Object))
+    expect(fetch).toHaveBeenCalledWith('/api/reports/organization', expect.any(Object))
   })
 
   test('notificationsApi.list', async () => {
     await notificationsApi.list()
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/api/notifications', expect.any(Object))
+    expect(fetch).toHaveBeenCalledWith('/api/notifications', expect.any(Object))
   })
 
   test('notificationsApi.markRead', async () => {
     await notificationsApi.markRead(1)
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/api/notifications/1/read', expect.objectContaining({ method: 'PUT' }))
+    expect(fetch).toHaveBeenCalledWith('/api/notifications/1/read', expect.objectContaining({ method: 'PUT' }))
   })
 
   test('notificationsApi.markAllRead', async () => {
     await notificationsApi.markAllRead()
-    expect(fetch).toHaveBeenCalledWith('http://localhost:8000/api/notifications/read-all', expect.objectContaining({ method: 'PUT' }))
+    expect(fetch).toHaveBeenCalledWith('/api/notifications/read-all', expect.objectContaining({ method: 'PUT' }))
   })
 })

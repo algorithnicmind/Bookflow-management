@@ -9,9 +9,9 @@ export default function LeadModal({ isOpen, onClose }) {
   const [formData, setFormData] = useState({
     company_name: '',
     company_size: '',
-    admin_name: '',
-    admin_email: '',
-    admin_phone: '',
+    super_admin_name: '',
+    super_admin_email: '',
+    super_admin_phone: '',
     industry: '',
     special_requirements: ''
   })
@@ -85,12 +85,12 @@ export default function LeadModal({ isOpen, onClose }) {
           
           <div style={{ display: 'flex', gap: 16 }}>
             <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Admin Name *</label>
-              <input required name="admin_name" value={formData.admin_name} onChange={handleChange} className="form-input" placeholder="Jane Doe" />
+              <label style={{ display: 'block', marginBottom: 6, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Super Admin Name *</label>
+              <input required name="super_admin_name" value={formData.super_admin_name} onChange={handleChange} className="form-input" placeholder="Jane Doe" />
             </div>
             <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Admin Email *</label>
-              <input required type="email" name="admin_email" value={formData.admin_email} onChange={handleChange} className="form-input" placeholder="jane@acme.com" />
+              <label style={{ display: 'block', marginBottom: 6, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Super Admin Email *</label>
+              <input required type="email" name="super_admin_email" value={formData.super_admin_email} onChange={handleChange} className="form-input" placeholder="jane@acme.com" />
             </div>
           </div>
 
@@ -100,8 +100,8 @@ export default function LeadModal({ isOpen, onClose }) {
               <input required name="industry" value={formData.industry} onChange={handleChange} className="form-input" placeholder="e.g. Technology, Healthcare" />
             </div>
             <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Admin Phone *</label>
-              <input required type="tel" name="admin_phone" value={formData.admin_phone} onChange={handleChange} className="form-input" placeholder="e.g. +1 555-0199" />
+              <label style={{ display: 'block', marginBottom: 6, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Super Admin Phone *</label>
+              <input required type="tel" name="super_admin_phone" value={formData.super_admin_phone} onChange={handleChange} className="form-input" placeholder="e.g. +1 555-0199" />
             </div>
           </div>
 

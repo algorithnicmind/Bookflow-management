@@ -10,7 +10,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import AppleEmoji from '@/components/AppleEmoji'
 import { contactApi, platformConfigApi } from '@/services/api'
 import LeadModal from '@/components/LeadModal'

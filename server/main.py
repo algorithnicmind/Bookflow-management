@@ -81,7 +81,22 @@ async def lifespan(app: FastAPI):
                     await conn.execute(text("ALTER TABLE onboarding_applications ADD COLUMN selected_plan VARCHAR(50) DEFAULT 'free_trial';"))
             except Exception as e:
                 print(f"Migration error: {e}")
-    
+                
+            # Seed default Platform Owner
+            from sqlalchemy.future import select
+            from app.modules.employees.models import PlatformOwner
+            from app.core.security import pwd_context
+            
+            res = await conn.execute(select(PlatformOwner))
+            if not res.scalars().first():
+                print("Seeding default Platform Owner...")
+                hashed_password = pwd_context.hash("Owner@123!")
+                # Insert directly to avoid session management issues in lifespan
+                await conn.execute(text("""
+                    INSERT INTO platform_owners (name, email, password_hash, role, department, is_active)
+                    VALUES ('Platform Owner', 'owner@leaveflow.com', :pwd, 'platform_owner', 'System', true)
+                """), {"pwd": hashed_password})
+                
     from app.modules.leaves.cron import start_scheduler
     start_scheduler()
     
