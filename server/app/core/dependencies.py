@@ -80,15 +80,32 @@ async def get_current_user(request: Request, db: AsyncSession = Depends(get_db))
 class RoleChecker:
     """
     Dependency: Enforces Role-Based Access Control (RBAC).
-    
-    Usage:
-    @router.get("/admin-only", dependencies=[Depends(RoleChecker(["admin", "super_admin"]))])
+    Now dynamically checks against RolePermission table in DB.
     """
-    def __init__(self, allowed_roles: list[str]):
+    def __init__(self, allowed_roles: list[str], required_permission: str = None):
         self.allowed_roles = allowed_roles
+        self.required_permission = required_permission
         
-    def __call__(self, current_user: Employee = Depends(get_current_user)):
-        # Verify that the authenticated user possesses one of the allowed roles
+    async def __call__(self, request: Request, current_user: Employee | PlatformOwner = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+        from app.modules.employees.models import PlatformOwner
+        if isinstance(current_user, PlatformOwner):
+            return current_user
+            
+        from app.modules.organizations.models import RolePermission
+        # Check permissions in DB for this org and role
+        res = await db.execute(select(RolePermission).where(
+            (RolePermission.organization_id == current_user.organization_id) &
+            (RolePermission.role_name == current_user.role)
+        ))
+        role_perm = res.scalar_one_or_none()
+        
+        if role_perm and self.required_permission:
+            user_perms = set(role_perm.permissions)
+            if self.required_permission not in user_perms:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Operation forbidden: Insufficient privileges")
+            return current_user
+            
+        # Fallback to hardcoded roles if dynamic not fully set up or required_permission not specified
         if current_user.role not in self.allowed_roles:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Operation forbidden: Insufficient privileges")
         return current_user

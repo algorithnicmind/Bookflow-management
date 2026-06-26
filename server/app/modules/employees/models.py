@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Date, CheckConstraint, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Date, CheckConstraint, ForeignKey, UniqueConstraint, LargeBinary
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -33,6 +33,23 @@ class Employee(Base):
     manager = relationship("Employee", remote_side=[id], backref="direct_reports")
     leave_requests = relationship("LeaveRequest", back_populates="employee", cascade="all, delete-orphan")
     leave_balances = relationship("LeaveBalance", back_populates="employee", cascade="all, delete-orphan")
+    images = relationship("EmployeeImage", back_populates="employee", cascade="all, delete-orphan")
+
+
+class EmployeeImage(Base):
+    __tablename__ = "employee_images"
+
+    id = Column(Integer, primary_key=True, index=True)
+    employee_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), nullable=True, index=True)
+    platform_owner_id = Column(Integer, ForeignKey("platform_owners.id", ondelete="CASCADE"), nullable=True, index=True)
+    filename = Column(String(255), nullable=False)
+    file_data = Column(LargeBinary, nullable=False)
+    mime_type = Column(String(50), nullable=False)
+    file_size = Column(Integer, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    employee = relationship("Employee", back_populates="images")
+    platform_owner = relationship("PlatformOwner")
 
 
 class PlatformOwner(Base):

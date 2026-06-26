@@ -178,6 +178,7 @@ class EmployeeService:
         if data.location is not None: emp.location = data.location
         if data.date_of_birth is not None: emp.date_of_birth = data.date_of_birth
         if data.phone_number is not None: emp.phone_number = data.phone_number
+        if data.department is not None: emp.department = data.department
         
         await AuditLogService.log_action(
             db=self.repo.db,

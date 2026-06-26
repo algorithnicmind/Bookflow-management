@@ -78,6 +78,8 @@ async def update_my_profile(
         if request.password:
             hashed = await asyncio.to_thread(pwd_context.hash, request.password)
             current_user.password_hash = hashed
+        if request.department is not None:
+            current_user.department = request.department
         db.add(current_user)
         await db.commit()
         await db.refresh(current_user)

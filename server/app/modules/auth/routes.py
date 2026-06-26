@@ -9,8 +9,6 @@ from datetime import timedelta, datetime, timezone
 from fastapi import APIRouter, Depends, status, HTTPException, Response, Request, UploadFile, File
 from fastapi.security import OAuth2PasswordRequestForm
 import os
-import shutil
-import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.core.database import get_db
@@ -25,6 +23,7 @@ from pydantic import BaseModel, EmailStr
 from app.core.tenant import get_current_tenant
 from app.modules.organizations.models import Organization
 from app.core.dependencies import limiter
+from app.modules.employees.models import EmployeeImage
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -206,30 +205,38 @@ async def upload_avatar(
 ):
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
-    
-    ext = file.filename.split(".")[-1]
-    new_filename = f"{uuid.uuid4()}.{ext}"
-    os.makedirs("uploads", exist_ok=True)
-    filepath = os.path.join("uploads", new_filename)
-    
-    with open(filepath, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-        
-    url = f"{BACKEND_URL}/uploads/{new_filename}"
-    
-    # Update user
-    # Check if PlatformOwner or Employee
+
+    file_data = await file.read()
+
+    # Determine the target user (Employee or PlatformOwner) by ID lookup
     po_res = await db.execute(select(PlatformOwner).where(PlatformOwner.id == current_user.id))
     po_user = po_res.scalar_one_or_none()
-    
-    if po_user and po_user.email == current_user.email:
-        po_user.profile_image_url = url
-    else:
+
+    is_po = po_user is not None and po_user.email == current_user.email
+    if not is_po:
         emp_res = await db.execute(select(Employee).where(Employee.id == current_user.id))
         emp_user = emp_res.scalar_one_or_none()
-        if emp_user:
-            emp_user.profile_image_url = url
-            
+        if not emp_user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+    employee_image = EmployeeImage(
+        employee_id=None if is_po else current_user.id,
+        platform_owner_id=current_user.id if is_po else None,
+        filename=file.filename,
+        file_data=file_data,
+        mime_type=file.content_type,
+        file_size=len(file_data),
+    )
+    db.add(employee_image)
+    await db.flush()
+
+    url = f"{BACKEND_URL}/api/uploads/{employee_image.id}"
+
+    if is_po:
+        po_user.profile_image_url = url
+    else:
+        emp_user.profile_image_url = url
+
     await db.commit()
     return {"profile_image_url": url}
 
@@ -312,5 +319,57 @@ async def register_admin(
             "email": new_employee.email,
             "role": new_employee.role,
             "department": new_employee.department
+        }
+    }
+
+from app.core.dependencies import RequireOwner
+
+@router.post("/impersonate/{org_id}", response_model=Token)
+async def impersonate_tenant(
+    org_id: int,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee | PlatformOwner = Depends(RequireOwner)
+):
+    """
+    Impersonation API (Platform Owner only).
+    Generates a login token for the target organization's super_admin.
+    """
+    # Find the super admin of the target organization
+    res = await db.execute(select(Employee).where(
+        (Employee.organization_id == org_id) & 
+        (Employee.role == "super_admin") &
+        (Employee.is_active == True)
+    ))
+    target_admin = res.scalars().first()
+    
+    if not target_admin:
+        raise HTTPException(status_code=404, detail="No active super_admin found for this organization")
+        
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": target_admin.email, "id": target_admin.id, "role": target_admin.role},
+        expires_delta=access_token_expires
+    )
+    
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=settings.ENVIRONMENT != "development",
+        samesite="lax",
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    )
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": target_admin.id,
+            "name": target_admin.name,
+            "email": target_admin.email,
+            "role": target_admin.role,
+            "department": target_admin.department,
+            "profile_image_url": getattr(target_admin, "profile_image_url", None)
         }
     }

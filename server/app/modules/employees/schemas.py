@@ -42,3 +42,4 @@ class EmployeeProfileUpdate(BaseModel):
     location: Optional[str] = None
     date_of_birth: Optional[date] = None
     phone_number: Optional[str] = None
+    department: Optional[str] = None

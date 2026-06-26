@@ -13,6 +13,8 @@ import Button from '@/components/ui/Button'
 import { useAuth } from '@/context/AuthContext'
 import { toast } from 'react-hot-toast'
 
+const departments = ['Engineering', 'Marketing', 'Sales', 'HR', 'Finance', 'Operations', 'Design', 'Management', 'General', 'System']
+
 export default function AccountSettingsPage() {
   const { user, updateUser } = useAuth()
   const [loading, setLoading] = useState(true)
@@ -26,7 +28,8 @@ export default function AccountSettingsPage() {
     password: '',
     location: '',
     date_of_birth: '',
-    phone_number: ''
+    phone_number: '',
+    department: ''
   })
 
   const [calendarStatus, setCalendarStatus] = useState({ connected: false })
@@ -53,7 +56,8 @@ export default function AccountSettingsPage() {
           password: '',
           location: data.location || '',
           date_of_birth: data.date_of_birth || '',
-          phone_number: data.phone_number || ''
+          phone_number: data.phone_number || '',
+          department: data.department || ''
         })
       } catch (err) {
         console.error(err)
@@ -232,6 +236,18 @@ export default function AccountSettingsPage() {
                 onChange={e => setForm({...form, phone_number: e.target.value})} 
                 placeholder="+1 (555) 000-0000" 
               />
+            </div>
+
+            <div className="form-group">
+              <label>Department</label>
+              <select 
+                value={form.department} 
+                onChange={e => setForm({...form, department: e.target.value})}
+                style={{ width: '100%', padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-main)' }}
+              >
+                <option value="">Select a department</option>
+                {departments.map((d) => <option key={d} value={d}>{d}</option>)}
+              </select>
             </div>
 
             <div className="form-group">

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey, JSON
 from sqlalchemy.sql import func
 from app.core.database import Base
 
@@ -9,9 +9,20 @@ class Organization(Base):
     name = Column(String(100), nullable=False)
     domain = Column(String(100), unique=True, index=True, nullable=True)
     plan_type = Column(String(20), default="starter", nullable=False) # starter, professional, enterprise
+    module_access = Column(JSON, nullable=True) # e.g. {"chatbot": true, "advanced_reports": false}
+    max_employees = Column(Integer, nullable=True) # Override for max employees allowed
     is_active = Column(Boolean, default=True, nullable=False)
     access_days = Column(Integer, default=30, nullable=True)
     expires_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+class RolePermission(Base):
+    __tablename__ = "role_permissions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    role_name = Column(String(50), nullable=False) # super_admin, admin, manager, employee
+    permissions = Column(JSON, nullable=False) # e.g. ["manage_employees", "approve_leaves", "view_reports"]
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 class OnboardingApplication(Base):
