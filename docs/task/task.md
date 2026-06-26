@@ -18,6 +18,11 @@ This project focuses on building an advanced Tenant/Organization Management Port
 - [x] **Database Schema Updates:** Update the `Organization` table to include columns for `plan_tier`, `module_access` (JSON), `max_employees` (Integer), and `status`.
 - [x] **Role Permissions Table:** Create a new `RolePermissions` table linking `organization_id`, `role_name`, and a JSON array of `permissions`.
 - [x] **Tenant Management APIs:** Create endpoints for the Platform Owner to edit organization details, update plan tiers, toggle modules, change active status, and override quotas.
+- [x] **Complete transition to Zero-Hardcoding Architecture:**
+  - [x] Dynamic Roles (RolePermission implementation, RoleChecker logic)
+  - [x] Dynamic Departments (Department model, CRUD API)
+  - [x] Dynamic Leave Types (LeaveType model, is_paid logic, CRUD API)
+  - [x] Remove DB Constraints (Dropped PostgreSQL CheckConstraints on role, leave_type, etc.)
 - [x] **Dynamic RBAC Engine:** Create endpoints to fetch and update role permissions. Implement a dynamic `PermissionChecker` middleware to replace the hardcoded `RoleChecker`, ensuring that users only access routes they have explicit permissions for.
 - [x] **Impersonation API:** Build a secure endpoint that generates a temporary login JWT for an organization's admin, accessible only by Platform Owners.
 

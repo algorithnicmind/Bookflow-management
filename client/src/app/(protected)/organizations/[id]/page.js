@@ -9,7 +9,7 @@
  * - Dynamic RBAC Matrix
  */
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter } from 'next/navigation'
 import { organizationsApi, authApi, request } from '@/services/api'
@@ -30,11 +30,7 @@ const AVAILABLE_PERMISSIONS = [
 const ROLES = ['super_admin', 'admin', 'manager', 'employee']
 
 export default function TenantSettingsPage({ params }) {
-  // params in Next.js 14 app router might be a promise depending on how it's accessed, 
-  // but usually it's just destructured. However, React complains if we don't unwrap it properly 
-  // if it's async in recent Next.js versions. We'll use React.use() to be safe.
-  const resolvedParams = use(params)
-  const orgId = resolvedParams.id
+  const orgId = params.id
 
   const { user } = useAuth()
   const router = useRouter()
@@ -134,7 +130,7 @@ export default function TenantSettingsPage({ params }) {
   }
 
   const handleImpersonate = async () => {
-    if (!confirm('Are you sure you want to login as this tenant\\'s Super Admin? This will replace your current session.')) return
+    if (!confirm(`Are you sure you want to login as this tenant's Super Admin? This will replace your current session.`)) return
     
     setIsImpersonating(true)
     try {

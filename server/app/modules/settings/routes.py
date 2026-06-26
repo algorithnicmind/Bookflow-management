@@ -4,12 +4,12 @@ System Settings API Routes
 Handles global platform configurations, approval chains, and triggering scheduled CRON jobs like accruals.
 Restricted to system administrators.
 """
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List, Optional
 from app.core.database import get_db
-from app.core.dependencies import RoleChecker, RequireOwner
+from app.core.dependencies import RoleChecker, RequireOwner, get_current_user
 from app.core.tenant import get_current_tenant
 from app.modules.organizations.models import Organization
 from app.modules.employees.models import Employee
@@ -93,6 +93,77 @@ async def delete_leave_policy(
     service = SettingsService(db, tenant.id)
     await service.delete_leave_policy(policy_id)
     return {"message": "Leave policy deleted"}
+
+from app.modules.settings.schemas import LeaveTypeCreate, LeaveTypeUpdate, LeaveTypeResponse
+from app.modules.settings.models import LeaveType
+
+@router.get("/leave-types", response_model=List[LeaveTypeResponse])
+async def get_leave_types(
+    db: AsyncSession = Depends(get_db),
+    tenant: Organization = Depends(get_current_tenant),
+    current_user: Employee = Depends(get_current_user)
+):
+    result = await db.execute(select(LeaveType).where(LeaveType.organization_id == tenant.id))
+    return result.scalars().all()
+
+@router.post("/leave-types", response_model=LeaveTypeResponse)
+async def create_leave_type(
+    request: LeaveTypeCreate,
+    db: AsyncSession = Depends(get_db),
+    tenant: Organization = Depends(get_current_tenant),
+    current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))
+):
+    leave_type = LeaveType(
+        organization_id=tenant.id,
+        name=request.name,
+        description=request.description,
+        default_days=request.default_days,
+        is_paid=request.is_paid
+    )
+    db.add(leave_type)
+    await db.commit()
+    await db.refresh(leave_type)
+    return leave_type
+
+@router.put("/leave-types/{type_id}", response_model=LeaveTypeResponse)
+async def update_leave_type(
+    type_id: int,
+    request: LeaveTypeUpdate,
+    db: AsyncSession = Depends(get_db),
+    tenant: Organization = Depends(get_current_tenant),
+    current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))
+):
+    leave_type = await db.get(LeaveType, type_id)
+    if not leave_type or leave_type.organization_id != tenant.id:
+        raise HTTPException(status_code=404, detail="Leave Type not found")
+        
+    if request.name is not None:
+        leave_type.name = request.name
+    if request.description is not None:
+        leave_type.description = request.description
+    if request.default_days is not None:
+        leave_type.default_days = request.default_days
+    if request.is_paid is not None:
+        leave_type.is_paid = request.is_paid
+        
+    await db.commit()
+    await db.refresh(leave_type)
+    return leave_type
+
+@router.delete("/leave-types/{type_id}")
+async def delete_leave_type(
+    type_id: int,
+    db: AsyncSession = Depends(get_db),
+    tenant: Organization = Depends(get_current_tenant),
+    current_user: Employee = Depends(RoleChecker(["super_admin"]))
+):
+    leave_type = await db.get(LeaveType, type_id)
+    if not leave_type or leave_type.organization_id != tenant.id:
+        raise HTTPException(status_code=404, detail="Leave Type not found")
+        
+    await db.delete(leave_type)
+    await db.commit()
+    return {"message": "Leave type deleted"}
 
 @router.get("/holidays", response_model=List[PublicHolidayResponse])
 async def get_holidays(

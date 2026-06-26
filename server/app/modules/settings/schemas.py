@@ -58,6 +58,28 @@ class LeavePolicyBase(BaseModel):
 class LeavePolicyCreate(LeavePolicyBase):
     pass
 
+class LeaveTypeCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    default_days: int = 0
+    is_paid: bool = True
+
+class LeaveTypeUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    default_days: Optional[int] = None
+    is_paid: Optional[bool] = None
+
+class LeaveTypeResponse(BaseModel):
+    id: int
+    organization_id: int
+    name: str
+    description: Optional[str]
+    default_days: int
+    is_paid: bool
+    
+    class Config:
+        from_attributes = True
 class LeavePolicyResponse(LeavePolicyBase):
     id: int
 

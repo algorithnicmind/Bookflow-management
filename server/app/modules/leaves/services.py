@@ -82,7 +82,14 @@ class LeaveService:
             raise HTTPException(status_code=400, detail="The requested dates consist only of public holidays or invalid days.")
 
         # Check balance for paid leaves
-        if request.leave_type != "unpaid":
+        from app.modules.settings.models import LeaveType
+        leave_type_obj = await self.repo.db.execute(select(LeaveType).where(
+            LeaveType.organization_id == self.repo.organization_id,
+            LeaveType.name == request.leave_type
+        ))
+        leave_type = leave_type_obj.scalar_one_or_none()
+        
+        if leave_type and leave_type.is_paid:
             current_year = today.year
             balance = await self.repo.get_balance(employee_id, request.leave_type, current_year)
             if not balance:
@@ -214,7 +221,14 @@ class LeaveService:
         leave.status = "cancelled"
 
         # Restore balance
-        if leave.leave_type != "unpaid":
+        from app.modules.settings.models import LeaveType
+        leave_type_obj = await self.repo.db.execute(select(LeaveType).where(
+            LeaveType.organization_id == self.repo.organization_id,
+            LeaveType.name == leave.leave_type
+        ))
+        leave_type_record = leave_type_obj.scalar_one_or_none()
+
+        if leave_type_record and leave_type_record.is_paid:
             requested_days = get_calendar_days(leave.start_date, leave.end_date)
 
             current_year = leave.start_date.year
@@ -506,7 +520,14 @@ class LeaveService:
         await self.repo.add_approval(approval)
 
         # Restore balance
-        if leave.leave_type != "unpaid":
+        from app.modules.settings.models import LeaveType
+        leave_type_obj = await self.repo.db.execute(select(LeaveType).where(
+            LeaveType.organization_id == self.repo.organization_id,
+            LeaveType.name == leave.leave_type
+        ))
+        leave_type_record = leave_type_obj.scalar_one_or_none()
+
+        if leave_type_record and leave_type_record.is_paid:
             requested_days = get_calendar_days(leave.start_date, leave.end_date)
 
             current_year = leave.start_date.year

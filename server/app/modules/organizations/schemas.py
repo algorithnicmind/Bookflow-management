@@ -34,3 +34,20 @@ class RolePermissionResponse(BaseModel):
     permissions: List[str]
     
     model_config = ConfigDict(from_attributes=True)
+
+class DepartmentCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+
+class DepartmentUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+
+class DepartmentResponse(BaseModel):
+    id: int
+    organization_id: int
+    name: str
+    description: Optional[str]
+    created_at: datetime
+    
+    model_config = ConfigDict(from_attributes=True)

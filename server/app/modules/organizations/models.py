@@ -25,6 +25,15 @@ class RolePermission(Base):
     permissions = Column(JSON, nullable=False) # e.g. ["manage_employees", "approve_leaves", "view_reports"]
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
+class Department(Base):
+    __tablename__ = "departments"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    name = Column(String(100), nullable=False)
+    description = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
 class OnboardingApplication(Base):
     __tablename__ = "onboarding_applications"
 

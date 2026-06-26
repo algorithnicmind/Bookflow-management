@@ -90,3 +90,74 @@ async def update_role_permissions(
     await db.commit()
     await db.refresh(role_perm)
     return role_perm
+
+from app.modules.organizations.models import Department
+from app.modules.organizations.schemas import DepartmentCreate, DepartmentUpdate, DepartmentResponse
+from app.core.tenant import get_current_tenant
+
+@router.get("/{org_id}/departments", response_model=List[DepartmentResponse])
+async def list_departments(
+    org_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee | PlatformOwner = Depends(get_current_user)
+):
+    if not isinstance(current_user, PlatformOwner):
+        if current_user.organization_id != org_id:
+            raise HTTPException(status_code=403, detail="Forbidden")
+    result = await db.execute(select(Department).where(Department.organization_id == org_id))
+    return result.scalars().all()
+
+@router.post("/{org_id}/departments", response_model=DepartmentResponse)
+async def create_department(
+    org_id: int,
+    request: DepartmentCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))
+):
+    if current_user.organization_id != org_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    dept = Department(organization_id=org_id, name=request.name, description=request.description)
+    db.add(dept)
+    await db.commit()
+    await db.refresh(dept)
+    return dept
+
+@router.put("/{org_id}/departments/{dept_id}", response_model=DepartmentResponse)
+async def update_department(
+    org_id: int,
+    dept_id: int,
+    request: DepartmentUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))
+):
+    if current_user.organization_id != org_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    dept = await db.get(Department, dept_id)
+    if not dept or dept.organization_id != org_id:
+        raise HTTPException(status_code=404, detail="Department not found")
+    
+    if request.name is not None:
+        dept.name = request.name
+    if request.description is not None:
+        dept.description = request.description
+        
+    await db.commit()
+    await db.refresh(dept)
+    return dept
+
+@router.delete("/{org_id}/departments/{dept_id}")
+async def delete_department(
+    org_id: int,
+    dept_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(RoleChecker(["super_admin"]))
+):
+    if current_user.organization_id != org_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    dept = await db.get(Department, dept_id)
+    if not dept or dept.organization_id != org_id:
+        raise HTTPException(status_code=404, detail="Department not found")
+        
+    await db.delete(dept)
+    await db.commit()
+    return {"message": "Department deleted"}

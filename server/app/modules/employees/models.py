@@ -25,7 +25,6 @@ class Employee(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     __table_args__ = (
-        CheckConstraint(role.in_(['super_admin', 'admin', 'manager', 'employee']), name="check_employee_role"),
         UniqueConstraint('organization_id', 'email', name='uq_org_email'),
     )
 

@@ -72,3 +72,14 @@ class PlatformConfig(Base):
     onboarding_section_title = Column(String(200), default="Get Started with LeaveFlow", nullable=True)
     onboarding_section_subtitle = Column(String(500), default="Fill out the form below and our team will set up your organization.", nullable=True)
     updated_at = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
+
+class LeaveType(Base):
+    __tablename__ = "leave_types"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    name = Column(String(100), nullable=False)
+    description = Column(String(255), nullable=True)
+    default_days = Column(Integer, nullable=False, default=0)
+    is_paid = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

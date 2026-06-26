@@ -57,6 +57,12 @@ async def lifespan(app: FastAPI):
             # Migration to add access_days and expires_at to organizations
             from sqlalchemy import text
             try:
+                print("Dropping old hardcoded constraints for zero-hardcoding architecture...")
+                await conn.execute(text("ALTER TABLE employees DROP CONSTRAINT IF EXISTS check_employee_role;"))
+                await conn.execute(text("ALTER TABLE leave_requests DROP CONSTRAINT IF EXISTS check_leave_type;"))
+                await conn.execute(text("ALTER TABLE leave_requests DROP CONSTRAINT IF EXISTS check_leave_status;"))
+                await conn.execute(text("ALTER TABLE leave_balances DROP CONSTRAINT IF EXISTS check_balance_leave_type;"))
+
                 res = await conn.execute(text("""
                     SELECT column_name 
                     FROM information_schema.columns 
