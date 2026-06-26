@@ -127,6 +127,23 @@ export const authApi = {
     }
     return response.json()
   },
+  impersonate: async (orgId) => {
+    const response = await fetch(`${API_BASE}/api/auth/impersonate/${orgId}`, {
+      method: 'POST',
+      credentials: 'include'
+    })
+    const contentType = response.headers.get('content-type') || ''
+    let data
+    if (contentType.includes('application/json')) {
+      data = await response.json()
+    } else {
+      data = { detail: response.statusText || 'Impersonation failed' }
+    }
+    if (!response.ok) {
+      throw new Error(typeof data.detail === 'string' ? data.detail : 'Impersonation failed')
+    }
+    return data
+  },
 }
 
 export const leavesApi = {
@@ -241,3 +258,10 @@ export const platformConfigApi = {
   update: (body) => request('/api/settings/platform-config', { method: 'PUT', body }),
 }
 
+export const organizationsApi = {
+  list: () => request('/api/organizations'),
+  get: (id) => request(`/api/organizations/${id}`),
+  update: (id, body) => request(`/api/organizations/${id}`, { method: 'PUT', body }),
+  getRoles: (id) => request(`/api/organizations/${id}/roles`),
+  updateRole: (id, roleName, permissions) => request(`/api/organizations/${id}/roles/${roleName}`, { method: 'PUT', body: { permissions } }),
+}

@@ -22,7 +22,7 @@ This project focuses on building an advanced Tenant/Organization Management Port
 - [x] **Impersonation API:** Build a secure endpoint that generates a temporary login JWT for an organization's admin, accessible only by Platform Owners.
 
 ### Frontend Tasks (Next.js)
-- **Platform Owner Tenant Dashboard:** Build a detailed list view of all organizations.
-- **Tenant Settings Forms:** Inside a specific Tenant's view, build forms for the Platform Owner to edit the organization name, select pricing plans from a dropdown, toggle module access switches, suspend the account, and configure initial super-admin credentials.
-- **Impersonation & Actions:** Add a "Login As" button on the Tenant Details view that securely routes the Platform Owner into that tenant's view.
-- **Dynamic RBAC Matrix UI:** Build a grid/matrix interface where administrators can check/uncheck specific permission boxes for each role (e.g., granting the "Manager" role the ability to view organization reports).
+- [x] **Platform Owner Tenant Dashboard:** Build a detailed list view of all organizations.
+- [x] **Tenant Settings Forms:** Inside a specific Tenant's view, build forms for the Platform Owner to edit the organization name, select pricing plans from a dropdown, toggle module access switches, suspend the account, and configure initial super-admin credentials.
+- [x] **Impersonation & Actions:** Add a "Login As" button on the Tenant Details view that securely routes the Platform Owner into that tenant's view.
+- [x] **Dynamic RBAC Matrix UI:** Build a grid/matrix interface where administrators can check/uncheck specific permission boxes for each role (e.g., granting the "Manager" role the ability to view organization reports).
