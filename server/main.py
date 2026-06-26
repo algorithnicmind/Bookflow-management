@@ -12,6 +12,7 @@ import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.future import select
+from sqlalchemy import text
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from app.core.database import engine, Base, AsyncSessionLocal
@@ -150,6 +151,31 @@ async def lifespan(app: FastAPI):
                     """))
                     await conn.execute(text("CREATE INDEX ix_employee_images_employee_id ON employee_images(employee_id);"))
                     await conn.execute(text("CREATE INDEX ix_employee_images_platform_owner_id ON employee_images(platform_owner_id);"))
+                else:
+                    # Add platform_owner_id if missing
+                    res = await conn.execute(text("""
+                        SELECT column_name
+                        FROM information_schema.columns
+                        WHERE table_name='employee_images' AND column_name='platform_owner_id';
+                    """))
+                    if not res.scalar():
+                        print("Adding column platform_owner_id to employee_images...")
+                        await conn.execute(text("""
+                            ALTER TABLE employee_images
+                            ADD COLUMN platform_owner_id INTEGER REFERENCES platform_owners(id) ON DELETE CASCADE
+                        """))
+                        await conn.execute(text("CREATE INDEX IF NOT EXISTS ix_employee_images_platform_owner_id ON employee_images(platform_owner_id);"))
+
+                    # Make employee_id nullable (if it was created before we made it nullable)
+                    res = await conn.execute(text("""
+                        SELECT is_nullable
+                        FROM information_schema.columns
+                        WHERE table_name='employee_images' AND column_name='employee_id';
+                    """))
+                    row = res.scalar()
+                    if row == 'NO':
+                        print("Making employee_id nullable in employee_images...")
+                        await conn.execute(text("ALTER TABLE employee_images ALTER COLUMN employee_id DROP NOT NULL;"))
                     
                 res = await conn.execute(text("""
                     SELECT column_name 
@@ -233,6 +259,24 @@ async def lifespan(app: FastAPI):
                 if os.path.isdir(uploads_dir) and not os.listdir(uploads_dir):
                     os.rmdir(uploads_dir)
                 print("Local upload migration complete.")
+            else:
+                print("Uploads directory empty, cleaning stale old-format URLs...")
+                await session.execute(
+                    text("UPDATE employees SET profile_image_url = NULL WHERE profile_image_url LIKE '%/uploads/%'")
+                )
+                await session.execute(
+                    text("UPDATE platform_owners SET profile_image_url = NULL WHERE profile_image_url LIKE '%/uploads/%'")
+                )
+                await session.commit()
+        else:
+            print("No uploads directory found, cleaning stale old-format URLs...")
+            await session.execute(
+                text("UPDATE employees SET profile_image_url = NULL WHERE profile_image_url LIKE '%/uploads/%'")
+            )
+            await session.execute(
+                text("UPDATE platform_owners SET profile_image_url = NULL WHERE profile_image_url LIKE '%/uploads/%'")
+            )
+            await session.commit()
 
     from app.modules.leaves.cron import start_scheduler
     start_scheduler()
