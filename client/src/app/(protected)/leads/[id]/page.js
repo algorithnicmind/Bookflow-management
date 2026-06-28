@@ -17,15 +17,15 @@ import AppleEmoji from '@/components/AppleEmoji'
 import { LEAD_STATUS_OPTIONS as STATUS_OPTIONS, getStatusMeta } from '@/lib/constants'
 
 const PLAN_META = {
-  free_trial: { name: 'Free Trial', price: '$0/mo', color: '#a1a1aa', bg: 'rgba(161, 161, 161, 0.1)', border: 'rgba(161, 161, 161, 0.3)' },
+  free_trial: { name: 'Free Tier', price: '$0/mo', color: '#a1a1aa', bg: 'rgba(161, 161, 161, 0.1)', border: 'rgba(161, 161, 161, 0.3)' },
   professional: { name: 'Professional', price: '$5/user/mo', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)', border: 'rgba(16, 185, 129, 0.3)' },
-  enterprise: { name: 'Enterprise', price: 'Custom', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)', border: 'rgba(139, 92, 246, 0.3)' },
+  enterprise: { name: 'Customization', price: 'Custom', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)', border: 'rgba(139, 92, 246, 0.3)' },
 }
 
 const PLAN_OPTIONS = [
-  { value: 'free_trial', label: 'Free Trial' },
+  { value: 'free_trial', label: 'Free Tier' },
   { value: 'professional', label: 'Professional' },
-  { value: 'enterprise', label: 'Enterprise' },
+  { value: 'enterprise', label: 'Customization' },
 ]
 
 export default function LeadProfilePage() {
