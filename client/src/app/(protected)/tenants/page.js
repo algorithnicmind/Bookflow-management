@@ -155,8 +155,14 @@ export default function TenantsPage() {
                     <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-main)' }}>
                       <span 
                         style={{ cursor: 'pointer', color: 'var(--accent)', textDecoration: 'underline' }}
-                        onClick={() => router.push(`/tenants/${app.id}/dashboard`)}
-                        title="View Tenant Dashboard"
+                        onClick={() => {
+                          if (app.organization_id) {
+                            router.push(`/organizations/${app.organization_id}`)
+                          } else {
+                            showToast('Tenant has not been provisioned yet.', 'error')
+                          }
+                        }}
+                        title="View Organization Profile"
                       >
                         {app.company_name}
                       </span>
