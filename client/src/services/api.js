@@ -223,7 +223,6 @@ export const onboardingApi = {
   approve: (id, body) => request(`/api/onboarding/applications/${id}/approve`, { method: 'PUT', body: body || {} }),
   reject: (id) => request(`/api/onboarding/applications/${id}/reject`, { method: 'PUT', body: {} }),
   deleteTenant: (id) => request(`/api/onboarding/applications/${id}/tenant`, { method: 'DELETE' }),
-  getDashboard: (id) => request(`/api/onboarding/applications/${id}/dashboard`),
 }
 
 export const integrationsApi = {
@@ -264,4 +263,5 @@ export const organizationsApi = {
   update: (id, body) => request(`/api/organizations/${id}`, { method: 'PUT', body }),
   getRoles: (id) => request(`/api/organizations/${id}/roles`),
   updateRole: (id, roleName, permissions) => request(`/api/organizations/${id}/roles/${roleName}`, { method: 'PUT', body: { permissions } }),
+  getDashboard: (id) => request(`/api/organizations/${id}/dashboard`),
 }

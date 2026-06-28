@@ -161,3 +161,109 @@ async def delete_department(
     await db.delete(dept)
     await db.commit()
     return {"message": "Department deleted"}
+
+
+@router.get("/{org_id}/dashboard")
+async def get_organization_dashboard(
+    org_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee | PlatformOwner = Depends(RequireOwner),
+):
+    """Get the full hierarchical structure and recent activity for an organization."""
+    from app.modules.audit.models import AuditLog
+    
+    org_result = await db.execute(
+        select(Organization).where(Organization.id == org_id)
+    )
+    org = org_result.scalar_one_or_none()
+
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+        
+    # 2. Fetch all Employees
+    emp_result = await db.execute(select(Employee).where(Employee.organization_id == org.id))
+    employees = emp_result.scalars().all()
+    
+    # 3. Build Hierarchy & Stats
+    total_super_admins = 0
+    total_admins = 0
+    total_managers = 0
+    total_employees = 0
+    
+    # Map employees by id
+    emp_dict = {}
+    for e in employees:
+        emp_dict[e.id] = {
+            "id": e.id,
+            "name": e.name,
+            "email": e.email,
+            "role": e.role,
+            "department": e.department,
+            "last_login": e.last_login.isoformat() if e.last_login else None,
+            "profile_image_url": getattr(e, 'profile_image_url', None),
+            "reports": []
+        }
+        if e.role == 'super_admin':
+            total_super_admins += 1
+        elif e.role == 'admin':
+            total_admins += 1
+        elif e.role == 'manager':
+            total_managers += 1
+        else:
+            total_employees += 1
+
+    # Attach reports
+    hierarchy = []
+    unassigned = []
+    for e in employees:
+        node = emp_dict[e.id]
+        if e.manager_id and e.manager_id in emp_dict:
+            emp_dict[e.manager_id]["reports"].append(node)
+        elif e.role in ('admin', 'super_admin'):
+            hierarchy.append(node)
+        else:
+            unassigned.append(node)
+            
+    # Add unassigned to hierarchy if they don't have a manager and aren't admins
+    if unassigned:
+        hierarchy.append({
+            "id": "unassigned",
+            "name": "Unassigned / Direct Reports",
+            "role": "group",
+            "reports": unassigned
+        })
+
+    # 4. Fetch Recent Audit Logs
+    audit_result = await db.execute(
+        select(AuditLog)
+        .join(Employee, Employee.id == AuditLog.actor_id)
+        .where(Employee.organization_id == org.id)
+        .order_by(AuditLog.created_at.desc())
+        .limit(50)
+    )
+    audit_logs = audit_result.scalars().all()
+    
+    recent_activity = [
+        {
+            "id": log.id,
+            "actor_name": log.actor_name,
+            "action": log.action,
+            "target_type": log.target_type,
+            "details": log.details,
+            "created_at": log.created_at.isoformat()
+        }
+        for log in audit_logs
+    ]
+
+    return {
+        "tenant_id": org.id,
+        "company_name": org.name,
+        "stats": {
+            "total_employees": total_employees,
+            "total_managers": total_managers,
+            "total_super_admins": total_super_admins,
+            "total_admins": total_admins,
+        },
+        "hierarchy": hierarchy,
+        "recent_activity": recent_activity
+    }
