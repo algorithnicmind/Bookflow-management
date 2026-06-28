@@ -1,7 +1,9 @@
 # SaaS Tenant Management & Dynamic RBAC - Task Details
 
 ## 1. Project Details & Feature Requirements
+
 This project focuses on building an advanced Tenant/Organization Management Portal specifically designed for the Platform Owner. The core features to be implemented include:
+
 - **Organization Profile Management:** Create, edit, and manage basic profile details (Name, Domain).
 - **Subscription Plans & Tiered Access:** Assign subscription plans (e.g., Starter, Pro, Enterprise) to dictate organizational limits and access.
 - **Granular Module Access (Feature Flags):** Manually toggle specific modules (like AI Chatbot, Slack Integrations, Advanced Analytics) on and off for specific organizations.
@@ -15,10 +17,12 @@ This project focuses on building an advanced Tenant/Organization Management Port
 ## 2. Implementation Tasks
 
 ### Backend Tasks (FastAPI & Database)
+
 - [x] **Database Schema Updates:** Update the `Organization` table to include columns for `plan_tier`, `module_access` (JSON), `max_employees` (Integer), and `status`.
 - [x] **Role Permissions Table:** Create a new `RolePermissions` table linking `organization_id`, `role_name`, and a JSON array of `permissions`.
 - [x] **Tenant Management APIs:** Create endpoints for the Platform Owner to edit organization details, update plan tiers, toggle modules, change active status, and override quotas.
 - [x] **Complete transition to Zero-Hardcoding Architecture:**
+
   - [x] Dynamic Roles (RolePermission implementation, RoleChecker logic)
   - [x] Dynamic Departments (Department model, CRUD API)
   - [x] Dynamic Leave Types (LeaveType model, is_paid logic, CRUD API)
