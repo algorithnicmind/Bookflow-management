@@ -153,17 +153,7 @@ export default function TenantsPage() {
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
                     <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-main)' }}>
-                      <span 
-                        style={{ cursor: 'pointer', color: 'var(--accent)', textDecoration: 'underline' }}
-                        onClick={() => {
-                          if (app.organization_id) {
-                            router.push(`/organizations/${app.organization_id}`)
-                          } else {
-                            showToast('Tenant has not been provisioned yet.', 'error')
-                          }
-                        }}
-                        title="View Organization Profile"
-                      >
+                      <span>
                         {app.company_name}
                       </span>
                       <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: 4 }}>{app.company_size} employees</span>
