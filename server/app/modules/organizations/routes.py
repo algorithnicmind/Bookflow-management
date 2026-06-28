@@ -91,6 +91,30 @@ async def update_role_permissions(
     await db.refresh(role_perm)
     return role_perm
 
+@router.delete("/{org_id}/roles/{role_name}")
+async def delete_role_permissions(
+    org_id: int,
+    role_name: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee | PlatformOwner = Depends(get_current_user)
+):
+    if not isinstance(current_user, PlatformOwner):
+        if current_user.organization_id != org_id or current_user.role != "super_admin":
+            raise HTTPException(status_code=403, detail="Forbidden")
+            
+    result = await db.execute(select(RolePermission).where(
+        (RolePermission.organization_id == org_id) &
+        (RolePermission.role_name == role_name)
+    ))
+    role_perm = result.scalar_one_or_none()
+    
+    if not role_perm:
+        raise HTTPException(status_code=404, detail="Role not found")
+        
+    await db.delete(role_perm)
+    await db.commit()
+    return {"message": "Role deleted"}
+
 from app.modules.organizations.models import Department
 from app.modules.organizations.schemas import DepartmentCreate, DepartmentUpdate, DepartmentResponse
 from app.core.tenant import get_current_tenant
@@ -267,3 +291,54 @@ async def get_organization_dashboard(
         "hierarchy": hierarchy,
         "recent_activity": recent_activity
     }
+
+from app.modules.settings.models import LeaveType
+from app.modules.settings.schemas import LeaveTypeCreate, LeaveTypeUpdate, LeaveTypeResponse
+
+@router.get("/{org_id}/leave-types", response_model=List[LeaveTypeResponse])
+async def list_leave_types(
+    org_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee | PlatformOwner = Depends(get_current_user)
+):
+    if not isinstance(current_user, PlatformOwner):
+        if current_user.organization_id != org_id or current_user.role != "super_admin":
+            raise HTTPException(status_code=403, detail="Forbidden")
+    result = await db.execute(select(LeaveType).where(LeaveType.organization_id == org_id))
+    return result.scalars().all()
+
+@router.post("/{org_id}/leave-types", response_model=LeaveTypeResponse)
+async def create_leave_type(
+    org_id: int,
+    request: LeaveTypeCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee | PlatformOwner = Depends(get_current_user)
+):
+    if not isinstance(current_user, PlatformOwner):
+        if current_user.organization_id != org_id or current_user.role != "super_admin":
+            raise HTTPException(status_code=403, detail="Forbidden")
+    new_type = LeaveType(**request.model_dump(), organization_id=org_id)
+    db.add(new_type)
+    await db.commit()
+    await db.refresh(new_type)
+    return new_type
+
+@router.delete("/{org_id}/leave-types/{leave_type_id}")
+async def delete_leave_type(
+    org_id: int,
+    leave_type_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee | PlatformOwner = Depends(get_current_user)
+):
+    if not isinstance(current_user, PlatformOwner):
+        if current_user.organization_id != org_id or current_user.role != "super_admin":
+            raise HTTPException(status_code=403, detail="Forbidden")
+    result = await db.execute(select(LeaveType).where(
+        (LeaveType.id == leave_type_id) & (LeaveType.organization_id == org_id)
+    ))
+    leave_type = result.scalar_one_or_none()
+    if not leave_type:
+        raise HTTPException(status_code=404, detail="Leave type not found")
+    await db.delete(leave_type)
+    await db.commit()
+    return {"message": "Leave type deleted"}

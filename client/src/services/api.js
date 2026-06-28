@@ -144,6 +144,23 @@ export const authApi = {
     }
     return data
   },
+  impersonateEmployee: async (employeeId) => {
+    const response = await fetch(`${API_BASE}/api/auth/impersonate/employee/${employeeId}`, {
+      method: 'POST',
+      credentials: 'include'
+    })
+    const contentType = response.headers.get('content-type') || ''
+    let data
+    if (contentType.includes('application/json')) {
+      data = await response.json()
+    } else {
+      data = { detail: response.statusText || 'Impersonation failed' }
+    }
+    if (!response.ok) {
+      throw new Error(typeof data.detail === 'string' ? data.detail : 'Impersonation failed')
+    }
+    return data
+  },
 }
 
 export const leavesApi = {
@@ -263,5 +280,9 @@ export const organizationsApi = {
   update: (id, body) => request(`/api/organizations/${id}`, { method: 'PUT', body }),
   getRoles: (id) => request(`/api/organizations/${id}/roles`),
   updateRole: (id, roleName, permissions) => request(`/api/organizations/${id}/roles/${roleName}`, { method: 'PUT', body: { permissions } }),
+  deleteRole: (id, roleName) => request(`/api/organizations/${id}/roles/${roleName}`, { method: 'DELETE' }),
   getDashboard: (id) => request(`/api/organizations/${id}/dashboard`),
+  getLeaveTypes: (id) => request(`/api/organizations/${id}/leave-types`),
+  createLeaveType: (id, body) => request(`/api/organizations/${id}/leave-types`, { method: 'POST', body }),
+  deleteLeaveType: (id, leaveTypeId) => request(`/api/organizations/${id}/leave-types/${leaveTypeId}`, { method: 'DELETE' }),
 }

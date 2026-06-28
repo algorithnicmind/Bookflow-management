@@ -60,6 +60,22 @@ async def check_session(request: Request, db: AsyncSession = Depends(get_db)):
     if user is None or not user.is_active:
         return {"user": None}
 
+    # PlatformOwner doesn't have Employee-specific fields (manager_id, gender, etc.)
+    # so build response manually to avoid model_validate failure
+    if isinstance(user, PlatformOwner):
+        return {
+            "user": {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "role": user.role,
+                "department": user.department,
+                "is_active": user.is_active,
+                "profile_image_url": user.profile_image_url,
+                "organization_name": None,
+            }
+        }
+
     from app.modules.employees.schemas import EmployeeResponse
     resp = EmployeeResponse.model_validate(user)
 
@@ -366,10 +382,58 @@ async def impersonate_tenant(
         "token_type": "bearer",
         "user": {
             "id": target_admin.id,
-            "name": target_admin.name,
             "email": target_admin.email,
+            "name": target_admin.name,
             "role": target_admin.role,
             "department": target_admin.department,
-            "profile_image_url": getattr(target_admin, "profile_image_url", None)
+            "organization_id": target_admin.organization_id
+        }
+    }
+
+@router.post("/impersonate/employee/{employee_id}", response_model=Token)
+async def impersonate_employee(
+    employee_id: int,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee | PlatformOwner = Depends(RequireOwner)
+):
+    """
+    Deep Impersonation API (Platform Owner only).
+    Generates a login token for ANY specific employee in the system.
+    """
+    res = await db.execute(select(Employee).where(
+        (Employee.id == employee_id) & 
+        (Employee.is_active == True)
+    ))
+    target_employee = res.scalars().first()
+    
+    if not target_employee:
+        raise HTTPException(status_code=404, detail="Active employee not found")
+        
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": target_employee.email, "id": target_employee.id, "role": target_employee.role},
+        expires_delta=access_token_expires
+    )
+    
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=settings.ENVIRONMENT != "development",
+        samesite="lax",
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    )
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": target_employee.id,
+            "email": target_employee.email,
+            "name": target_employee.name,
+            "role": target_employee.role,
+            "department": target_employee.department,
+            "organization_id": target_employee.organization_id
         }
     }
