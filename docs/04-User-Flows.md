@@ -51,12 +51,14 @@ flowchart TD
     E -->|Manager| H[📊 Manager Dashboard]
     E -->|Admin| I[📊 Admin Dashboard]
     E -->|Super Admin| SA[📊 Super Admin Dashboard]
+    E -->|System| PO[⚙️ Platform Owner Leads Dashboard]
     
     style A fill:#1e1b4b,color:#fff
     style G fill:#065f46,color:#fff
     style H fill:#065f46,color:#fff
     style I fill:#065f46,color:#fff
     style SA fill:#065f46,color:#fff
+    style PO fill:#9333ea,color:#fff
     style F fill:#7f1d1d,color:#fff
 ```
 
@@ -227,9 +229,16 @@ flowchart LR
         AC[Approval Chains]
     end
     
+    subgraph PlatformOwner["⚙️ Platform Owner Views"]
+        LB[Leads Board]
+        TP[Tenant Provisioning]
+        OD[Organization Dashboards]
+    end
+    
     Login -->|Employee| ED
     Login -->|Manager| MD
     Login -->|Admin| AD
+    Login -->|System| LB
     
     ED --> AL
     ED --> LH
@@ -245,6 +254,9 @@ flowchart LR
     AD --> AC
     AD --> PR
     AD --> AL
+
+    LB --> TP
+    TP --> OD
     
     style Login fill:#4F46E5,color:#fff
     style ED fill:#10B981,color:#fff
@@ -256,4 +268,7 @@ flowchart LR
     style AD fill:#F43F5E,color:#fff
     style EM fill:#F43F5E,color:#fff
     style SS fill:#F43F5E,color:#fff
+    style LB fill:#9333ea,color:#fff
+    style TP fill:#9333ea,color:#fff
+    style OD fill:#9333ea,color:#fff
 ```

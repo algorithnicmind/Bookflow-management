@@ -232,8 +232,12 @@ Leaveflow-management/
         │   │   └── page.js          #    Manager approval view
         │   ├── system-settings/
         │   │   └── page.js          #    System Settings & Holiday Configurations
-        │   └── employees/
-        │       └── page.js          #    Admin employee management
+        │   ├── organizations/
+        │   │   └── [id]/page.js     #    Platform Owner / Super Admin Organization Dashboard
+        │   ├── leads/
+        │   │   └── page.js          #    Platform Owner leads board
+        │   ├── employees/
+        │   │   └── page.js          #    Admin employee management
         ├── 📁 context/
         │   └── AuthContext.js       #    Authentication React Provider
         ├── 📁 components/           #    Reusable visual widgets

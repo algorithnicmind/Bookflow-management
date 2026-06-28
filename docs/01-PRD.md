@@ -89,14 +89,24 @@ System administrator responsible for managing users, roles, system configuration
 - Manage Company Holidays and Approval Chains
 - View system-wide dashboard and statistics
 
-#### 👑 Super Admin (Client Organization)
-The highest-level authority within a client's specific organization/tenant. This role is manually provisioned by the internal LeaveFlow team after a successful sales onboarding.
+#### 👑 Super Admin (Tenant Owner)
+The highest-level authority within a client's specific organization/tenant. This role is provisioned automatically or manually after onboarding.
 
 **Permissions:**
 - All Admin permissions
-- Create Admin accounts
+- Create Custom Roles via Dynamic RBAC Matrix
+- Create and manage Dynamic Leave Types
 - Manage organization-wide system settings
 - Ultimate authority over their company's workspace
+
+#### ⚙️ Platform Owner (System Operators)
+The internal LeaveFlow team that manages the platform globally.
+
+**Permissions:**
+- Review incoming onboarding applications from the Landing Page
+- Verify identities and provision new workspaces/organizations
+- Deep Impersonation: Can impersonate *any* employee across any tenant for support purposes.
+- View system-wide metrics and connected tenants
 
 #### ⚙️ Internal LeaveFlow Team (System Operators)
 The internal sales and administration team that manages the platform globally.
@@ -127,33 +137,16 @@ The internal sales and administration team that manages the platform globally.
 
 ---
 
-## 4. Leave Types
+## 4. Dynamic Leave Types
 
-| Type                                       | Annual Quota |   Carry Forward  | Description                                                                                                 |
-| ------------------------------------------ | :----------: | :--------------: | ----------------------------------------------------------------------------------------------------------- |
-| **Casual Leave (CL)**                      |    12 Days   |        No        | Personal work, emergencies, family functions, or short-term absences. Applicable to all employees.          |
-| **Sick Leave (SL)**                        |    12 Days   |        No        | For illness, medical treatment, or health-related issues. Medical proof may be required for extended leave. |
-| **Earned Leave / Privilege Leave (EL/PL)** |    18 Days   | Yes (Max 5 Days) | Planned vacations, long breaks, or personal commitments. Accumulated based on company policy.               |
-| **Maternity Leave**                        |   26 Weeks   |        N/A       | Paid leave for female employees before and after childbirth as per Maternity Benefit Act, 1961.             |
-| **Miscarriage Leave**                      |    6 Weeks   |        N/A       | Paid leave granted to female employees in case of miscarriage, as per applicable labor laws.                |
-| **Unpaid Leave (LWP)**                     |   Unlimited  |        N/A       | Granted when paid leave balance is exhausted or under special circumstances.                                |
+Leave types are fully dynamic and configurable on a per-tenant basis by the Super Admin from the Organization Settings dashboard. 
 
-## Admin Leave Policy Page
-┌────────────────────────────────────────────────────────────┐
-│ 📋 Company Leave Policy                                   │
-├────────────────────────────────────────────────────────────┤
-│ Casual Leave (CL)                 12 Days                 │
-│ Sick Leave (SL)                   12 Days                 │
-│ Earned Leave (EL/PL)              18 Days                 │
-│ Maternity Leave                   26 Weeks               │
-│ Miscarriage Leave                 6 Weeks                │
-│ Leave Without Pay (LWP)           Unlimited              │
-├────────────────────────────────────────────────────────────┤
-│ Carry Forward Rules                                     │
-│ • CL → Not Allowed                                      │
-│ • SL → Not Allowed                                      │
-│ • EL/PL → Maximum 5 Days                               │
-└────────────────────────────────────────────────────────────┘
+Each Leave Type supports:
+- Custom Name (e.g., Vacation, Sick Leave, Parental)
+- Default Days allocated per year
+- Paid / Unpaid designation
+
+*(Note: Carry forward policies and half-day increments are planned for future phases. For now, all leave balances reset manually or annually as configured).*
 ## 5. Key Business Rules
 
 1. Leave **end date** must be ≥ **start date**

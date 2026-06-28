@@ -144,8 +144,12 @@ client/
     │   │   └── page.js              # Custom user history tracker table
     │   ├── pending-requests/
     │   │   └── page.js              # Manager queue approvals UI
-    │   └── employees/
-    │       └── page.js              # Admin organizational staff listings (CRUD)
+    │   ├── employees/
+    │   │   └── page.js              # Admin organizational staff listings (CRUD)
+    │   ├── organizations/
+    │   │   └── [id]/page.js         # Platform Owner Organization Dashboard
+    │   └── leads/
+    │       └── page.js              # Platform Owner Leads Dashboard
     │
     ├── 📁 context/
     │   └── AuthContext.js           # AuthProvider: stores token, user metadata, and Tenant/Organization ID

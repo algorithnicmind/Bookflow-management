@@ -96,9 +96,9 @@ Each standup answers three questions:
 | **Tester** | Drafted test scenarios | Complete detailed Test Cases, write Negative Test Cases | None |
 
 **Day 3 Outcomes:**
-- [ ] LLD document completed (DB schema + SQL DDL)
-- [ ] API Documentation finalized (all endpoints)
-- [ ] UI Wireframes created
+- [x] LLD document completed (DB schema + SQL DDL)
+- [x] API Documentation finalized (all endpoints)
+- [x] UI Wireframes created
 - [ ] Test Cases finalized (TC-001 to TC-021)
 
 ---

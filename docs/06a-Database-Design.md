@@ -57,6 +57,8 @@ erDiagram
     EMPLOYEES ||--o{ EMPLOYEES : "manages"
     LEAVE_REQUESTS ||--o| LEAVE_APPROVALS : "reviewed in"
     EMPLOYEES ||--o{ LEAVE_APPROVALS : "reviews"
+    ORGANIZATIONS ||--o{ LEAVE_TYPES : "defines"
+    ORGANIZATIONS ||--o{ ROLES : "defines"
 ```
 
 ---
@@ -178,6 +180,32 @@ Stores prospective client leads before they are manually provisioned.
 | `company_name` | VARCHAR(100)| Not Null | Requested company name |
 | `status` | VARCHAR(20) | Default 'pending' | pending, provisioned, rejected |
 | `created_at` | TIMESTAMP | Default NOW() | Submission time |
+
+---
+
+### 2.9 Leave Types Table
+Stores custom leave types configured by the Super Admin per tenant.
+
+| Column Name | Data Type | Constraints | Description |
+|-------------|-----------|-------------|-------------|
+| `id` | UUID | Primary Key | Unique leave type identifier |
+| `organization_id` | UUID | FK -> organizations(id) | Tenant |
+| `name` | VARCHAR(100) | Not Null | E.g., 'Maternity', 'Sabbatical' |
+| `description` | VARCHAR(255)| | Brief explanation |
+| `default_days` | INTEGER | Default 0 | Annual default allowance |
+| `is_paid` | BOOLEAN | Default TRUE| Paid vs unpaid leave |
+
+---
+
+### 2.10 Custom Roles Table
+Allows dynamic generation of permission profiles.
+
+| Column Name | Data Type | Constraints | Description |
+|-------------|-----------|-------------|-------------|
+| `id` | UUID | Primary Key | Unique role identifier |
+| `organization_id` | UUID | FK -> organizations(id) | Tenant |
+| `name` | VARCHAR(100) | Not Null | E.g., 'HR Manager', 'Intern' |
+| `permissions` | JSONB | Not Null | JSON object of toggled permissions |
 
 ---
 

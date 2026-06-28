@@ -1256,6 +1256,70 @@ Registry of Platform Owners. Includes a modal to invite/create new Platform Owne
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
+#### 3.12e Platform Owner Organizations Dashboard (/tenants)
+
+Displays all active and inactive organizations (tenants). Allows Platform Owners to view high-level metrics and access Deep Impersonation.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  PLATFORM OWNER ORGANIZATIONS DASHBOARD — /tenants                  │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌── Page Header ──────────────────────────────────────────────┐   │
+│  │  Organizations Dashboard                                     │   │
+│  │  Monitor and manage all tenant organizations                 │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌── Organizations Grid / Table ───────────────────────────────┐   │
+│  │  ┌────────────────────────────────────────────────────────┐  │   │
+│  │  │ COMPANY NAME       STATUS      EMPLOYEES   PLAN        │  │   │
+│  │  │────────────────────────────────────────────────────────│  │   │
+│  │  │ Acme Corp          ● active    50          Enterprise  │  │   │
+│  │  │                    [Setup Profile]  [Deactivate]       │  │   │
+│  │  │────────────────────────────────────────────────────────│  │   │
+│  │  │ Globex             ● active    120         Pro         │  │   │
+│  │  │                    [Setup Profile]  [Deactivate]       │  │   │
+│  │  └────────────────────────────────────────────────────────┘  │   │
+│  │                                                              │   │
+│  │  * Note: Company name is NOT clickable. Impersonation is     │   │
+│  │  accessed exclusively via the [Setup Profile] button.        │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+#### 3.12f Organization Details / Deep Impersonation (/organizations/[id])
+
+Accessed by clicking "Setup Profile". Allows Platform Owners to configure settings on behalf of a specific tenant (Deep Impersonation).
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  ORGANIZATION IMPERSONATION — /organizations/[id]                   │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  [← Back to Organizations]                                          │
+│                                                                     │
+│  ┌── Impersonation Banner (Sticky) ────────────────────────────┐   │
+│  │  ⚠️ You are viewing Acme Corp as a Platform Owner. Any changes │   │
+│  │  made here will directly affect this organization.             │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌── Tabs Panel ───────────────────────────────────────────────┐   │
+│  │  [ Overview ]  [ Users ]  [ Leave Types ]  [ Approval Chains ]  │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌── Dynamic Leave Types Setup ────────────────────────────────┐   │
+│  │  Add and configure custom leave types for Acme Corp          │   │
+│  │                                        [+ Add Leave Type]    │   │
+│  │                                                              │   │
+│  │  ┌───────────────────────────────────────────────────────┐   │   │
+│  │  │ NAME           DAYS    PAID      ACTIONS              │   │   │
+│  │  │ Casual Leave   12      Yes       [Edit] [Delete]      │   │   │
+│  │  │ Maternity      182     Yes       [Edit] [Delete]      │   │   │
+│  │  └───────────────────────────────────────────────────────┘   │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
 ---
 
 ## 4. Sidebar Navigation (Role-Based)

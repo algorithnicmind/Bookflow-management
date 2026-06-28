@@ -284,6 +284,42 @@
 - [ ] Shows total leave requests, approved, rejected counts
 - [ ] Shows department-wise and role-wise breakdowns
 
+### US-021: Create Custom Roles 🔴
+**As a** Super Admin,  
+**I want to** create custom roles beyond the standard 4,  
+**So that** I can configure granular permissions based on our company structure.
+
+**Acceptance Criteria:**
+- [ ] Accessible via Organization Settings Matrix
+- [ ] Super Admin can define role name and toggle specific permissions
+
+### US-022: Configure Dynamic Leave Types 🔴
+**As a** Super Admin,  
+**I want to** create and modify Leave Types dynamically,  
+**So that** we are not locked into hardcoded leave categories.
+
+**Acceptance Criteria:**
+- [ ] Super Admin can define name, days allocated, and paid/unpaid status.
+- [ ] Dynamic leave types immediately appear in employee application forms.
+
+### US-021: Create Custom Roles 🔴
+**As a** Super Admin,  
+**I want to** create custom roles beyond the standard 4,  
+**So that** I can configure granular permissions based on our company structure.
+
+**Acceptance Criteria:**
+- [ ] Accessible via Organization Settings Matrix
+- [ ] Super Admin can define role name and toggle specific permissions
+
+### US-022: Configure Dynamic Leave Types 🔴
+**As a** Super Admin,  
+**I want to** create and modify Leave Types dynamically,  
+**So that** we are not locked into hardcoded leave categories.
+
+**Acceptance Criteria:**
+- [ ] Super Admin can define name, days allocated, and paid/unpaid status.
+- [ ] Dynamic leave types immediately appear in employee application forms.
+
 ---
 
 ## 7. System Settings & Holidays

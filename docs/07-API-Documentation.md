@@ -500,7 +500,9 @@ Adds a new company holiday.
 
 ---
 
-## 6. Dashboard Analytics/reports/organization`
+## 6. Dashboard Analytics
+
+### 6.1 GET `/api/dashboard/reports/organization`
 
 View organization-wide reports and metrics.
 
@@ -519,4 +521,56 @@ View organization-wide reports and metrics.
   }
 }
 ```
+
+---
+
+## 7. Organization & Platform Owner Endpoints
+
+These endpoints are strictly for Platform Owners managing multi-tenancy.
+
+### 7.1 GET `/api/organizations`
+Lists all registered organizations.
+**Roles:** Platform Owner
+**Success Response (200):**
+```json
+{
+  "organizations": [
+    {
+      "id": "uuid-1",
+      "name": "Acme Corp",
+      "status": "active",
+      "plan": "Enterprise",
+      "employee_count": 50,
+      "created_at": "2026-06-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### 7.2 POST `/api/organizations`
+Creates a new organization profile, provisioning their space.
+**Roles:** Platform Owner
+**Request:**
+```json
+{
+  "name": "Acme Corp",
+  "plan": "Enterprise",
+  "admin_email": "admin@acmecorp.com"
+}
+```
+
+### 7.3 POST `/api/organizations/:id/impersonate`
+Initiates a deep impersonation session for a target organization. Generates an impersonation JWT.
+**Roles:** Platform Owner
+**Success Response (200):**
+```json
+{
+  "impersonation_token": "eyJhbG...",
+  "message": "Impersonation session started for Acme Corp"
+}
+```
+
+### 7.4 DELETE `/api/organizations/:id`
+Deactivates an organization.
+**Roles:** Platform Owner
 
