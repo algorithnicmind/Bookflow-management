@@ -55,6 +55,20 @@
   --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.dark {
+  --bg-primary: #0F172A;
+  --bg-secondary: rgba(30, 41, 59, 0.75);
+  --bg-tertiary: #1E293B;
+  --bg-card: rgba(30, 41, 59, 0.75);
+  
+  --text-main: #F8FAFC;
+  --text-muted: #94A3B8;
+  --text-dim: #64748B;
+  
+  --border: rgba(255, 255, 255, 0.1);
+  --border-hover: rgba(255, 255, 255, 0.2);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -113,7 +127,7 @@ input, select, textarea, button { font-family: inherit; }
 input, select, textarea {
   width: 100%;
   padding: 12px 16px;
-  background: #FFFFFF;
+  background: var(--bg-tertiary);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   color: var(--text-main);
@@ -142,7 +156,7 @@ select {
   padding-right: 36px;
 }
 
-select option { background: #FFFFFF; color: var(--text-main); }
+select option { background: var(--bg-tertiary); color: var(--text-main); }
 textarea { resize: vertical; min-height: 100px; }
 
 label {

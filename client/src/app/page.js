@@ -24,6 +24,7 @@ export default function LandingPage() {
   const [mounted, setMounted] = useState(false)
   const [leadModalOpen, setLeadModalOpen] = useState(false)
   const [onboardingModalOpen, setOnboardingModalOpen] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState('free_trial')
   const [platformConfig, setPlatformConfig] = useState({
     show_onboarding_section: true,
@@ -36,7 +37,24 @@ export default function LandingPage() {
 
   useEffect(() => {
     setMounted(true)
+    const savedTheme = localStorage.getItem('theme')
+    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      setIsDarkMode(true)
+      document.documentElement.classList.add('dark')
+    }
   }, [])
+
+  const toggleTheme = () => {
+    if (isDarkMode) {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+      setIsDarkMode(false)
+    } else {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+      setIsDarkMode(true)
+    }
+  }
 
   useEffect(() => {
     // Fetch platform config (public endpoint)
@@ -127,12 +145,12 @@ export default function LandingPage() {
           justifyContent: 'space-between',
           padding: '8px 24px 8px 32px',
           borderRadius: 100,
-          background: 'rgba(255, 255, 255, 0.8)',
+          background: 'var(--bg-secondary)',
           backdropFilter: 'blur(16px)',
           border: '1px solid var(--border)',
           width: '90%',
           maxWidth: 1200,
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)'
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
         }}
       >
         {/* Left: Logo */}
@@ -152,10 +170,24 @@ export default function LandingPage() {
 
         {/* Right: Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button
+            onClick={toggleTheme}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 36, height: 36, borderRadius: '50%',
+              background: 'transparent', border: '1px solid var(--border)',
+              color: 'var(--text-main)', cursor: 'pointer', transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background='var(--border)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background='transparent'; }}
+            title="Toggle Theme"
+          >
+            {isDarkMode ? '🌙' : '☀️'}
+          </button>
           <button 
             onClick={() => router.push('/login')} 
             style={{ padding: '8px 20px', borderRadius: '100px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-main)', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }} 
-            onMouseEnter={(e) => { e.currentTarget.style.background='rgba(0,0,0,0.05)'; }} 
+            onMouseEnter={(e) => { e.currentTarget.style.background='var(--border)'; }} 
             onMouseLeave={(e) => { e.currentTarget.style.background='transparent'; }}
           >
             Login
