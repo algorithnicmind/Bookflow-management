@@ -5,13 +5,14 @@ from dotenv import load_dotenv
 
 load_dotenv('server/.env')
 DATABASE_URL = os.getenv('DATABASE_URL')
-# ensure it uses postgresql:// for asyncpg
 if DATABASE_URL and '+asyncpg' in DATABASE_URL:
     DATABASE_URL = DATABASE_URL.replace('+asyncpg', '')
+if DATABASE_URL and '?sslmode=require' in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.replace('?sslmode=require', '')
 
 async def migrate():
     print(f"Connecting to {DATABASE_URL}")
-    conn = await asyncpg.connect(DATABASE_URL)
+    conn = await asyncpg.connect(DATABASE_URL, ssl='require', timeout=60)
     try:
         # Create tenants table
         await conn.execute("""
