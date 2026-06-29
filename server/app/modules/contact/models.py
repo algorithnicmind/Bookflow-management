@@ -1,10 +1,11 @@
-from sqlalchemy import Column, String, DateTime
+from sqlalchemy import Column, ForeignKey, String, DateTime
 from datetime import datetime
 import uuid
 from app.core.database import Base
 
 class ContactMessage(Base):
     __tablename__ = "contact_messages"
+    tenant_id = Column(Integer, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     name = Column(String, nullable=False)

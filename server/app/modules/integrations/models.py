@@ -3,6 +3,7 @@ from app.core.database import Base
 
 class CalendarIntegration(Base):
     __tablename__ = "calendar_integrations"
+    tenant_id = Column(Integer, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
     employee_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), nullable=False, unique=True)

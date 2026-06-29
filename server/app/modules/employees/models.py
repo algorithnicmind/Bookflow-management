@@ -5,6 +5,7 @@ from app.core.database import Base
 
 class Employee(Base):
     __tablename__ = "employees"
+    tenant_id = Column(Integer, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
     organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True, index=True)
@@ -37,6 +38,7 @@ class Employee(Base):
 
 class EmployeeImage(Base):
     __tablename__ = "employee_images"
+    tenant_id = Column(Integer, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
     employee_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), nullable=True, index=True)
@@ -53,6 +55,7 @@ class EmployeeImage(Base):
 
 class PlatformOwner(Base):
     __tablename__ = "platform_owners"
+    tenant_id = Column(Integer, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False)
