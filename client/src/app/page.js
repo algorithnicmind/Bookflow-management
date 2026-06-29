@@ -127,35 +127,35 @@ export default function LandingPage() {
           justifyContent: 'space-between',
           padding: '8px 24px 8px 32px',
           borderRadius: 100,
-          background: 'rgba(28, 28, 30, 0.9)',
+          background: 'rgba(255, 255, 255, 0.8)',
           backdropFilter: 'blur(16px)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          border: '1px solid var(--border)',
           width: '90%',
           maxWidth: 1200,
-          boxShadow: '0 12px 40px rgba(0, 0, 0, 0.5)'
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)'
         }}
       >
         {/* Left: Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <img src="/logo.png" alt="LeaveFlow Logo" style={{ height: 26, width: 'auto', objectFit: 'contain' }} />
-          <span style={{ fontWeight: 700, fontSize: '1.15rem', letterSpacing: '-0.3px', color: '#fff' }}>LeaveFlow</span>
+          <span style={{ fontWeight: 700, fontSize: '1.15rem', letterSpacing: '-0.3px', color: 'var(--text-main)' }}>LeaveFlow</span>
         </div>
 
         {/* Center: Links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 32, color: '#a1a1aa', fontSize: '0.9rem', fontWeight: 600 }}>
-          <a href="#features" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='#fff'} onMouseLeave={(e) => e.target.style.color='#a1a1aa'}>Features</a>
-          <a href="#solutions" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='#fff'} onMouseLeave={(e) => e.target.style.color='#a1a1aa'}>Solutions</a>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 32, color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 600 }}>
+          <a href="#features" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='var(--text-main)'} onMouseLeave={(e) => e.target.style.color='var(--text-muted)'}>Features</a>
+          <a href="#solutions" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='var(--text-main)'} onMouseLeave={(e) => e.target.style.color='var(--text-muted)'}>Solutions</a>
           <LiveClock compact />
-          <a href="#contact" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='#fff'} onMouseLeave={(e) => e.target.style.color='#a1a1aa'}>Contact</a>
-          <a href="#pricing" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='#fff'} onMouseLeave={(e) => e.target.style.color='#a1a1aa'}>Pricing</a>
+          <a href="#contact" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='var(--text-main)'} onMouseLeave={(e) => e.target.style.color='var(--text-muted)'}>Contact</a>
+          <a href="#pricing" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='var(--text-main)'} onMouseLeave={(e) => e.target.style.color='var(--text-muted)'}>Pricing</a>
         </div>
 
         {/* Right: Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button 
             onClick={() => router.push('/login')} 
-            style={{ padding: '8px 20px', borderRadius: '100px', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }} 
-            onMouseEnter={(e) => { e.currentTarget.style.background='rgba(255,255,255,0.05)'; }} 
+            style={{ padding: '8px 20px', borderRadius: '100px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-main)', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }} 
+            onMouseEnter={(e) => { e.currentTarget.style.background='rgba(0,0,0,0.05)'; }} 
             onMouseLeave={(e) => { e.currentTarget.style.background='transparent'; }}
           >
             Login
@@ -242,17 +242,17 @@ export default function LandingPage() {
               style={{
                 padding: '16px 36px',
                 borderRadius: '100px',
-                background: 'linear-gradient(135deg, #34d399, #059669)',
+                background: 'linear-gradient(135deg, var(--accent), var(--accent-hover))',
                 color: '#000',
                 border: 'none',
                 fontSize: '1rem',
                 fontWeight: 600,
                 cursor: 'pointer',
                 transition: 'var(--transition)',
-                boxShadow: '0 8px 24px rgba(16, 185, 129, 0.4)'
+                boxShadow: '0 8px 24px var(--accent-glow)'
               }}
-              onMouseEnter={(e) => { e.target.style.transform = 'translateY(-3px)'; e.target.style.boxShadow = '0 12px 32px rgba(16, 185, 129, 0.5)' }}
-              onMouseLeave={(e) => { e.target.style.transform = 'none'; e.target.style.boxShadow = '0 8px 24px rgba(16, 185, 129, 0.4)' }}
+              onMouseEnter={(e) => { e.target.style.transform = 'translateY(-3px)'; e.target.style.boxShadow = '0 12px 32px var(--accent-glow)' }}
+              onMouseLeave={(e) => { e.target.style.transform = 'none'; e.target.style.boxShadow = '0 8px 24px var(--accent-glow)' }}
             >
               Get Started Now →
             </button>

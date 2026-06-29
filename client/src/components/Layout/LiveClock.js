@@ -35,7 +35,7 @@ export default function LiveClock({ compact = false }) {
         gap: 6,
         padding: '4px 12px',
         borderRadius: 100,
-        background: 'rgba(0,0,0,0.02)',
+        background: 'rgba(0,0,0,0.03)',
         border: '1px solid rgba(0,0,0,0.05)',
         fontSize: '12px',
         fontWeight: 600,
