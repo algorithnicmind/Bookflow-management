@@ -14,7 +14,7 @@ import { dashboardApi } from '@/services/api'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import { formatDate, getLeaveTypeIcon } from '@/lib/utils'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts'
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts'
 
 export default function DashboardPage() {
   const { user } = useAuth()
@@ -109,36 +109,73 @@ export default function DashboardPage() {
 
       {/* KPI WIDGETS */}
       <div className="grid-4 animate-in" style={{ animationDelay: '0.05s', marginBottom: '28px' }}>
-        <div className="glass widget-card">
-          <div className="widget-header">
-            <span className="widget-icon" style={{ background: 'rgba(16, 185, 129, 0.15)', color: 'var(--accent)' }}>📋</span>
+        <div className="glass widget-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div className="widget-header" style={{ marginBottom: '16px' }}>
+            <span className="widget-icon" style={{ background: 'rgba(16, 185, 129, 0.15)', color: 'var(--accent)', width: '48px', height: '48px', fontSize: '1.5rem' }}>📋</span>
           </div>
-          <div className="widget-value">{data.stats?.total_requests || 0}</div>
-          <div className="widget-label">Total Requests</div>
+          <div className="widget-value" style={{ fontSize: '2.5rem', marginBottom: '4px' }}>{data.stats?.total_requests || 0}</div>
+          <div className="widget-label" style={{ fontSize: '1rem' }}>Total Requests</div>
         </div>
         
-        <div className="glass widget-card">
-          <div className="widget-header">
-            <span className="widget-icon" style={{ background: 'rgba(245, 158, 11, 0.15)', color: 'var(--warning)' }}>⏳</span>
+        <div className="glass widget-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div className="widget-header" style={{ marginBottom: '16px' }}>
+            <span className="widget-icon" style={{ background: 'rgba(245, 158, 11, 0.15)', color: 'var(--warning)', width: '48px', height: '48px', fontSize: '1.5rem' }}>⏳</span>
           </div>
-          <div className="widget-value">{data.stats?.pending || 0}</div>
-          <div className="widget-label">Pending Approvals</div>
+          <div className="widget-value" style={{ fontSize: '2.5rem', marginBottom: '4px' }}>{data.stats?.pending || 0}</div>
+          <div className="widget-label" style={{ fontSize: '1rem' }}>Pending Approvals</div>
         </div>
         
-        <div className="glass widget-card">
-          <div className="widget-header">
-            <span className="widget-icon" style={{ background: 'rgba(16, 185, 129, 0.15)', color: 'var(--success)' }}>✅</span>
+        <div className="glass widget-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div className="widget-header" style={{ marginBottom: '16px' }}>
+            <span className="widget-icon" style={{ background: 'rgba(16, 185, 129, 0.15)', color: 'var(--success)', width: '48px', height: '48px', fontSize: '1.5rem' }}>✅</span>
           </div>
-          <div className="widget-value">{data.stats?.approved || 0}</div>
-          <div className="widget-label">Approved Leaves</div>
+          <div className="widget-value" style={{ fontSize: '2.5rem', marginBottom: '4px' }}>{data.stats?.approved || 0}</div>
+          <div className="widget-label" style={{ fontSize: '1rem' }}>Approved Leaves</div>
         </div>
         
-        <div className="glass widget-card">
-          <div className="widget-header">
-            <span className="widget-icon" style={{ background: 'rgba(244, 63, 94, 0.15)', color: 'var(--danger)' }}>❌</span>
+        <div className="glass widget-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div className="widget-header" style={{ marginBottom: '16px' }}>
+            <span className="widget-icon" style={{ background: 'rgba(244, 63, 94, 0.15)', color: 'var(--danger)', width: '48px', height: '48px', fontSize: '1.5rem' }}>❌</span>
           </div>
-          <div className="widget-value">{data.stats?.rejected || 0}</div>
-          <div className="widget-label">Rejected Leaves</div>
+          <div className="widget-value" style={{ fontSize: '2.5rem', marginBottom: '4px' }}>{data.stats?.rejected || 0}</div>
+          <div className="widget-label" style={{ fontSize: '1rem' }}>Rejected Leaves</div>
+        </div>
+      </div>
+
+      {/* REQUESTS OVERVIEW CHART */}
+      <div className="glass animate-in" style={{ animationDelay: '0.08s', padding: '24px', marginBottom: '28px' }}>
+        <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '24px' }}>Requests Overview</h3>
+        <div style={{ height: '300px', width: '100%' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={[
+                { name: 'Pending', count: data.stats?.pending || 0, fill: 'var(--warning)' },
+                { name: 'Approved', count: data.stats?.approved || 0, fill: 'var(--success)' },
+                { name: 'Rejected', count: data.stats?.rejected || 0, fill: 'var(--danger)' }
+              ]}
+              margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-muted)', fontSize: 12 }} dy={10} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--text-muted)', fontSize: 12 }} dx={-10} allowDecimals={false} />
+              <RechartsTooltip 
+                cursor={{ fill: 'var(--border)', opacity: 0.2 }}
+                contentStyle={{ background: 'var(--glass-bg)', backdropFilter: 'blur(10px)', border: '1px solid var(--border)', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}
+                itemStyle={{ color: 'var(--text-main)', fontWeight: 600 }}
+              />
+              <Bar dataKey="count" radius={[6, 6, 0, 0]} maxBarSize={60} minPointSize={8}>
+                {
+                  [
+                    { name: 'Pending', count: data.stats?.pending || 0, fill: 'var(--warning)' },
+                    { name: 'Approved', count: data.stats?.approved || 0, fill: 'var(--success)' },
+                    { name: 'Rejected', count: data.stats?.rejected || 0, fill: 'var(--danger)' }
+                  ].map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))
+                }
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
@@ -154,18 +191,18 @@ export default function DashboardPage() {
               const color = getChartColor(b.leave_type);
               const chartData = [
                 { name: 'Used', value: b.used_days, fill: color },
-                { name: 'Remaining', value: b.remaining, fill: 'var(--bg-secondary)' }
+                { name: 'Remaining', value: b.remaining, fill: 'var(--border)' }
               ];
               
               return (
                 <div key={i} style={{
-                  padding: '20px',
-                  borderRadius: '16px',
-                  background: 'var(--bg-secondary)',
+                  padding: '24px',
+                  borderRadius: '20px',
+                  background: 'var(--surface)',
                   border: '1px solid var(--border)',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '20px',
+                  gap: '24px',
                   transition: 'var(--transition)'
                 }} className="glass-hover">
                   <div style={{ width: '100px', height: '100px', position: 'relative' }}>
