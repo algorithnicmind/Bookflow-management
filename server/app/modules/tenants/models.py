@@ -7,7 +7,7 @@ class Tenant(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False)
-    plan_type = Column(String(20), default="starter", nullable=False) # starter, professional, enterprise
+    plan_type = Column(String(20), default="free_tier", nullable=False) # free_tier, professional, customization
     module_access = Column(JSON, nullable=True) # e.g. {"chatbot": true, "advanced_reports": false}
     max_employees = Column(Integer, nullable=True) # Override for max employees allowed
     is_active = Column(Boolean, default=True, nullable=False)

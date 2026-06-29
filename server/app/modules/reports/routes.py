@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import func
 from app.core.database import get_db
-from app.core.dependencies import RoleChecker
+from app.core.dependencies import PermissionChecker
 from app.core.tenant import get_current_tenant
 from app.modules.organizations.models import Organization
 from app.modules.employees.models import Employee
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/api/reports", tags=["reports"])
 async def get_organization_report(
     db: AsyncSession = Depends(get_db),
     tenant: Organization = Depends(get_current_tenant),
-    current_user: Employee = Depends(RoleChecker(["super_admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_settings"))
 ):
     e_res = await db.execute(
         select(func.count(Employee.id))
@@ -87,7 +87,7 @@ async def get_organization_report(
 async def export_leaves_report(
     db: AsyncSession = Depends(get_db),
     tenant: Organization = Depends(get_current_tenant),
-    current_user: Employee = Depends(RoleChecker(["admin", "super_admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
     from app.modules.leaves.models import LeaveRequest
     

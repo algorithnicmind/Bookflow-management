@@ -4,7 +4,7 @@ from sqlalchemy.future import select
 from typing import List
 
 from app.core.database import get_db
-from app.core.dependencies import RequireOwner, RoleChecker, get_current_user
+from app.core.dependencies import RequireOwner, PermissionChecker, get_current_user
 from app.modules.organizations.models import Organization, RolePermission
 from app.modules.organizations.schemas import OrganizationResponse, OrganizationUpdate, RolePermissionResponse, RolePermissionUpdate
 from app.modules.employees.models import Employee, PlatformOwner
@@ -136,7 +136,7 @@ async def create_department(
     org_id: int,
     request: DepartmentCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
     if current_user.organization_id != org_id:
         raise HTTPException(status_code=403, detail="Forbidden")
@@ -152,7 +152,7 @@ async def update_department(
     dept_id: int,
     request: DepartmentUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
     if current_user.organization_id != org_id:
         raise HTTPException(status_code=403, detail="Forbidden")
@@ -174,7 +174,7 @@ async def delete_department(
     org_id: int,
     dept_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: Employee = Depends(RoleChecker(["super_admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_settings"))
 ):
     if current_user.organization_id != org_id:
         raise HTTPException(status_code=403, detail="Forbidden")

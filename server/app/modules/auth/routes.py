@@ -14,7 +14,7 @@ from sqlalchemy.future import select
 from app.core.database import get_db
 from app.core.config import settings
 from app.core.security import create_access_token, pwd_context
-from app.core.dependencies import RoleChecker
+from app.core.dependencies import PermissionChecker
 from app.modules.employees.models import Employee
 from app.modules.auth.schemas import Token, AdminCreateRequest
 from app.modules.auth.services import authenticate_user, register_admin_user
@@ -317,7 +317,7 @@ async def logout(response: Response):
 async def register_admin(
     request: AdminCreateRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: Employee = Depends(RoleChecker(["super_admin"])),
+    current_user: Employee = Depends(PermissionChecker("manage_settings")),
     current_org: Organization = Depends(get_current_tenant)
 ):
     """

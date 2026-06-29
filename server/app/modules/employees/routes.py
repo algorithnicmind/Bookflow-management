@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 import asyncio
 from app.core.database import get_db
-from app.core.dependencies import RoleChecker, get_current_user, RequireOwner
+from app.core.dependencies import PermissionChecker, get_current_user, RequireOwner
 from app.core.tenant import get_current_tenant
 from app.core.security import pwd_context
 from app.modules.organizations.models import Organization
@@ -153,7 +153,7 @@ async def create_system_owner(
 async def list_employees(
     search: Optional[str] = None,
     service: EmployeeService = Depends(get_employee_service),
-    current_user: Employee = Depends(RoleChecker(["admin", "super_admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
     employees = await service.list_employees(search)
     return {"employees": employees}
@@ -162,7 +162,7 @@ async def list_employees(
 async def create_employee(
     request: EmployeeCreate,
     service: EmployeeService = Depends(get_employee_service),
-    current_user: Employee = Depends(RoleChecker(["admin", "super_admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
     employee = await service.create_employee(request, current_user.id)
     return {"message": "Employee created successfully", "employee": EmployeeResponse.model_validate(employee)}
@@ -172,7 +172,7 @@ async def update_employee(
     employee_id: int,
     request: EmployeeUpdate,
     service: EmployeeService = Depends(get_employee_service),
-    current_user: Employee = Depends(RoleChecker(["admin", "super_admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
     await service.update_employee(employee_id, request, current_user.id)
     return {"message": "Employee updated successfully"}
@@ -181,7 +181,7 @@ async def update_employee(
 async def deactivate_employee(
     employee_id: int,
     service: EmployeeService = Depends(get_employee_service),
-    current_user: Employee = Depends(RoleChecker(["admin", "super_admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
     await service.deactivate_employee(employee_id, current_user.id)
     return {"message": "Employee deactivated successfully"}

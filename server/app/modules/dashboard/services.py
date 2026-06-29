@@ -68,7 +68,7 @@ class DashboardService:
         
         # 2. Manager-specific stats
         if current_user.role in ["manager", "admin", "super_admin"]:
-            is_admin = current_user.role in ["admin", "super_admin"]
+            is_admin = "manage_everything" in current_user.permissions or "manage_employees" in current_user.permissions
             if is_admin:
                 p_res = await self.db.execute(
                     select(func.count(LeaveRequest.id))

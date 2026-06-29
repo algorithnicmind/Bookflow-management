@@ -222,11 +222,11 @@ Organizations, Employees, LeaveRequests, LeaveApprovals, LeaveBalances, SystemSe
 
 ## 7. AUTHENTICATION & AUTHORIZATION
 
-**4 roles (fixed):**
-- `super_admin` — Full access
-- `admin` — Manage org, approve, logs
-- `manager` — Approve team, team view
-- `employee` — Apply, view balance, chatbot
+**Dynamic Roles (New Architecture):**
+- Roles are completely dynamic and created per tenant (e.g., "HR Manager", "Team Lead").
+- Fixed permissions dictate access control (e.g., `manage_settings`, `manage_employees`, `approve_leaves`, `view_reports`).
+- The `PermissionChecker` dependency is used on routes (e.g., `Depends(PermissionChecker("manage_employees"))`).
+- `PlatformOwner` (System department) has a built-in `"manage_everything"` permission.
 
 **Login flow (preserve):**
 1. POST email+password → `/api/auth/login`

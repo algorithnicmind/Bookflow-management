@@ -592,7 +592,7 @@ export default function LandingPage() {
               </ul>
               <button onClick={() => {
                 if (platformConfig.show_onboarding_section) {
-                  setSelectedPlan('free_trial')
+                  setSelectedPlan('free_tier')
                   setOnboardingModalOpen(true)
                 } else {
                   setLeadModalOpen(true)
@@ -643,7 +643,7 @@ export default function LandingPage() {
               </ul>
               <button onClick={() => {
                 if (platformConfig.show_onboarding_section) {
-                  setSelectedPlan('enterprise')
+                  setSelectedPlan('customization')
                   setOnboardingModalOpen(true)
                 } else {
                   document.getElementById('contact').scrollIntoView({ behavior: 'smooth' })

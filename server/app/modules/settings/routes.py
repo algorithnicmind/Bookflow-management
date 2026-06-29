@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List, Optional
 from app.core.database import get_db
-from app.core.dependencies import RoleChecker, RequireOwner, get_current_user
+from app.core.dependencies import PermissionChecker, RequireOwner, get_current_user
 from app.core.tenant import get_current_tenant
 from app.modules.organizations.models import Organization
 from app.modules.employees.models import Employee
@@ -24,7 +24,7 @@ async def update_settings(
     request: SettingsUpdate,
     db: AsyncSession = Depends(get_db),
     tenant: Organization = Depends(get_current_tenant),
-    current_user: Employee = Depends(RoleChecker(["super_admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_settings"))
 ):
     service = SettingsService(db, tenant.id)
     return await service.update_settings(request, current_user.id)
@@ -38,7 +38,7 @@ async def update_organization_name(
     request: OrgNameUpdate,
     db: AsyncSession = Depends(get_db),
     tenant: Organization = Depends(get_current_tenant),
-    current_user: Employee = Depends(RoleChecker(["super_admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_settings"))
 ):
     tenant.name = request.name
     db.add(tenant)
@@ -49,7 +49,7 @@ async def update_organization_name(
 async def get_settings(
     db: AsyncSession = Depends(get_db),
     tenant: Organization = Depends(get_current_tenant),
-    current_user: Employee = Depends(RoleChecker(["super_admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_settings"))
 ):
     service = SettingsService(db, tenant.id)
     settings = await service.get_settings()
@@ -68,7 +68,7 @@ from app.modules.settings.schemas import PublicHolidayCreate, PublicHolidayRespo
 async def get_leave_policies(
     db: AsyncSession = Depends(get_db),
     tenant: Organization = Depends(get_current_tenant),
-    current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
     service = SettingsService(db, tenant.id)
     return await service.get_leave_policies()
@@ -78,7 +78,7 @@ async def create_leave_policy(
     request: LeavePolicyCreate,
     db: AsyncSession = Depends(get_db),
     tenant: Organization = Depends(get_current_tenant),
-    current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
     service = SettingsService(db, tenant.id)
     return await service.create_leave_policy(request)
@@ -88,7 +88,7 @@ async def delete_leave_policy(
     policy_id: int,
     db: AsyncSession = Depends(get_db),
     tenant: Organization = Depends(get_current_tenant),
-    current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
     service = SettingsService(db, tenant.id)
     await service.delete_leave_policy(policy_id)
@@ -111,7 +111,7 @@ async def create_leave_type(
     request: LeaveTypeCreate,
     db: AsyncSession = Depends(get_db),
     tenant: Organization = Depends(get_current_tenant),
-    current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
     leave_type = LeaveType(
         organization_id=tenant.id,
@@ -131,7 +131,7 @@ async def update_leave_type(
     request: LeaveTypeUpdate,
     db: AsyncSession = Depends(get_db),
     tenant: Organization = Depends(get_current_tenant),
-    current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
     leave_type = await db.get(LeaveType, type_id)
     if not leave_type or leave_type.organization_id != tenant.id:
@@ -155,7 +155,7 @@ async def delete_leave_type(
     type_id: int,
     db: AsyncSession = Depends(get_db),
     tenant: Organization = Depends(get_current_tenant),
-    current_user: Employee = Depends(RoleChecker(["super_admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_settings"))
 ):
     leave_type = await db.get(LeaveType, type_id)
     if not leave_type or leave_type.organization_id != tenant.id:
@@ -169,7 +169,7 @@ async def delete_leave_type(
 async def get_holidays(
     db: AsyncSession = Depends(get_db),
     tenant: Organization = Depends(get_current_tenant),
-    current_user: Employee = Depends(RoleChecker(["super_admin", "admin", "manager", "employee"]))
+    current_user: Employee = Depends(PermissionChecker("view_basic_info"))
 ):
     service = SettingsService(db, tenant.id)
     return await service.get_holidays()
@@ -179,7 +179,7 @@ async def create_holiday(
     request: PublicHolidayCreate,
     db: AsyncSession = Depends(get_db),
     tenant: Organization = Depends(get_current_tenant),
-    current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
     service = SettingsService(db, tenant.id)
     return await service.create_holiday(request)
@@ -189,7 +189,7 @@ async def delete_holiday(
     holiday_id: int,
     db: AsyncSession = Depends(get_db),
     tenant: Organization = Depends(get_current_tenant),
-    current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
     service = SettingsService(db, tenant.id)
     await service.delete_holiday(holiday_id)
@@ -199,7 +199,7 @@ async def delete_holiday(
 async def get_approval_chains(
     db: AsyncSession = Depends(get_db),
     tenant: Organization = Depends(get_current_tenant),
-    current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
     service = SettingsService(db, tenant.id)
     return await service.get_approval_chains()
@@ -209,7 +209,7 @@ async def create_approval_chain(
     request: ApprovalChainCreate,
     db: AsyncSession = Depends(get_db),
     tenant: Organization = Depends(get_current_tenant),
-    current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
     service = SettingsService(db, tenant.id)
     return await service.create_approval_chain(request)
@@ -219,7 +219,7 @@ async def delete_approval_chain(
     chain_id: int,
     db: AsyncSession = Depends(get_db),
     tenant: Organization = Depends(get_current_tenant),
-    current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
     service = SettingsService(db, tenant.id)
     await service.delete_approval_chain(chain_id)
@@ -228,12 +228,12 @@ async def delete_approval_chain(
 from app.modules.leaves.cron import run_monthly_accruals, run_yearly_carry_forward
 
 @router.post("/debug/trigger-monthly-accrual")
-async def trigger_monthly_accrual(current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))):
+async def trigger_monthly_accrual(current_user: Employee = Depends(PermissionChecker("manage_employees"))):
     await run_monthly_accruals()
     return {"message": "Monthly accrual job completed"}
 
 @router.post("/debug/trigger-yearly-carry-forward")
-async def trigger_yearly_carry_forward(current_user: Employee = Depends(RoleChecker(["super_admin", "admin"]))):
+async def trigger_yearly_carry_forward(current_user: Employee = Depends(PermissionChecker("manage_employees"))):
     await run_yearly_carry_forward()
     return {"message": "Yearly carry forward job completed"}
 

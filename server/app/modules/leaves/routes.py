@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from app.core.database import get_db
-from app.core.dependencies import get_current_user, RoleChecker
+from app.core.dependencies import get_current_user, PermissionChecker
 from app.core.tenant import get_current_tenant
 from app.modules.employees.models import Employee
 from app.modules.organizations.models import Organization
@@ -72,14 +72,14 @@ async def cancel_leave(
 @router.get("/pending")
 async def get_pending_requests(
     service: LeaveService = Depends(get_leave_service),
-    current_user: Employee = Depends(RoleChecker(["manager", "admin", "super_admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_leaves"))
 ):
     """
     Get Pending Approvals.
     Restricted to managers and admins. Returns a list of leave requests waiting
     for the current user's approval in the approval chain.
     """
-    is_admin = current_user.role in ["admin", "super_admin"]
+    is_admin = "manage_everything" in getattr(current_user, "permissions", []) or "manage_employees" in getattr(current_user, "permissions", [])
     pending = await service.get_pending_requests(current_user.id, is_admin)
     return {"pending": pending}
 
@@ -89,14 +89,14 @@ async def approve_leave(
     leave_id: int,
     action: LeaveApprovalAction,
     service: LeaveService = Depends(get_leave_service),
-    current_user: Employee = Depends(RoleChecker(["manager", "admin", "super_admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_leaves"))
 ):
     """
     Approve a Leave Request.
     Steps the request forward in the Approval Chain. If it's the final step,
     marks it as fully approved.
     """
-    is_admin = current_user.role in ["admin", "super_admin"]
+    is_admin = "manage_everything" in getattr(current_user, "permissions", []) or "manage_employees" in getattr(current_user, "permissions", [])
     return await service.approve_leave(leave_id, current_user.id, is_admin, action)
 
 @router.put("/{leave_id}/reject")
@@ -104,7 +104,7 @@ async def reject_leave(
     leave_id: int,
     action: LeaveApprovalAction,
     service: LeaveService = Depends(get_leave_service),
-    current_user: Employee = Depends(RoleChecker(["manager", "admin", "super_admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_leaves"))
 ):
-    is_admin = current_user.role in ["admin", "super_admin"]
+    is_admin = "manage_everything" in getattr(current_user, "permissions", []) or "manage_employees" in getattr(current_user, "permissions", [])
     return await service.reject_leave(leave_id, current_user.id, is_admin, action)

@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from app.core.database import get_db
-from app.core.dependencies import RoleChecker
+from app.core.dependencies import PermissionChecker
 from app.modules.employees.models import Employee
 from app.modules.audit.services import AuditLogService
 from app.modules.audit.schemas import AuditLogResponse
@@ -23,7 +23,7 @@ async def get_audit_logs(
     limit: int = Query(50, ge=1, le=100, description="Pagination page size limit"),
     offset: int = Query(0, ge=0, description="Pagination offset"),
     db: AsyncSession = Depends(get_db),
-    current_user: Employee = Depends(RoleChecker(["admin", "super_admin"]))
+    current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
     """
     Retrieves compliance audit logs. Restricted to admins and super admins.
