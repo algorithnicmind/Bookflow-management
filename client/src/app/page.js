@@ -242,17 +242,17 @@ export default function LandingPage() {
               style={{
                 padding: '16px 36px',
                 borderRadius: '100px',
-                background: 'linear-gradient(135deg, var(--accent), var(--accent-hover))',
+                background: 'linear-gradient(135deg, #34d399, #059669)',
                 color: '#000',
                 border: 'none',
                 fontSize: '1rem',
                 fontWeight: 600,
                 cursor: 'pointer',
                 transition: 'var(--transition)',
-                boxShadow: '0 8px 24px var(--accent-glow)'
+                boxShadow: '0 8px 24px rgba(16, 185, 129, 0.4)'
               }}
-              onMouseEnter={(e) => { e.target.style.transform = 'translateY(-3px)'; e.target.style.boxShadow = '0 12px 32px var(--accent-glow)' }}
-              onMouseLeave={(e) => { e.target.style.transform = 'none'; e.target.style.boxShadow = '0 8px 24px var(--accent-glow)' }}
+              onMouseEnter={(e) => { e.target.style.transform = 'translateY(-3px)'; e.target.style.boxShadow = '0 12px 32px rgba(16, 185, 129, 0.5)' }}
+              onMouseLeave={(e) => { e.target.style.transform = 'none'; e.target.style.boxShadow = '0 8px 24px rgba(16, 185, 129, 0.4)' }}
             >
               Get Started Now →
             </button>

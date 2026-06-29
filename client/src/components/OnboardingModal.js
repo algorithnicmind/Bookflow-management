@@ -102,7 +102,7 @@ export default function OnboardingModal({ isOpen, onClose, selectedPlan = 'free_
     border: '1px solid var(--border)',
     padding: '10px 14px',
     borderRadius: 8,
-    color: '#fff',
+    color: 'var(--text-main)',
     fontSize: '0.9rem',
     outline: 'none',
     transition: 'all 0.2s',
