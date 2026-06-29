@@ -192,7 +192,7 @@ export default function Sidebar({ isOpen, onClose }) {
               width: '100%',
               padding: '10px',
               borderRadius: 'var(--radius-md)',
-              background: '#FFFFFF',
+              background: 'var(--bg-tertiary)',
               border: '1px solid var(--border)',
               color: 'var(--text-main)',
               cursor: 'pointer',

@@ -183,10 +183,10 @@ export default function Chatbot() {
             display: 'flex',
             flexDirection: 'column',
             boxShadow: 'var(--shadow-lg)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
+            border: '1px solid var(--border)',
             animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
             transformOrigin: 'bottom right',
-            background: 'rgba(15, 17, 35, 0.95)',
+            background: 'var(--bg-primary)',
             overflow: 'hidden'
           }}
         >
@@ -304,7 +304,7 @@ export default function Chatbot() {
                       padding: '12px 16px',
                       borderRadius: msg.isUser ? '16px 16px 2px 16px' : '16px 16px 16px 2px',
                       background: msg.isUser ? 'linear-gradient(135deg, #4f46e5, #4338ca)' : 'var(--bg-tertiary)',
-                      color: '#fff',
+                      color: msg.isUser ? '#fff' : 'var(--text-main)',
                       fontSize: '0.86rem',
                       lineHeight: 1.5,
                       whiteSpace: 'pre-wrap',
@@ -352,8 +352,8 @@ export default function Chatbot() {
                 gap: 8,
                 flexWrap: 'wrap',
                 overflowX: 'auto',
-                borderTop: '1px solid rgba(255, 255, 255, 0.03)',
-                background: 'rgba(10, 11, 20, 0.4)'
+                borderTop: '1px solid var(--border)',
+                background: 'var(--bg-secondary)'
               }}
             >
               {suggestions.map((chip, idx) => (
@@ -363,22 +363,24 @@ export default function Chatbot() {
                   style={{
                     padding: '6px 12px',
                     borderRadius: 100,
-                    background: 'rgba(79, 70, 229, 0.1)',
-                    border: '1px solid rgba(79, 70, 229, 0.3)',
-                    color: '#a5b4fc',
+                    background: 'var(--accent-glow)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--accent)',
                     fontSize: '0.78rem',
                     fontWeight: 500,
                     cursor: 'pointer',
                     transition: 'var(--transition)'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(79, 70, 229, 0.2)'
-                    e.currentTarget.style.borderColor = 'rgba(79, 70, 229, 0.6)'
+                    e.currentTarget.style.background = 'var(--accent)'
+                    e.currentTarget.style.color = '#fff'
+                    e.currentTarget.style.borderColor = 'var(--accent)'
                     e.currentTarget.style.transform = 'translateY(-1px)'
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(79, 70, 229, 0.1)'
-                    e.currentTarget.style.borderColor = 'rgba(79, 70, 229, 0.3)'
+                    e.currentTarget.style.background = 'var(--accent-glow)'
+                    e.currentTarget.style.color = 'var(--accent)'
+                    e.currentTarget.style.borderColor = 'var(--border)'
                     e.currentTarget.style.transform = 'none'
                   }}
                 >
