@@ -120,13 +120,13 @@ export default function LandingPage() {
     hidden: { opacity: 0 },
     visible: { 
       opacity: 1,
-      transition: { staggerChildren: 0.15 }
+      transition: { staggerChildren: 0.2, delayChildren: 0.1 }
     }
   }
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+    hidden: { opacity: 0, y: 40, scale: 0.95, filter: 'blur(12px)' },
+    visible: { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transition: { duration: 1.2, ease: [0.16, 1, 0.3, 1] } }
   }
 
   return (
@@ -206,120 +206,151 @@ export default function LandingPage() {
 
       {/* Main Content */}
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 10 }}>
-        
+           {/* Hero Section */}
         {/* Hero Section */}
-        <motion.section 
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          style={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center',
-            padding: '200px 24px 80px', /* Increased top padding to prevent overlap with dock */
-            maxWidth: 1000,
-            margin: '0 auto',
-            position: 'relative'
-          }}
-        >
-          <motion.div variants={itemVariants} style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '8px 20px',
-            borderRadius: 100,
-            background: 'var(--accent-glow)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
-            fontSize: '0.85rem',
-            color: 'var(--accent)',
-            fontWeight: 600,
-            marginBottom: 32,
-            boxShadow: '0 0 20px rgba(16, 185, 129, 0.1)'
-          }}>
-            <AppleEmoji char="🌿" /> Welcome to the Future of Work
-          </motion.div>
-
-          <motion.h1 variants={itemVariants} style={{
-            fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
-            fontWeight: 900,
-            lineHeight: 1.1,
-            letterSpacing: '-1.5px',
-            marginBottom: 24,
-          }}>
-            Breathe Easy.<br/>
-            <span style={{ 
-              background: 'linear-gradient(135deg, #34d399, #059669)', 
-              WebkitBackgroundClip: 'text', 
-              WebkitTextFillColor: 'transparent',
-              filter: 'drop-shadow(0px 4px 12px rgba(16, 185, 129, 0.2))'
-            }}>
-              Automate Your Time Off.
-            </span>
-          </motion.h1>
-
-          <motion.p variants={itemVariants} style={{
-            fontSize: 'clamp(1rem, 2vw, 1.25rem)',
-            color: 'var(--text-muted)',
-            maxWidth: 680,
-            lineHeight: 1.7,
-            marginBottom: 48,
-          }}>
-            The ultimate time-off management platform designed for modern teams. Say goodbye to messy spreadsheets and endless email chains—LeaveFlow automates complex approval workflows, tracks real-time balances, and instantly answers HR queries with a built-in AI assistant, all from one beautifully simple dashboard.
-          </motion.p>
-
-          <motion.div variants={itemVariants} style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
-            <button
-              onClick={() => {
-                if (platformConfig.show_onboarding_section) {
-                  setSelectedPlan('professional')
-                  setOnboardingModalOpen(true)
-                } else {
-                  setLeadModalOpen(true)
-                }
-              }}
-              style={{
-                padding: '16px 36px',
-                borderRadius: '100px',
-                background: 'linear-gradient(135deg, var(--accent), var(--accent-hover))',
-                color: '#000',
-                border: 'none',
-                fontSize: '1rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'var(--transition)',
-                boxShadow: '0 8px 24px var(--accent-glow)'
-              }}
-              onMouseEnter={(e) => { e.target.style.transform = 'translateY(-3px)'; e.target.style.boxShadow = '0 12px 32px var(--accent-glow)' }}
-              onMouseLeave={(e) => { e.target.style.transform = 'none'; e.target.style.boxShadow = '0 8px 24px var(--accent-glow)' }}
+        <section style={{ position: 'relative', width: '100%', overflow: 'hidden', paddingBottom: '60px' }}>
+          
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8 }}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textAlign: 'center',
+              padding: '180px 24px 60px',
+              maxWidth: 1000,
+              margin: '0 auto',
+            }}
+          >
+            {/* Continuously Levitating Hero Content */}
+            <motion.div
+              animate={{ y: [0, -20, 0] }}
+              transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
             >
-              Get Started Now →
-            </button>
-            <button
-              onClick={() => {
-                document.getElementById('features').scrollIntoView({ behavior: 'smooth' })
-              }}
-              style={{
-                padding: '16px 36px',
-                borderRadius: '100px',
-                background: 'rgba(255,255,255,0.03)',
-                color: 'var(--text-main)',
+              <motion.div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '8px 20px',
+                borderRadius: 100,
+                background: 'var(--bg-secondary)',
                 border: '1px solid var(--border)',
-                fontSize: '1rem',
+                fontSize: '0.85rem',
+                color: 'var(--text-main)',
                 fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'var(--transition)',
-                backdropFilter: 'blur(10px)'
-              }}
-              onMouseEnter={(e) => { e.target.style.borderColor = 'var(--accent)'; e.target.style.background = 'rgba(16, 185, 129, 0.05)' }}
-              onMouseLeave={(e) => { e.target.style.borderColor = 'var(--border)'; e.target.style.background = 'rgba(255,255,255,0.03)' }}
-            >
-              Explore Features
-            </button>
+                marginBottom: 32,
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)'
+              }}>
+                <AppleEmoji char="✨" /> Welcome to the Future of Work
+              </motion.div>
+
+              <h1 style={{
+                fontSize: 'clamp(3rem, 7vw, 5.5rem)',
+                fontWeight: 900,
+                lineHeight: 1.1,
+                letterSpacing: '-2px',
+                marginBottom: 24,
+              }}>
+                Breathe Easy.<br/>
+                {/* Continuously Moving Liquid Gradient Text */}
+                <motion.span 
+                  animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
+                  transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
+                  style={{ 
+                    display: 'inline-block',
+                    background: 'linear-gradient(270deg, #10b981, #3b82f6, #10b981, #34d399)',
+                    backgroundSize: '300% 300%',
+                    WebkitBackgroundClip: 'text', 
+                    WebkitTextFillColor: 'transparent',
+                    filter: 'drop-shadow(0px 10px 20px rgba(16, 185, 129, 0.3))'
+                  }}
+                >
+                  Automate Your Time Off.
+                </motion.span>
+              </h1>
+
+              <p style={{
+                fontSize: 'clamp(1.1rem, 2vw, 1.35rem)',
+                color: 'var(--text-muted)',
+                maxWidth: 720,
+                lineHeight: 1.6,
+                marginBottom: 48,
+              }}>
+                The ultimate time-off management platform designed for modern teams. Say goodbye to messy spreadsheets and endless email chains.
+              </p>
+
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+                <button
+                  onClick={() => {
+                    if (platformConfig.show_onboarding_section) {
+                      document.getElementById('onboarding')?.scrollIntoView({ behavior: 'smooth' })
+                    } else {
+                      // fallback
+                    }
+                  }}
+                  style={{
+                    background: 'var(--accent)',
+                    color: 'white',
+                    padding: '16px 32px',
+                    borderRadius: 8,
+                    fontWeight: 600,
+                    fontSize: '1.1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    transition: 'all 0.2s',
+                    boxShadow: '0 4px 14px rgba(16, 185, 129, 0.4)',
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}
+                  onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  Get Started Now <AppleEmoji char="🚀" />
+                </button>
+                <button
+                  onClick={() => document.getElementById('solutions')?.scrollIntoView({ behavior: 'smooth' })}
+                  style={{
+                    background: 'var(--bg-secondary)',
+                    color: 'var(--text-main)',
+                    padding: '16px 32px',
+                    borderRadius: 8,
+                    fontWeight: 600,
+                    fontSize: '1.1rem',
+                    border: '1px solid var(--border)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseOver={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+                  onMouseOut={e => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                >
+                  View Solutions
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
-        </motion.section>
+
+          {/* Infinite Moving Band (Like the Marquee you loved) */}
+          <div style={{ marginTop: '80px', width: '100%', overflow: 'hidden', background: 'var(--bg-secondary)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', padding: '20px 0' }}>
+            <motion.div 
+              animate={{ x: [0, -1000] }}
+              transition={{ repeat: Infinity, duration: 20, ease: 'linear' }}
+              style={{ display: 'flex', gap: '80px', whiteSpace: 'nowrap', width: 'fit-content' }}
+            >
+              {[...Array(10)].map((_, i) => (
+                <div key={i} style={{ display: 'flex', gap: '80px', alignItems: 'center' }}>
+                  <span style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}><AppleEmoji char="⚡" /> Lightning Fast</span>
+                  <span style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}><AppleEmoji char="🔒" /> Enterprise Secure</span>
+                  <span style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}><AppleEmoji char="🤖" /> AI Powered</span>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
 
         {/* Feature Grid */}
         <section id="features" style={{ padding: '80px 32px 120px', maxWidth: 1200, margin: '0 auto', width: '100%' }}>
