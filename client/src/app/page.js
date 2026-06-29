@@ -10,7 +10,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { motion } from 'motion/react'
+import { motion, AnimatePresence } from 'motion/react'
 import AppleEmoji from '@/components/AppleEmoji'
 import LiveClock from '@/components/Layout/LiveClock'
 import { contactApi, platformConfigApi } from '@/services/api'
@@ -267,7 +267,7 @@ export default function LandingPage() {
             lineHeight: 1.7,
             marginBottom: 48,
           }}>
-            LeaveFlow is a complete multi-tenant leave management system built with Next.js and FastAPI. It empowers organizations with strict role-based access, custom multi-tier approval chains, real-time balance tracking, and an intelligent AI chatbot to handle all your HR policy queries in one beautiful dashboard.
+            The ultimate time-off management platform designed for modern teams. Say goodbye to messy spreadsheets and endless email chains—LeaveFlow automates complex approval workflows, tracks real-time balances, and instantly answers HR queries with a built-in AI assistant, all from one beautifully simple dashboard.
           </motion.p>
 
           <motion.div variants={itemVariants} style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
