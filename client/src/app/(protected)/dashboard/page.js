@@ -14,7 +14,7 @@ import { dashboardApi } from '@/services/api'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import { formatDate, getLeaveTypeIcon } from '@/lib/utils'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts'
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, RadialBarChart, RadialBar } from 'recharts'
 
 export default function DashboardPage() {
   const { user } = useAuth()
@@ -144,38 +144,69 @@ export default function DashboardPage() {
 
       {/* REQUESTS OVERVIEW CHART */}
       <div className="glass animate-in" style={{ animationDelay: '0.08s', padding: '24px', marginBottom: '28px' }}>
-        <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '24px' }}>Requests Overview</h3>
-        <div style={{ height: '300px', width: '100%' }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={[
-                { name: 'Pending', count: data.stats?.pending || 0, fill: 'var(--warning)' },
-                { name: 'Approved', count: data.stats?.approved || 0, fill: 'var(--success)' },
-                { name: 'Rejected', count: data.stats?.rejected || 0, fill: 'var(--danger)' }
-              ]}
-              margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-muted)', fontSize: 12 }} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--text-muted)', fontSize: 12 }} dx={-10} allowDecimals={false} />
-              <RechartsTooltip 
-                cursor={{ fill: 'var(--border)', opacity: 0.2 }}
-                contentStyle={{ background: 'var(--glass-bg)', backdropFilter: 'blur(10px)', border: '1px solid var(--border)', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}
-                itemStyle={{ color: 'var(--text-main)', fontWeight: 600 }}
-              />
-              <Bar dataKey="count" radius={[6, 6, 0, 0]} maxBarSize={60} minPointSize={8}>
-                {
-                  [
-                    { name: 'Pending', count: data.stats?.pending || 0, fill: 'var(--warning)' },
-                    { name: 'Approved', count: data.stats?.approved || 0, fill: 'var(--success)' },
-                    { name: 'Rejected', count: data.stats?.rejected || 0, fill: 'var(--danger)' }
-                  ].map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))
-                }
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+        <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '24px', color: 'var(--text-main)' }}>Requests Breakdown</h3>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '24px' }}>
+          
+          <div style={{ flex: '1 1 300px', height: '280px', position: 'relative' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'Pending', value: data.stats?.pending || 0, fill: 'var(--warning)' },
+                    { name: 'Approved', value: data.stats?.approved || 0, fill: 'var(--success)' },
+                    { name: 'Rejected', value: data.stats?.rejected || 0, fill: 'var(--danger)' }
+                  ].filter(d => d.value > 0)}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius="60%"
+                  outerRadius="80%"
+                  paddingAngle={4}
+                  cornerRadius={6}
+                  dataKey="value"
+                  stroke="none"
+                >
+                  {
+                    [
+                      { fill: 'var(--warning)' },
+                      { fill: 'var(--success)' },
+                      { fill: 'var(--danger)' }
+                    ].map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))
+                  }
+                </Pie>
+                <RechartsTooltip 
+                  contentStyle={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                  itemStyle={{ color: 'var(--text-main)', fontWeight: 600 }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+            {/* Center Total Text */}
+            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none' }}>
+              <div style={{ fontSize: '2.2rem', fontWeight: 700, color: 'var(--text-main)', lineHeight: 1 }}>
+                {(data.stats?.pending || 0) + (data.stats?.approved || 0) + (data.stats?.rejected || 0)}
+              </div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px', fontWeight: 500 }}>Total</div>
+            </div>
+          </div>
+          
+          {/* Minimalist Legend */}
+          <div style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {[
+              { name: 'Pending', count: data.stats?.pending || 0, color: 'var(--warning)' },
+              { name: 'Approved', count: data.stats?.approved || 0, color: 'var(--success)' },
+              { name: 'Rejected', count: data.stats?.rejected || 0, color: 'var(--danger)' }
+            ].map((item, idx) => (
+              <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '16px', borderBottom: idx < 2 ? '1px solid var(--border)' : 'none' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: 12, height: 12, borderRadius: '50%', background: item.color }} />
+                  <span style={{ fontSize: '0.95rem', color: 'var(--text-muted)', fontWeight: 500 }}>{item.name}</span>
+                </div>
+                <span style={{ fontSize: '1.1rem', color: 'var(--text-main)', fontWeight: 600 }}>{item.count}</span>
+              </div>
+            ))}
+          </div>
+          
         </div>
       </div>
 
