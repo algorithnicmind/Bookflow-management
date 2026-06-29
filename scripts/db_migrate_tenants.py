@@ -1,21 +1,20 @@
-import asyncio
 import os
-import asyncpg
+import psycopg2
 from dotenv import load_dotenv
 
 load_dotenv('server/.env')
 DATABASE_URL = os.getenv('DATABASE_URL')
 if DATABASE_URL and '+asyncpg' in DATABASE_URL:
     DATABASE_URL = DATABASE_URL.replace('+asyncpg', '')
-if DATABASE_URL and '?sslmode=require' in DATABASE_URL:
-    DATABASE_URL = DATABASE_URL.replace('?sslmode=require', '')
 
-async def migrate():
+def migrate():
     print(f"Connecting to {DATABASE_URL}")
-    conn = await asyncpg.connect(DATABASE_URL, ssl='require', timeout=60)
+    conn = psycopg2.connect(DATABASE_URL)
+    conn.autocommit = True
+    cur = conn.cursor()
     try:
         # Create tenants table
-        await conn.execute("""
+        cur.execute("""
         CREATE TABLE IF NOT EXISTS tenants (
             id SERIAL PRIMARY KEY,
             name VARCHAR(100) NOT NULL,
@@ -30,7 +29,7 @@ async def migrate():
         """)
         
         # Insert a default tenant
-        await conn.execute("""
+        cur.execute("""
         INSERT INTO tenants (id, name) VALUES (1, 'Default Tenant') ON CONFLICT DO NOTHING;
         """)
         
@@ -46,15 +45,17 @@ async def migrate():
         for table in tables:
             try:
                 # Check if column exists
-                res = await conn.fetchval(f"SELECT column_name FROM information_schema.columns WHERE table_name='{table}' AND column_name='tenant_id';")
+                cur.execute(f"SELECT column_name FROM information_schema.columns WHERE table_name='{table}' AND column_name='tenant_id';")
+                res = cur.fetchone()
                 if not res:
                     print(f"Adding tenant_id to {table}")
-                    await conn.execute(f"ALTER TABLE {table} ADD COLUMN tenant_id INTEGER DEFAULT 1;")
-                    await conn.execute(f"ALTER TABLE {table} ADD CONSTRAINT fk_{table}_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE;")
+                    cur.execute(f"ALTER TABLE {table} ADD COLUMN tenant_id INTEGER DEFAULT 1;")
+                    cur.execute(f"ALTER TABLE {table} ADD CONSTRAINT fk_{table}_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE;")
             except Exception as e:
                 print(f"Failed on {table}: {e}")
     finally:
-        await conn.close()
+        cur.close()
+        conn.close()
 
 if __name__ == '__main__':
-    asyncio.run(migrate())
+    migrate()
