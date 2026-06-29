@@ -10,13 +10,15 @@ export default function Badge({ status, style = {} }) {
         display: 'inline-flex',
         alignItems: 'center',
         gap: '6px',
-        padding: '3px 10px',
-        borderRadius: '100px',
-        fontSize: '0.75rem',
+        padding: '4px 12px',
+        borderRadius: 'var(--radius-full)',
+        fontSize: '12px',
         fontWeight: 600,
         textTransform: 'capitalize',
         background: colors.bg,
         color: colors.text,
+        boxShadow: 'var(--shadow-sm)',
+        border: '1px solid var(--border)',
         ...style,
       }}
     >
@@ -26,6 +28,7 @@ export default function Badge({ status, style = {} }) {
         borderRadius: '50%',
         background: colors.dot,
         flexShrink: 0,
+        animation: 'pulse-dot 2s infinite',
       }} />
       {status}
     </span>

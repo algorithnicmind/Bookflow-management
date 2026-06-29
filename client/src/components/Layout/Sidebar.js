@@ -83,7 +83,10 @@ export default function Sidebar({ isOpen, onClose }) {
           bottom: 0,
           width: 'var(--sidebar-width)',
           background: 'var(--bg-secondary)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
           borderRight: '1px solid var(--border)',
+          boxShadow: 'var(--shadow-sm)',
           display: 'flex',
           flexDirection: 'column',
           zIndex: 50,
@@ -131,21 +134,22 @@ export default function Sidebar({ isOpen, onClose }) {
                   alignItems: 'center',
                   gap: 12,
                   padding: '10px 14px',
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: '0.88rem',
-                  fontWeight: isActive ? 600 : 400,
-                  color: isActive ? 'var(--text-main)' : 'var(--text-muted)',
+                  borderRadius: 'var(--radius-md)',
+                  fontSize: '14px',
+                  fontWeight: isActive ? 600 : 500,
+                  color: isActive ? 'var(--accent-blue)' : 'var(--text-muted)',
                   background: isActive ? 'var(--accent-glow)' : 'transparent',
-                  borderLeft: isActive ? '3px solid var(--accent)' : '3px solid transparent',
-                  marginBottom: 2,
-                  transition: 'all 0.2s ease',
+                  marginBottom: 4,
+                  transition: 'var(--transition)',
                   textDecoration: 'none',
                 }}
                 onMouseEnter={(e) => {
-                  if (!isActive) e.target.style.background = 'rgba(255,255,255,0.03)'
+                  if (!isActive) e.currentTarget.style.background = 'rgba(0,0,0,0.03)'
+                  e.currentTarget.style.transform = 'translateX(4px)'
                 }}
                 onMouseLeave={(e) => {
-                  if (!isActive) e.target.style.background = 'transparent'
+                  if (!isActive) e.currentTarget.style.background = 'transparent'
+                  e.currentTarget.style.transform = 'translateX(0)'
                 }}
               >
                 <span style={{ fontSize: '1.1rem', width: 24, textAlign: 'center' }}>{item.icon}</span>
@@ -174,10 +178,10 @@ export default function Sidebar({ isOpen, onClose }) {
               </div>
             )}
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: '0.82rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {user?.name || 'User'}
               </div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
                 {user?.email || ''}
               </div>
             </div>
@@ -186,18 +190,29 @@ export default function Sidebar({ isOpen, onClose }) {
             onClick={logout}
             style={{
               width: '100%',
-              padding: '8px',
-              borderRadius: 'var(--radius-sm)',
-              background: 'transparent',
+              padding: '10px',
+              borderRadius: 'var(--radius-md)',
+              background: '#FFFFFF',
               border: '1px solid var(--border)',
-              color: 'var(--text-muted)',
+              color: 'var(--text-main)',
               cursor: 'pointer',
-              fontSize: '0.8rem',
-              fontWeight: 500,
+              fontSize: '13px',
+              fontWeight: 600,
               transition: 'var(--transition)',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
             }}
-            onMouseEnter={(e) => { e.target.style.borderColor = 'var(--danger)', e.target.style.color = 'var(--danger)' }}
-            onMouseLeave={(e) => { e.target.style.borderColor = 'var(--border)', e.target.style.color = 'var(--text-muted)' }}
+            onMouseEnter={(e) => { 
+              e.currentTarget.style.borderColor = 'var(--danger)'
+              e.currentTarget.style.color = 'var(--danger)'
+              e.currentTarget.style.transform = 'translateY(-1px)'
+              e.currentTarget.style.boxShadow = 'var(--shadow-sm)'
+            }}
+            onMouseLeave={(e) => { 
+              e.currentTarget.style.borderColor = 'var(--border)'
+              e.currentTarget.style.color = 'var(--text-main)'
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.02)'
+            }}
           >
             Sign Out
           </button>

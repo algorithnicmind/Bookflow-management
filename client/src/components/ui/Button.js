@@ -13,22 +13,24 @@ export default function Button({
 }) {
   const variants = {
     primary: {
-      background: 'linear-gradient(135deg, #4f46e5, #4338ca)',
+      background: '#0F172A',
       color: '#fff',
       border: 'none',
+      boxShadow: 'var(--shadow-md)',
     },
     secondary: {
-      background: 'transparent',
+      background: '#FFFFFF',
       color: 'var(--text-main)',
       border: '1px solid var(--border)',
+      boxShadow: 'var(--shadow-sm)',
     },
     success: {
-      background: 'linear-gradient(135deg, #10b981, #059669)',
+      background: 'var(--accent-green)',
       color: '#fff',
       border: 'none',
     },
     danger: {
-      background: 'linear-gradient(135deg, #f43f5e, #e11d48)',
+      background: 'var(--danger)',
       color: '#fff',
       border: 'none',
     },
@@ -48,10 +50,10 @@ export default function Button({
   const baseStyle = {
     ...variants[variant],
     ...sizes[size],
-    borderRadius: 'var(--radius-sm)',
+    borderRadius: 'var(--radius-md)', // 12px
     cursor: loading || disabled ? 'not-allowed' : 'pointer',
     fontWeight: 600,
-    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+    transition: 'var(--transition)',
     opacity: loading || disabled ? 0.6 : 1,
     display: 'inline-flex',
     alignItems: 'center',
@@ -68,17 +70,14 @@ export default function Button({
       style={baseStyle}
       disabled={disabled || loading}
       onClick={onClick}
-      onMouseEnter={(e) => {
-        if (!loading && !disabled && variant !== 'ghost') {
-          if (variant === 'secondary') e.target.style.borderColor = 'var(--accent)'
-          else e.target.style.opacity = '0.9'
-        }
+      onMouseDown={(e) => {
+        if (!loading && !disabled) e.currentTarget.style.transform = 'scale(0.98)'
+      }}
+      onMouseUp={(e) => {
+        if (!loading && !disabled) e.currentTarget.style.transform = 'scale(1)'
       }}
       onMouseLeave={(e) => {
-        if (!loading && !disabled) {
-          if (variant === 'secondary') e.target.style.borderColor = 'var(--border)'
-          else e.target.style.opacity = '1'
-        }
+        if (!loading && !disabled) e.currentTarget.style.transform = 'scale(1)'
       }}
     >
       {loading && <span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} />}

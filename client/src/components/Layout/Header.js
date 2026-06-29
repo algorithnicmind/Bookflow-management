@@ -89,6 +89,8 @@ export default function Header({ onToggleSidebar }) {
         zIndex: 30,
         height: 'var(--header-height)',
         background: 'var(--bg-secondary)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
         borderBottom: '1px solid var(--border)',
         display: 'flex',
         alignItems: 'center',
@@ -318,7 +320,7 @@ export default function Header({ onToggleSidebar }) {
                           background: notif.is_read ? 'transparent' : 'rgba(79, 70, 229, 0.05)',
                           transition: 'var(--transition)',
                         }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0,0,0,0.03)' }}
                         onMouseLeave={(e) => { e.currentTarget.style.background = notif.is_read ? 'transparent' : 'rgba(79, 70, 229, 0.05)' }}
                       >
                         <div style={{
@@ -456,7 +458,7 @@ export default function Header({ onToggleSidebar }) {
                   textAlign: 'left',
                   transition: 'var(--transition)',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0,0,0,0.03)' }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = 'none' }}
               >
                 ⚙️ Account Settings

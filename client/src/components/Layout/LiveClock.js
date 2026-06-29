@@ -35,13 +35,13 @@ export default function LiveClock({ compact = false }) {
         gap: 6,
         padding: '4px 12px',
         borderRadius: 100,
-        background: 'rgba(255,255,255,0.06)',
-        border: '1px solid rgba(255,255,255,0.08)',
-        fontSize: '0.78rem',
+        background: 'rgba(0,0,0,0.02)',
+        border: '1px solid rgba(0,0,0,0.05)',
+        fontSize: '12px',
         fontWeight: 600,
-        color: '#fff',
+        color: 'var(--text-main)',
         whiteSpace: 'nowrap',
-        letterSpacing: '0.3px',
+        letterSpacing: '0.2px',
       }}>
         <span style={{ fontSize: '0.85rem' }}>🕐</span>
         <span>{time}</span>
@@ -56,11 +56,11 @@ export default function LiveClock({ compact = false }) {
       display: 'flex',
       alignItems: 'center',
       gap: 8,
-      padding: '5px 14px',
-      borderRadius: 'var(--radius-sm)',
+      padding: '6px 16px',
+      borderRadius: 'var(--radius-full)',
       background: 'var(--bg-primary)',
       border: '1px solid var(--border)',
-      fontSize: '0.8rem',
+      fontSize: '13px',
       color: 'var(--text-muted)',
       whiteSpace: 'nowrap',
     }}>
