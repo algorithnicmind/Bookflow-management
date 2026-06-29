@@ -107,8 +107,8 @@ export default function Sidebar({ isOpen, onClose }) {
             src="/logo.png"
             alt="LeaveFlow Logo"
             style={{
-              width: 36,
-              height: 36,
+              width: 44,
+              height: 44,
               objectFit: 'contain',
               flexShrink: 0,
             }}
