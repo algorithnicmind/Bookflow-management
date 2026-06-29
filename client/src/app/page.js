@@ -249,28 +249,57 @@ export default function LandingPage() {
               </motion.div>
 
               <h1 style={{
-                fontSize: 'clamp(3rem, 7vw, 5.5rem)',
+                fontSize: 'clamp(2.2rem, 5vw, 4.2rem)',
                 fontWeight: 900,
-                lineHeight: 1.1,
-                letterSpacing: '-2px',
+                lineHeight: 1.15,
+                letterSpacing: '-1.5px',
                 marginBottom: 24,
+                whiteSpace: 'nowrap'
               }}>
                 Breathe Easy.<br/>
-                {/* Continuously Moving Liquid Gradient Text */}
-                <motion.span 
-                  animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
-                  style={{ 
-                    display: 'inline-block',
-                    background: 'linear-gradient(270deg, #10b981, #3b82f6, #10b981, #34d399)',
-                    backgroundSize: '300% 300%',
-                    WebkitBackgroundClip: 'text', 
-                    WebkitTextFillColor: 'transparent',
-                    filter: 'drop-shadow(0px 10px 20px rgba(16, 185, 129, 0.3))'
-                  }}
-                >
-                  Automate Your Time Off.
-                </motion.span>
+                
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                  {/* Continuous Animated Sparkles */}
+                  {[
+                    { top: '-10%', left: '-5%', delay: 0, color: '#10b981', size: 30 },
+                    { top: '80%', left: '10%', delay: 0.5, color: '#3b82f6', size: 20 },
+                    { top: '-5%', left: '50%', delay: 1.2, color: '#f59e0b', size: 24 },
+                    { top: '90%', left: '60%', delay: 0.8, color: '#10b981', size: 16 },
+                    { top: '10%', left: '95%', delay: 0.3, color: '#8b5cf6', size: 28 },
+                    { top: '85%', left: '90%', delay: 1.5, color: '#3b82f6', size: 22 },
+                  ].map((sparkle, i) => (
+                    <motion.svg key={i} width={sparkle.size} height={sparkle.size} viewBox="0 0 24 24" fill="none"
+                      animate={{ scale: [0, 1, 0], rotate: [0, 180], opacity: [0, 1, 0] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: sparkle.delay, ease: "easeInOut" }}
+                      style={{ 
+                        position: 'absolute', 
+                        top: sparkle.top, 
+                        left: sparkle.left, 
+                        color: sparkle.color,
+                        zIndex: 10,
+                        pointerEvents: 'none'
+                      }}
+                    >
+                      <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" fill="currentColor" />
+                    </motion.svg>
+                  ))}
+
+                  {/* High-Gloss Moving Shine Text */}
+                  <motion.span 
+                    animate={{ backgroundPosition: ['200% center', '-200% center'] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+                    style={{ 
+                      display: 'inline-block',
+                      background: 'linear-gradient(90deg, #10b981 0%, #34d399 25%, #ffffff 50%, #34d399 75%, #10b981 100%)',
+                      backgroundSize: '200% auto',
+                      WebkitBackgroundClip: 'text', 
+                      WebkitTextFillColor: 'transparent',
+                      filter: 'drop-shadow(0px 8px 16px rgba(16, 185, 129, 0.25))'
+                    }}
+                  >
+                    Automate Your Time Off.
+                  </motion.span>
+                </div>
               </h1>
 
               <p style={{
