@@ -13,13 +13,13 @@ export default function Button({
 }) {
   const variants = {
     primary: {
-      background: '#0F172A',
-      color: '#fff',
+      background: 'var(--text-main)',
+      color: 'var(--bg-primary)',
       border: 'none',
       boxShadow: 'var(--shadow-md)',
     },
     secondary: {
-      background: '#FFFFFF',
+      background: 'var(--bg-tertiary)',
       color: 'var(--text-main)',
       border: '1px solid var(--border)',
       boxShadow: 'var(--shadow-sm)',
