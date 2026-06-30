@@ -1,5 +1,5 @@
 import ErrorBoundary from '@/components/ErrorBoundary'
-import { AuthProvider } from '@/context/AuthContext'
+import { AuthProvider } from '@/features/auth/AuthContext'
 import { Toaster } from 'react-hot-toast'
 import '@/app.css'
 

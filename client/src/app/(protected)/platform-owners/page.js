@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect } from 'react'
-import { useAuth } from '@/context/AuthContext'
+import { useAuth } from '@/features/auth/AuthContext'
 import { useRouter } from 'next/navigation'
 import { systemOwnersApi } from '@/services/api'
 import Card from '@/components/ui/Card'

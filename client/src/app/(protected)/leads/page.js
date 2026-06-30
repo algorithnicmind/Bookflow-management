@@ -8,7 +8,7 @@
  */
 
 import { useState, useEffect } from 'react'
-import { useAuth } from '@/context/AuthContext'
+import { useAuth } from '@/features/auth/AuthContext'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { onboardingApi } from '@/services/api'
 import Card from '@/components/ui/Card'

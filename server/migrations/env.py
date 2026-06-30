@@ -6,7 +6,23 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
+import sys
+from os.path import abspath, dirname
+sys.path.insert(0, dirname(dirname(abspath(__file__))))
 
+from app.core.config import settings
+from app.core.database import Base
+
+# Import all models to ensure they are registered on Base.metadata
+from app.modules.organizations.models import Organization, OnboardingApplication, RolePermission
+from app.modules.employees.models import Employee, PlatformOwner, EmployeeImage
+from app.modules.leaves.models import LeaveRequest, LeaveApproval, LeaveBalance
+from app.modules.settings.models import SystemSetting, PlatformConfig
+from app.modules.notifications.models import Notification
+from app.modules.audit.models import AuditLog
+from app.modules.integrations.models import CalendarIntegration
+from app.modules.contact.models import ContactMessage
+from app.modules.tenants.models import Tenant
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -20,7 +36,8 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+target_metadata = Base.metadata
+config.set_main_option("sqlalchemy.url", str(settings.async_database_url))
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

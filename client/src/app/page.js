@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
+import { useAuth } from '@/features/auth/AuthContext'
 import { motion, AnimatePresence } from 'motion/react'
 import AppleEmoji from '@/components/AppleEmoji'
 import LiveClock from '@/components/Layout/LiveClock'

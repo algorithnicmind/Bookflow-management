@@ -10,7 +10,7 @@ import { useState, useEffect } from 'react'
 import { authApi, integrationsApi } from '@/services/api'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
-import { useAuth } from '@/context/AuthContext'
+import { useAuth } from '@/features/auth/AuthContext'
 import { toast } from 'react-hot-toast'
 
 const departments = ['Engineering', 'Marketing', 'Sales', 'HR', 'Finance', 'Operations', 'Design', 'Management', 'General', 'System']

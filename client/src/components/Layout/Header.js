@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
+import { useAuth } from '@/features/auth/AuthContext'
 import { useNotifications } from '@/context/NotificationContext'
 import { settingsApi } from '@/services/api'
 import LiveClock from '@/components/Layout/LiveClock'
