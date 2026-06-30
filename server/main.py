@@ -18,6 +18,11 @@ from slowapi.errors import RateLimitExceeded
 from app.core.database import engine, Base, AsyncSessionLocal
 from app.core.dependencies import limiter
 from app.core.config import settings
+import logging
+from fastapi.responses import JSONResponse
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("leaveflow")
 
 # Import all models to ensure they are registered on Base.metadata
 from app.modules.organizations.models import Organization, OnboardingApplication, RolePermission
@@ -158,7 +163,7 @@ app = FastAPI(
 # Configure CORS (from TRD)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:8000", "http://127.0.0.1:8000", "https://leaveflow.com"],
+    allow_origins=["https://leaveflow.com", "http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -166,6 +171,14 @@ app.add_middleware(
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled error processing {request.method} {request.url.path}: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "An unexpected error occurred. Please try again later."}
+    )
 
 @app.get("/")
 def root():
