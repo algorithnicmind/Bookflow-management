@@ -9,7 +9,7 @@
  * spamming ECONNREFUSED errors every 30 seconds.
  */
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
-import { useAuth } from './AuthContext'
+import { useAuth } from '@/features/auth/AuthContext'
 import { notificationsApi } from '@/services/api'
 
 const NotificationContext = createContext(null)

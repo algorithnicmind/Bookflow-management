@@ -5,7 +5,6 @@ from app.core.database import Base
 
 class SystemSetting(Base):
     __tablename__ = "system_settings"
-    tenant_id = Column(Integer, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
     organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -17,7 +16,6 @@ class SystemSetting(Base):
 
 class PublicHoliday(Base):
     __tablename__ = "public_holidays"
-    tenant_id = Column(Integer, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
     organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -27,7 +25,6 @@ class PublicHoliday(Base):
 
 class ApprovalChain(Base):
     __tablename__ = "approval_chains"
-    tenant_id = Column(Integer, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
     organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -37,7 +34,6 @@ class ApprovalChain(Base):
 
 class ApprovalStep(Base):
     __tablename__ = "approval_steps"
-    tenant_id = Column(Integer, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
     chain_id = Column(Integer, ForeignKey("approval_chains.id", ondelete="CASCADE"), nullable=False)
@@ -48,7 +44,6 @@ class ApprovalStep(Base):
 
 class LeavePolicy(Base):
     __tablename__ = "leave_policies"
-    tenant_id = Column(Integer, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
     
     id = Column(Integer, primary_key=True, index=True)
     organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -62,7 +57,6 @@ class LeavePolicy(Base):
     
 class AccrualLog(Base):
     __tablename__ = "accrual_logs"
-    tenant_id = Column(Integer, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
     
     id = Column(Integer, primary_key=True, index=True)
     job_type = Column(String(50), nullable=False) # e.g. 'monthly_accrual', 'yearly_carry_forward'
@@ -72,7 +66,6 @@ class AccrualLog(Base):
 
 class PlatformConfig(Base):
     __tablename__ = "platform_config"
-    tenant_id = Column(Integer, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
     
     id = Column(Integer, primary_key=True, index=True)
     show_onboarding_section = Column(Boolean, default=True, nullable=False)
@@ -82,7 +75,6 @@ class PlatformConfig(Base):
 
 class LeaveType(Base):
     __tablename__ = "leave_types"
-    tenant_id = Column(Integer, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
     
     id = Column(Integer, primary_key=True, index=True)
     organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)

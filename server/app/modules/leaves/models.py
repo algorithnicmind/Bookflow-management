@@ -5,7 +5,6 @@ from app.core.database import Base
 
 class LeaveRequest(Base):
     __tablename__ = "leave_requests"
-    tenant_id = Column(Integer, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
     organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -28,7 +27,6 @@ class LeaveRequest(Base):
 
 class LeaveApproval(Base):
     __tablename__ = "leave_approvals"
-    tenant_id = Column(Integer, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
     organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -48,7 +46,6 @@ class LeaveApproval(Base):
 
 class LeaveBalance(Base):
     __tablename__ = "leave_balances"
-    tenant_id = Column(Integer, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
     organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)

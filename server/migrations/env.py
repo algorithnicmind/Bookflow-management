@@ -1,5 +1,12 @@
 import asyncio
 from logging.config import fileConfig
+import socket
+
+# Monkey-patch socket.getaddrinfo to force IPv4 and prevent Neon DB connection hangs over IPv6
+original_getaddrinfo = socket.getaddrinfo
+def getaddrinfo_ipv4(host, port, family=0, type=0, proto=0, flags=0):
+    return original_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
+socket.getaddrinfo = getaddrinfo_ipv4
 
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
@@ -22,7 +29,6 @@ from app.modules.notifications.models import Notification
 from app.modules.audit.models import AuditLog
 from app.modules.integrations.models import CalendarIntegration
 from app.modules.contact.models import ContactMessage
-from app.modules.tenants.models import Tenant
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config

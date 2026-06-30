@@ -5,7 +5,6 @@ from app.core.database import Base
 
 class AuditLog(Base):
     __tablename__ = "audit_logs"
-    tenant_id = Column(Integer, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
 
     id = Column(Integer, primary_key=True, index=True)
     actor_id = Column(Integer, ForeignKey("employees.id", ondelete="SET NULL"), nullable=True, index=True)
