@@ -13,6 +13,7 @@ import { useAuth } from '@/features/auth/AuthContext'
 import { platformConfigApi } from '@/services/api'
 import LeadModal from '@/components/LeadModal'
 import OnboardingModal from '@/components/OnboardingModal'
+import { useTheme } from '@/hooks'
 
 import FloatingNav from '@/components/Landing/FloatingNav'
 import HeroSection from '@/components/Landing/HeroSection'
@@ -27,7 +28,6 @@ export default function LandingPage() {
   const [mounted, setMounted] = useState(false)
   const [leadModalOpen, setLeadModalOpen] = useState(false)
   const [onboardingModalOpen, setOnboardingModalOpen] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState('free_trial')
   const [platformConfig, setPlatformConfig] = useState({
     show_onboarding_section: true,
@@ -37,24 +37,9 @@ export default function LandingPage() {
 
   useEffect(() => {
     setMounted(true)
-    const savedTheme = localStorage.getItem('theme')
-    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      setIsDarkMode(true)
-      document.documentElement.classList.add('dark')
-    }
   }, [])
 
-  const toggleTheme = () => {
-    if (isDarkMode) {
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
-      setIsDarkMode(false)
-    } else {
-      document.documentElement.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
-      setIsDarkMode(true)
-    }
-  }
+  const { isDarkMode, toggleTheme } = useTheme()
 
   useEffect(() => {
     // Fetch platform config (public endpoint)

@@ -6,7 +6,7 @@
  * and session management across the entire application.
  */
 
-const API_BASE = ''
+import { API_BASE } from '@/config'
 
 /**
  * Core HTTP Request Wrapper
