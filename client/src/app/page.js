@@ -89,7 +89,10 @@ export default function LandingPage() {
       <FloatingNav isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
 
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 10 }}>
-        <HeroSection platformConfig={platformConfig} />
+        <HeroSection 
+          platformConfig={platformConfig} 
+          setOnboardingModalOpen={setOnboardingModalOpen}
+        />
         <FeatureGrid />
         <SolutionsSection />
         <PricingSection 

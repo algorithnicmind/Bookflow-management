@@ -3,7 +3,7 @@
 import { motion } from 'motion/react'
 import AppleEmoji from '@/components/AppleEmoji'
 
-export default function HeroSection({ platformConfig }) {
+export default function HeroSection({ platformConfig, setOnboardingModalOpen }) {
   return (
     <section style={{ position: 'relative', width: '100%', overflow: 'hidden', paddingBottom: '60px' }}>
       <motion.div 
@@ -108,8 +108,8 @@ export default function HeroSection({ platformConfig }) {
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
             <button
               onClick={() => {
-                if (platformConfig.show_onboarding_section) {
-                  document.getElementById('onboarding')?.scrollIntoView({ behavior: 'smooth' })
+                if (platformConfig.show_onboarding_section && setOnboardingModalOpen) {
+                  setOnboardingModalOpen(true)
                 }
               }}
               style={{
