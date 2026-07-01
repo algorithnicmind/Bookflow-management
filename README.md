@@ -316,50 +316,400 @@ flowchart TD
 ```text
 Leaveflow-management/
 │
-├── 📁 client/                        # 🌐 Next.js App Router Frontend
-│   ├── package.json                 #    Node packages configure
-│   ├── next.config.js               #    Next.js configuration parameters
-│   └── 📁 src/
-│       ├── 📁 app/                  #    App Router folders (Pages & Layouts)
-│       │   ├── page.js              #    Landing Page
-│       │   ├── layout.js            #    Global HTML Layout
-│       │   ├── 📁 apply-leave/      #    Employee apply leave screen
-│       │   ├── 📁 dashboard/        #    Custom dynamic Home Dashboard
-│       │   ├── 📁 employees/        #    Admin Employee CRUD controller
-│       │   ├── 📁 leave-history/    #    Employee list of requests
-│       │   ├── 📁 login/            #    Login Form
-│       │   ├── 📁 manage-admins/    #    Super admin portal settings
-│       │   ├── 📁 organization-reports/  # Organization performance stats
-│       │   ├── 📁 pending-requests/ #    Manager approval portal
-│       │   ├── 📁 system-settings/  #    Super admin setup variables
-│       │   └── 📁 team-overview/    #    Manager direct report calendar
-│       ├── 📁 components/           #    Reusable Glassmorphic elements
-│       ├── 📁 context/              #    Global Contexts (AuthContext provider)
-│       ├── 📁 lib/                  #    Shared helpers and constants
-│       ├── 📁 services/             #    Frontend API client integrations
-│       └── app.css                  #    Unified Design System styling
-│
-├── 📁 server/                        # 🐍 Python REST API (FastAPI Backend)
-│   ├── main.py                      #    Coordinator entrypoint & Demo Auto-seeding
-│   ├── requirements.txt             #    Pip dependencies
-│   ├── 📁 app/
-│   │   ├── 📁 core/                 #    Cross-cutting configurations
-│   │   │   ├── config.py            #    Environment Variable settings
-│   │   │   ├── database.py          #    Async Session and engine configuration
-│   │   │   ├── dependencies.py      #    JWT validation and role checker filters
-│   │   │   └── security.py          #    Bcrypt utilities
-│   │   └── 📁 modules/              #    Feature modules (Repository-Service Pattern)
-│   │       ├── 📁 auth/             #    User authorization services
-│   │       ├── 📁 dashboard/        #    Consolidated dashboard API
-│   │       ├── 📁 employees/        #    Staff directory services
-│   │       ├── 📁 leaves/           #    Core leave engines
-│   │       ├── 📁 reports/          #    Super admin org statistics
-│   │       └── 📁 settings/         #    Global limit settings
-│   └── 📁 db/
-│       └── seed.py                  #    Database seeder script (Drop & Rebuilds schema)
-│
-├── 📁 docs/                          # 📖 Detailed Architectural Docs
-└── README.md                         # ← You are here!
+├── 📁 client/                                           # Next.js App Router Frontend - Contains all user interface code
+│   ├── 📁 __tests__/                                    # Directory
+│   │   ├── 📁 app/                                      # Next.js App Router folders (Pages & Layouts)
+│   │   │   ├── 📁 apply-leave/                          # Directory
+│   │   │   │   └── page.test.js                        # Frontend unit/integration tests
+│   │   │   ├── 📁 dashboard/                            # Directory
+│   │   │   │   └── page.test.js                        # Frontend unit/integration tests
+│   │   │   └── 📁 login/                                # Directory
+│   │   │       └── page.test.js                        # Frontend unit/integration tests
+│   │   ├── 📁 context/                                  # Directory
+│   │   │   ├── AuthContext.test.js                     # Frontend unit/integration tests
+│   │   │   └── NotificationContex...                   # Project file
+│   │   ├── 📁 lib/                                      # Shared utility functions and helpers
+│   │   │   └── utils.test.js                           # Frontend unit/integration tests
+│   │   └── 📁 services/                                 # API client integrators for fetching backend data
+│   │       └── api.test.js                             # Frontend unit/integration tests
+│   ├── 📁 public/                                       # Static assets like images and favicons
+│   │   ├── assets                                      # Project file
+│   │   ├── favicon.ico                                 # Project file
+│   │   ├── favicon.png                                 # Project file
+│   │   └── logo.png                                    # Project file
+│   ├── 📁 src/                                          # Source code root for the frontend
+│   │   ├── 📁 app/                                      # Next.js App Router folders (Pages & Layouts)
+│   │   │   ├── 📁 (protected)/                          # Protected routes requiring authentication
+│   │   │   │   ├── 📁 apply-leave/                      # Directory
+│   │   │   │   │   └── page.js                         # Form page for submitting leave requests
+│   │   │   │   ├── 📁 audit-logs/                       # Directory
+│   │   │   │   │   └── page.js                         # Next.js page route component
+│   │   │   │   ├── 📁 dashboard/                        # Directory
+│   │   │   │   │   └── page.js                         # Main dashboard view with stats
+│   │   │   │   ├── 📁 employees/                        # Directory
+│   │   │   │   │   └── page.js                         # Next.js page route component
+│   │   │   │   ├── 📁 leads/                            # Directory
+│   │   │   │   │   ├── 📁 [id]/                         # Directory
+│   │   │   │   │   │   └── page.js                     # Next.js page route component
+│   │   │   │   │   └── page.js                         # Next.js page route component
+│   │   │   │   ├── 📁 leave-history/                    # Directory
+│   │   │   │   │   └── pa...                           # Project file
+│   │   │   │   ├── 📁 manage-admins/                    # Directory
+│   │   │   │   │   └── pa...                           # Project file
+│   │   │   │   ├── 📁 organizations/                    # Directory
+│   │   │   │   │   ├── [i...                           # Project file
+│   │   │   │   │   ├── [id]                            # Project file
+│   │   │   │   │   └── pa...                           # Project file
+│   │   │   │   ├── 📁 owner-contacts/                   # Directory
+│   │   │   │   │   └── p...                            # Project file
+│   │   │   │   ├── 📁 platform-owners/                  # Directory
+│   │   │   │   │   └── ...                             # Project file
+│   │   │   │   ├── 📁 system-settings/                  # Directory
+│   │   │   │   │   └── ...                             # Project file
+│   │   │   │   ├── 📁 team-overview/                    # Directory
+│   │   │   │   │   └── pa...                           # Project file
+│   │   │   │   ├── 📁 tenants/                          # Directory
+│   │   │   │   │   ├── 📁 [id]/                         # Directory
+│   │   │   │   │   │   ├── das...                      # Project file
+│   │   │   │   │   │   └── pag...                      # Project file
+│   │   │   │   │   └── page.js                         # Next.js page route component
+│   │   │   │   ├── account-settings                    # Project file
+│   │   │   │   ├── account-settings...                 # Project file
+│   │   │   │   ├── layout.js                           # Next.js layout wrapper for consistent UI
+│   │   │   │   ├── organization-rep...                 # Project file
+│   │   │   │   ├── pending-requests                    # Project file
+│   │   │   │   └── pending-requests...                 # Project file
+│   │   │   ├── 📁 login/                                # Directory
+│   │   │   │   └── page.js                             # Login screen for all users
+│   │   │   ├── layout.js                               # Next.js layout wrapper for consistent UI
+│   │   │   └── page.js                                 # Next.js page route component
+│   │   ├── 📁 components/                               # Reusable React components
+│   │   │   ├── 📁 Chatbot/                              # Directory
+│   │   │   │   ├── ChatInput.js                        # JavaScript source code
+│   │   │   │   ├── Chatbot.js                          # JavaScript source code
+│   │   │   │   ├── ChatbotHeader.js                    # JavaScript source code
+│   │   │   │   ├── FloatingButto...                    # Project file
+│   │   │   │   ├── MessageList.js                      # JavaScript source code
+│   │   │   │   └── SuggestionChi...                    # Project file
+│   │   │   ├── 📁 Landing/                              # Directory
+│   │   │   │   ├── ContactSectio...                    # Project file
+│   │   │   │   ├── FeatureGrid.js                      # JavaScript source code
+│   │   │   │   ├── FloatingNav.js                      # JavaScript source code
+│   │   │   │   ├── HeroSection.js                      # JavaScript source code
+│   │   │   │   ├── PricingSectio...                    # Project file
+│   │   │   │   └── SolutionsSect...                    # Project file
+│   │   │   ├── 📁 Layout/                               # Directory
+│   │   │   │   ├── 📁 Header/                           # Directory
+│   │   │   │   │   ├── Notific...                      # Project file
+│   │   │   │   │   ├── Organiz...                      # Project file
+│   │   │   │   │   ├── Profile...                      # Project file
+│   │   │   │   │   └── ThemeTo...                      # Project file
+│   │   │   │   ├── Header.js                           # JavaScript source code
+│   │   │   │   ├── LiveClock.js                        # JavaScript source code
+│   │   │   │   ├── Sidebar.js                          # JavaScript source code
+│   │   │   │   └── index.js                            # JavaScript source code
+│   │   │   ├── 📁 shared/                               # Directory
+│   │   │   │   ├── LeaveTypeIcon.js                    # JavaScript source code
+│   │   │   │   └── index.js                            # JavaScript source code
+│   │   │   ├── 📁 ui/                                   # Atomic UI components (Buttons, Cards, Modals)
+│   │   │   │   ├── Badge.js                            # JavaScript source code
+│   │   │   │   ├── Button.js                           # Reusable Button component
+│   │   │   │   ├── Card.js                             # Reusable Card container component
+│   │   │   │   ├── Modal.js                            # Reusable Modal dialog component
+│   │   │   │   ├── StatCard.js                         # JavaScript source code
+│   │   │   │   └── index.js                            # JavaScript source code
+│   │   │   ├── AppleEmoji.js                           # JavaScript source code
+│   │   │   ├── ErrorBoundary.js                        # JavaScript source code
+│   │   │   ├── LeadModal.js                            # JavaScript source code
+│   │   │   ├── OnboardingModal.js                      # JavaScript source code
+│   │   │   └── index.js                                # JavaScript source code
+│   │   ├── 📁 config/                                   # Directory
+│   │   │   ├── constants.js                            # JavaScript source code
+│   │   │   ├── index.js                                # JavaScript source code
+│   │   │   └── navigation.js                           # JavaScript source code
+│   │   ├── 📁 context/                                  # Directory
+│   │   │   ├── NotificationContext.js                  # JavaScript source code
+│   │   │   └── index.js                                # JavaScript source code
+│   │   ├── 📁 features/                                 # Domain-specific feature modules (e.g., auth, leaves)
+│   │   │   ├── 📁 audit/                                # Directory
+│   │   │   │   └── AuditLogsPage.js                    # JavaScript source code
+│   │   │   ├── 📁 auth/                                 # Authentication, login, and authorization logic
+│   │   │   │   ├── 📁 login/                            # Authentication, login, and authorization logic
+│   │   │   │   │   └── LoginForm.js                    # JavaScript source code
+│   │   │   │   ├── AuthContext.js                      # Global React context for managing user session
+│   │   │   │   ├── AuthGuard.js                        # JavaScript source code
+│   │   │   │   └── index.js                            # JavaScript source code
+│   │   │   ├── 📁 contact/                              # Directory
+│   │   │   │   └── OwnerContactsPa...                  # Project file
+│   │   │   ├── 📁 dashboard/                            # Dashboard stats and widgets
+│   │   │   │   ├── DashboardPage.js                    # JavaScript source code
+│   │   │   │   └── components                          # Project file
+│   │   │   ├── 📁 employees/                            # Employee directory and management
+│   │   │   │   ├── EmployeesPage.js                    # JavaScript source code
+│   │   │   │   ├── ManageAdminsP...                    # Project file
+│   │   │   │   └── TeamOverviewP...                    # Project file
+│   │   │   ├── 📁 leads/                                # Directory
+│   │   │   │   ├── LeadDetailsPage.js                  # JavaScript source code
+│   │   │   │   └── LeadsPage.js                        # JavaScript source code
+│   │   │   ├── 📁 leaves/                               # Leave request creation and management
+│   │   │   │   ├── 📁 apply/                            # Leave request creation and management
+│   │   │   │   │   └── ApplyLeave...                   # Project file
+│   │   │   │   ├── 📁 history/                          # Leave request creation and management
+│   │   │   │   │   └── LeaveHis...                     # Project file
+│   │   │   │   └── 📁 pending/                          # Leave request creation and management
+│   │   │   │       └── PendingR...                     # Project file
+│   │   │   ├── 📁 organizations/                        # Tenant organization management (Platform Owner)
+│   │   │   │   └── Organizat...                        # Project file
+│   │   │   ├── 📁 platform-owners/                      # Directory
+│   │   │   │   └── Platfor...                          # Project file
+│   │   │   ├── 📁 reports/                              # Directory
+│   │   │   │   └── OrganizationRep...                  # Project file
+│   │   │   ├── 📁 settings/                             # System configuration settings
+│   │   │   │   ├── AccountSetting...                   # Project file
+│   │   │   │   └── SystemSettings...                   # Project file
+│   │   │   └── 📁 tenants/                              # Tenant provisioning and onboarding
+│   │   │       ├── TenantDashboard...                  # Project file
+│   │   │       ├── TenantDetailsPa...                  # Project file
+│   │   │       └── TenantsPage.js                      # JavaScript source code
+│   │   ├── 📁 hooks/                                    # Directory
+│   │   │   ├── index.js                                # JavaScript source code
+│   │   │   └── useTheme.js                             # JavaScript source code
+│   │   ├── 📁 lib/                                      # Shared utility functions and helpers
+│   │   │   ├── constants.js                            # JavaScript source code
+│   │   │   ├── index.js                                # JavaScript source code
+│   │   │   └── utils.js                                # JavaScript source code
+│   │   ├── 📁 services/                                 # API client integrators for fetching backend data
+│   │   │   ├── api.js                                  # Centralized frontend API definitions connecting to backend
+│   │   │   └── index.js                                # JavaScript source code
+│   │   └── app.css                                     # Global application styling and Tailwind/CSS variables
+│   ├── .env.local                                      # Project file
+│   ├── .prettierrc                                     # Project file
+│   ├── crop_favicon.js                                 # JavaScript source code
+│   ├── jest.config.js                                  # JavaScript source code
+│   ├── jest.setup.js                                   # JavaScript source code
+│   ├── jsconfig.json                                   # JSON configuration data
+│   ├── next-env.d.ts                                   # Project file
+│   ├── next.config.js                                  # Next.js compilation and framework settings
+│   ├── package-lock.json                               # JSON configuration data
+│   ├── package.json                                    # Node dependencies and scripts
+│   ├── postcss.config.mjs                              # Project file
+│   ├── remove_bg.js                                    # JavaScript source code
+│   ├── test-emojis.js                                  # JavaScript source code
+│   └── tsconfig.json                                   # JSON configuration data
+├── 📁 docs/                                             # Detailed Architectural and Planning Documentation
+│   ├── 📁 task/                                         # Directory
+│   │   └── task.md                                     # Markdown documentation file
+│   ├── 01-PRD.md                                       # Markdown documentation file
+│   ├── 02-TRD.md                                       # Markdown documentation file
+│   ├── 03-User-Stories.md                              # Markdown documentation file
+│   ├── 04-User-Flows.md                                # Markdown documentation file
+│   ├── 05-HLD.md                                       # Markdown documentation file
+│   ├── 06-LLD.md                                       # Markdown documentation file
+│   ├── 06a-Database-Design.md                          # Markdown documentation file
+│   ├── 07-API-Documentation.md                         # Markdown documentation file
+│   ├── 08-Wireframes.md                                # Markdown documentation file
+│   └── 10-Sprint-Tracker.md                            # Markdown documentation file
+├── 📁 server/                                           # FastAPI Backend - Contains all business logic and database models
+│   ├── 📁 app/                                          # Next.js App Router folders (Pages & Layouts)
+│   │   ├── 📁 core/                                     # Cross-cutting backend configurations (DB, security)
+│   │   │   ├── __init__.py                             # Python source code
+│   │   │   ├── config.py                               # Environment variable loading and configuration
+│   │   │   ├── database.py                             # SQLAlchemy async database engine setup
+│   │   │   ├── dependencies.py                         # Python source code
+│   │   │   ├── security.py                             # Python source code
+│   │   │   ├── tenant.py                               # Python source code
+│   │   │   └── utils.py                                # Python source code
+│   │   ├── 📁 modules/                                  # Backend feature modules (Repository-Service Pattern)
+│   │   │   ├── 📁 audit/                                # Directory
+│   │   │   │   ├── __init__.py                         # Python source code
+│   │   │   │   ├── models.py                           # SQLAlchemy ORM database table definitions
+│   │   │   │   ├── routes.py                           # FastAPI HTTP endpoint definitions
+│   │   │   │   ├── schemas.py                          # Pydantic models for request/response validation
+│   │   │   │   └── services.py                         # Business logic and service layer
+│   │   │   ├── 📁 auth/                                 # Directory
+│   │   │   │   ├── __init__.py                         # Python source code
+│   │   │   │   ├── repositories.py                     # Database querying and transaction layer
+│   │   │   │   ├── routes.py                           # FastAPI HTTP endpoint definitions
+│   │   │   │   ├── schemas.py                          # Pydantic models for request/response validation
+│   │   │   │   └── services.py                         # Business logic and service layer
+│   │   │   ├── 📁 contact/                              # Directory
+│   │   │   │   ├── __init__.py                         # Python source code
+│   │   │   │   ├── models.py                           # SQLAlchemy ORM database table definitions
+│   │   │   │   ├── routes.py                           # FastAPI HTTP endpoint definitions
+│   │   │   │   └── schemas.py                          # Pydantic models for request/response validation
+│   │   │   ├── 📁 dashboard/                            # Directory
+│   │   │   │   ├── __init__.py                         # Python source code
+│   │   │   │   ├── routes.py                           # FastAPI HTTP endpoint definitions
+│   │   │   │   ├── schemas.py                          # Pydantic models for request/response validation
+│   │   │   │   └── services.py                         # Business logic and service layer
+│   │   │   ├── 📁 employees/                            # Directory
+│   │   │   │   ├── __init__.py                         # Python source code
+│   │   │   │   ├── models.py                           # SQLAlchemy ORM database table definitions
+│   │   │   │   ├── repositories.py                     # Database querying and transaction layer
+│   │   │   │   ├── routes.py                           # FastAPI HTTP endpoint definitions
+│   │   │   │   ├── schemas.py                          # Pydantic models for request/response validation
+│   │   │   │   └── services.py                         # Business logic and service layer
+│   │   │   ├── 📁 integrations/                         # Directory
+│   │   │   │   ├── __init__.py                         # Python source code
+│   │   │   │   ├── calendar_se...                      # Project file
+│   │   │   │   ├── models.py                           # SQLAlchemy ORM database table definitions
+│   │   │   │   ├── routes.py                           # FastAPI HTTP endpoint definitions
+│   │   │   │   └── services.py                         # Business logic and service layer
+│   │   │   ├── 📁 leaves/                               # Directory
+│   │   │   │   ├── __init__.py                         # Python source code
+│   │   │   │   ├── cron.py                             # Python source code
+│   │   │   │   ├── models.py                           # SQLAlchemy ORM database table definitions
+│   │   │   │   ├── repositories.py                     # Database querying and transaction layer
+│   │   │   │   ├── routes.py                           # FastAPI HTTP endpoint definitions
+│   │   │   │   ├── schemas.py                          # Pydantic models for request/response validation
+│   │   │   │   └── services.py                         # Business logic and service layer
+│   │   │   ├── 📁 notifications/                        # Directory
+│   │   │   │   ├── __init__.py                         # Python source code
+│   │   │   │   ├── models.py                           # SQLAlchemy ORM database table definitions
+│   │   │   │   └── routes.py                           # FastAPI HTTP endpoint definitions
+│   │   │   ├── 📁 onboarding/                           # Directory
+│   │   │   │   ├── __init__.py                         # Python source code
+│   │   │   │   ├── repositories.py                     # Database querying and transaction layer
+│   │   │   │   ├── routes.py                           # FastAPI HTTP endpoint definitions
+│   │   │   │   └── services.py                         # Business logic and service layer
+│   │   │   ├── 📁 organizations/                        # Directory
+│   │   │   │   ├── __init__.py                         # Python source code
+│   │   │   │   ├── models.py                           # SQLAlchemy ORM database table definitions
+│   │   │   │   ├── repositori...                       # Project file
+│   │   │   │   ├── routes.py                           # FastAPI HTTP endpoint definitions
+│   │   │   │   ├── schemas.py                          # Pydantic models for request/response validation
+│   │   │   │   └── services.py                         # Business logic and service layer
+│   │   │   ├── 📁 reports/                              # Directory
+│   │   │   │   ├── __init__.py                         # Python source code
+│   │   │   │   └── routes.py                           # FastAPI HTTP endpoint definitions
+│   │   │   ├── 📁 settings/                             # Directory
+│   │   │   │   ├── __init__.py                         # Python source code
+│   │   │   │   ├── models.py                           # SQLAlchemy ORM database table definitions
+│   │   │   │   ├── routes.py                           # FastAPI HTTP endpoint definitions
+│   │   │   │   ├── schemas.py                          # Pydantic models for request/response validation
+│   │   │   │   └── services.py                         # Business logic and service layer
+│   │   │   ├── 📁 uploads/                              # Directory
+│   │   │   │   ├── __init__.py                         # Python source code
+│   │   │   │   └── routes.py                           # FastAPI HTTP endpoint definitions
+│   │   │   └── __init__.py                             # Python source code
+│   │   └── __init__.py                                 # Python source code
+│   ├── 📁 bot/                                          # AI Chatbot service for answering employee queries
+│   │   ├── __init__.py                                 # Python source code
+│   │   ├── actions.py                                  # Python source code
+│   │   ├── llm.py                                      # Python source code
+│   │   ├── policies.py                                 # Python source code
+│   │   ├── router.py                                   # Python source code
+│   │   ├── schemas.py                                  # Pydantic models for request/response validation
+│   │   └── service.py                                  # Python source code
+│   ├── 📁 migrations/                                   # Alembic database schema migration scripts
+│   │   ├── 📁 versions/                                 # Directory
+│   │   │   ├── c73b5aa6ffd4_rem...                     # Project file
+│   │   │   └── f7304259f1a9_ini...                     # Project file
+│   │   ├── README                                      # Project file
+│   │   ├── env.py                                      # Python source code
+│   │   └── script.py.mako                              # Project file
+│   ├── .env                                            # Project file
+│   ├── alembic.ini                                     # Project file
+│   ├── main.py                                         # FastAPI application entry point and server startup
+│   └── requirements.txt                                # Python pip dependencies
+├── 📁 test/                                             # Comprehensive test suite for the backend
+│   ├── 📁 .pytest_cache/                                # Directory
+│   │   ├── 📁 v/                                        # Directory
+│   │   │   └── 📁 cache/                                # Directory
+│   │   │       ├── lastfailed                          # Project file
+│   │   │       └── nodeids                             # Project file
+│   │   ├── .gitignore                                  # Files excluded from git version control
+│   │   ├── CACHEDIR.TAG                                # Project file
+│   │   └── README.md                                   # Main project documentation and quick start guide
+│   ├── 📁 e2e/                                          # Directory
+│   │   ├── __init__.py                                 # Python source code
+│   │   ├── test_admin_employee_flow.py                 # Automated test cases
+│   │   ├── test_employee_leave_flow.py                 # Automated test cases
+│   │   ├── test_leave_cancel_flow.py                   # Automated test cases
+│   │   ├── test_leave_rejection_flow.py                # Automated test cases
+│   │   └── test_notification_flow.py                   # Automated test cases
+│   ├── 📁 fixtures/                                     # Directory
+│   │   ├── __init__.py                                 # Python source code
+│   │   ├── database.py                                 # SQLAlchemy async database engine setup
+│   │   ├── leaves.py                                   # Python source code
+│   │   ├── notifications.py                            # Python source code
+│   │   ├── settings.py                                 # Python source code
+│   │   └── users.py                                    # Python source code
+│   ├── 📁 integration/                                  # Directory
+│   │   ├── 📁 auth/                                     # Directory
+│   │   │   ├── __init__.py                             # Python source code
+│   │   │   ├── test_login.py                           # Automated test cases
+│   │   │   └── test_register.py                        # Automated test cases
+│   │   ├── 📁 dashboard/                                # Directory
+│   │   │   ├── __init__.py                             # Python source code
+│   │   │   └── test_dashboard_s...                     # Automated test cases
+│   │   ├── 📁 employees/                                # Directory
+│   │   │   ├── __init__.py                             # Python source code
+│   │   │   ├── test_create_empl...                     # Automated test cases
+│   │   │   ├── test_deactivate_...                     # Automated test cases
+│   │   │   ├── test_list_employ...                     # Automated test cases
+│   │   │   └── test_update_empl...                     # Automated test cases
+│   │   ├── 📁 leaves/                                   # Directory
+│   │   │   ├── __init__.py                             # Python source code
+│   │   │   ├── test_apply_leave.py                     # Automated test cases
+│   │   │   ├── test_approve_leave.py                   # Automated test cases
+│   │   │   ├── test_cancel_leave.py                    # Automated test cases
+│   │   │   ├── test_leave_balance.py                   # Automated test cases
+│   │   │   ├── test_leave_history.py                   # Automated test cases
+│   │   │   ├── test_pending_reques...                  # Automated test cases
+│   │   │   └── test_reject_leave.py                    # Automated test cases
+│   │   ├── 📁 notifications/                            # Directory
+│   │   │   ├── __init__.py                             # Python source code
+│   │   │   ├── test_list_no...                         # Automated test cases
+│   │   │   ├── test_mark_al...                         # Automated test cases
+│   │   │   └── test_mark_re...                         # Automated test cases
+│   │   ├── 📁 reports/                                  # Directory
+│   │   │   ├── __init__.py                             # Python source code
+│   │   │   └── test_org_report.py                      # Automated test cases
+│   │   ├── 📁 settings/                                 # Directory
+│   │   │   ├── __init__.py                             # Python source code
+│   │   │   ├── test_get_settings.py                    # Automated test cases
+│   │   │   └── test_update_setti...                    # Automated test cases
+│   │   └── __init__.py                                 # Python source code
+│   ├── 📁 performance/                                  # Directory
+│   │   ├── __init__.py                                 # Python source code
+│   │   ├── test_dashboard_load.py                      # Automated test cases
+│   │   ├── test_employee_list_load.py                  # Automated test cases
+│   │   ├── test_leave_apply_load.py                    # Automated test cases
+│   │   └── test_login_load.py                          # Automated test cases
+│   ├── 📁 unit/                                         # Directory
+│   │   ├── 📁 auth/                                     # Directory
+│   │   │   ├── __init__.py                             # Python source code
+│   │   │   ├── test_auth_service.py                    # Automated test cases
+│   │   │   └── test_security.py                        # Automated test cases
+│   │   ├── 📁 dashboard/                                # Directory
+│   │   │   ├── __init__.py                             # Python source code
+│   │   │   └── test_dashboard_service.py               # Automated test cases
+│   │   ├── 📁 employees/                                # Directory
+│   │   │   ├── __init__.py                             # Python source code
+│   │   │   ├── test_employee_repositor...              # Automated test cases
+│   │   │   └── test_employee_service.py                # Automated test cases
+│   │   ├── 📁 leaves/                                   # Directory
+│   │   │   ├── __init__.py                             # Python source code
+│   │   │   ├── test_leave_repository.py                # Automated test cases
+│   │   │   ├── test_leave_service.py                   # Automated test cases
+│   │   │   └── test_leave_validators.py                # Automated test cases
+│   │   ├── 📁 notifications/                            # Directory
+│   │   │   ├── __init__.py                             # Python source code
+│   │   │   └── test_notification_h...                  # Automated test cases
+│   │   ├── 📁 settings/                                 # Directory
+│   │   │   ├── __init__.py                             # Python source code
+│   │   │   └── test_settings_service.py                # Automated test cases
+│   │   └── __init__.py                                 # Python source code
+│   ├── conftest.py                                     # Python source code
+│   └── pytest.ini                                      # Project file
+├── .env.example                                        # Example environment variables template
+├── .gitignore                                          # Files excluded from git version control
+├── LICENSE                                             # Project file
+├── README.md                                           # Main project documentation and quick start guide
+├── filtered_tree.txt                                   # Project file
+├── scripts                                             # Project file
+└── tree_output.txt                                     # Project file
 ```
 
 ---
