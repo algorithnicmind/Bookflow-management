@@ -31,6 +31,7 @@ class LeaveService:
         return result.scalar_one_or_none()
 
     async def _create_notification(self, user_id: int, title: str, message: str, ntype: str = "info", action_url: str = None):
+        """Helper to create an in-app notification asynchronously."""
         notification = Notification(
             user_id=user_id,
             title=title,
@@ -65,7 +66,7 @@ class LeaveService:
         if overlaps:
             raise HTTPException(status_code=400, detail="You have an overlapping leave request for these dates")
 
-        # Fetch holidays
+        # Fetch holidays mapped to this tenant
         from app.modules.settings.models import PublicHoliday
         holiday_rows = await self.repo.db.execute(select(PublicHoliday.date).where(
             PublicHoliday.organization_id == self.repo.organization_id,
@@ -74,8 +75,8 @@ class LeaveService:
         ))
         holidays = [row[0] for row in holiday_rows.all()]
         
+        # Calculate raw calendar days, then subtract the holidays
         requested_days = get_calendar_days(request.start_date, request.end_date)
-        # Exclude holidays
         requested_days -= len(holidays)
         
         if requested_days <= 0:
@@ -99,9 +100,10 @@ class LeaveService:
             if remaining < requested_days:
                 raise HTTPException(status_code=400, detail=f"Insufficient {request.leave_type} balance. Available: {remaining} days")
 
-            # Deduct balance
+            # Deduct balance immediately upon application
             balance.used_days += requested_days
 
+        # Create request record
         new_request = LeaveRequest(
             organization_id=self.repo.organization_id,
             employee_id=employee_id,
@@ -130,6 +132,7 @@ class LeaveService:
         
         await self.repo.commit()
 
+        # Send notifications
         employee = await self._get_employee(employee_id)
         if employee and employee.manager_id:
             days = get_calendar_days(request.start_date, request.end_date)
@@ -170,6 +173,9 @@ class LeaveService:
         return {"message": "Leave application submitted successfully"}
 
     async def get_leave_history(self, employee_id: int, status: Optional[str] = "all") -> List[dict]:
+        """
+        Fetches an employee's leave history and constructs a detailed DTO including manager action details.
+        """
         leaves = await self.repo.list_history(employee_id, status)
         responses = []
         for leave in leaves:
@@ -197,6 +203,10 @@ class LeaveService:
         return responses
 
     async def get_balances(self, employee_id: int) -> List[dict]:
+        """
+        Retrieves leave balances for the current calendar year.
+        Calculates remaining days dynamically based on total_days and used_days.
+        """
         current_year = datetime.today().year
         balances = await self.repo.get_balances(employee_id, current_year)
         res = []
@@ -210,6 +220,9 @@ class LeaveService:
         return res
 
     async def cancel_leave(self, leave_id: int, employee_id: int) -> dict:
+        """
+        Allows an employee to cancel a pending leave request, safely restoring their deducted balance.
+        """
         leave = await self.repo.get_request_by_id(leave_id)
         if not leave:
             raise HTTPException(status_code=404, detail="Leave request not found")
@@ -220,7 +233,7 @@ class LeaveService:
 
         leave.status = "cancelled"
 
-        # Restore balance
+        # Restore balance if it was a paid leave
         from app.modules.settings.models import LeaveType
         leave_type_obj = await self.repo.db.execute(select(LeaveType).where(
             LeaveType.organization_id == self.repo.organization_id,
@@ -230,7 +243,6 @@ class LeaveService:
 
         if leave_type_record and leave_type_record.is_paid:
             requested_days = get_calendar_days(leave.start_date, leave.end_date)
-
             current_year = leave.start_date.year
             balance = await self.repo.get_balance(leave.employee_id, leave.leave_type, current_year)
             if balance:
@@ -276,7 +288,7 @@ class LeaveService:
         2. Looks at the `current_approval_step` of the leave request.
         3. Determines if the current user (manager or specific role like HR) has the required role
            for the current step in the chain.
-        4. Admins bypass these checks.
+        4. Admins bypass these checks to prevent bottlenecks.
         """
         rows = await self.repo.list_all_pending_requests()
         approver = await self._get_employee(manager_id)
@@ -287,6 +299,7 @@ class LeaveService:
         )
         chains = chains_res.scalars().all()
         chain_ids = [c.id for c in chains]
+        
         steps_res = await self.repo.db.execute(
             select(ApprovalStep).where(ApprovalStep.chain_id.in_(chain_ids)).order_by(ApprovalStep.step_order)
         ) if chain_ids else None
@@ -357,6 +370,7 @@ class LeaveService:
         leave, emp = row
         if leave.status != "pending":
             raise HTTPException(status_code=400, detail="Only pending leaves can be approved")
+            
         from app.modules.settings.models import ApprovalChain, ApprovalStep
         chain_res = await self.repo.db.execute(select(ApprovalChain).where(
             ApprovalChain.organization_id == self.repo.organization_id,
@@ -376,8 +390,9 @@ class LeaveService:
             steps = steps_res.scalars().all()
 
         current_step_idx = leave.current_approval_step - 1
-
         approver = await self._get_employee(manager_id)
+        
+        # Enforce step-specific role validations
         if steps and current_step_idx < len(steps):
             required_role = steps[current_step_idx].role_required
             if required_role == "manager":
@@ -401,9 +416,11 @@ class LeaveService:
         
         is_final = True
         if steps and leave.current_approval_step < len(steps):
+            # Advance to next approval step
             leave.current_approval_step += 1
             is_final = False
         else:
+            # Mark as completely approved
             leave.status = "approved"
         
         # Log audit trail
@@ -435,7 +452,7 @@ class LeaveService:
             )
             await self.repo.commit()
 
-            # Trigger calendar syncing
+            # Trigger calendar syncing once fully approved
             try:
                 from app.modules.integrations.calendar_service import CalendarService
                 await CalendarService.sync_leave_to_calendar(self.repo.db, leave.id)
@@ -476,6 +493,7 @@ class LeaveService:
         leave, emp = row
         if leave.status != "pending":
             raise HTTPException(status_code=400, detail="Only pending leaves can be rejected")
+            
         from app.modules.settings.models import ApprovalChain, ApprovalStep
         chain_res = await self.repo.db.execute(select(ApprovalChain).where(
             ApprovalChain.organization_id == self.repo.organization_id,
@@ -495,8 +513,9 @@ class LeaveService:
             steps = steps_res.scalars().all()
 
         current_step_idx = leave.current_approval_step - 1
-
         approver = await self._get_employee(manager_id)
+        
+        # Enforce step-specific role validations
         if steps and current_step_idx < len(steps):
             required_role = steps[current_step_idx].role_required
             if required_role == "manager":
@@ -519,7 +538,7 @@ class LeaveService:
         )
         await self.repo.add_approval(approval)
 
-        # Restore balance
+        # Restore balance (refund the days originally deducted during apply_leave)
         from app.modules.settings.models import LeaveType
         leave_type_obj = await self.repo.db.execute(select(LeaveType).where(
             LeaveType.organization_id == self.repo.organization_id,
@@ -529,7 +548,6 @@ class LeaveService:
 
         if leave_type_record and leave_type_record.is_paid:
             requested_days = get_calendar_days(leave.start_date, leave.end_date)
-
             current_year = leave.start_date.year
             balance = await self.repo.get_balance(leave.employee_id, leave.leave_type, current_year)
             if balance:
@@ -553,7 +571,6 @@ class LeaveService:
         await self.repo.commit()
 
         days = get_calendar_days(leave.start_date, leave.end_date)
-
         await self._create_notification(
             user_id=leave.employee_id,
             title="Leave Request Rejected",

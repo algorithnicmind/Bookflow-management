@@ -10,6 +10,13 @@ from app.modules.leaves.models import LeaveBalance
 from app.modules.audit.services import AuditLogService
 
 class EmployeeService:
+    """
+    Employee Service Layer
+    ----------------------
+    Handles business logic for managing employees within a specific tenant (organization).
+    All database operations in this service inherently filter by the `organization_id`
+    injected into the repository to ensure strict multi-tenant data isolation.
+    """
     def __init__(self, repo: EmployeeRepository):
         self.repo = repo
 
@@ -17,10 +24,15 @@ class EmployeeService:
         return await self.repo.get_by_id(employee_id)
 
     async def list_employees(self, search: Optional[str] = None) -> List[dict]:
+        """
+        Retrieves all employees for the current organization, optionally filtered by search.
+        Resolves manager names manually for frontend display.
+        """
         employees = await self.repo.list_employees(search)
         
         emp_responses = []
         for emp in employees:
+            # Resolve manager name dynamically
             manager_name = None
             if emp.manager_id:
                 manager = await self.repo.get_by_id(emp.manager_id)
@@ -42,13 +54,24 @@ class EmployeeService:
         return emp_responses
 
     async def create_employee(self, data: EmployeeCreate, actor_id: Optional[int] = None) -> Employee:
+        """
+        Creates a new employee profile.
+        
+        Flow:
+        1. Validates email uniqueness globally.
+        2. Hashes password in a non-blocking thread.
+        3. Creates Employee record.
+        4. Fetches custom leave policies (or defaults to system settings) for the org.
+        5. Provisions leave balances for the current year based on those policies.
+        6. Emits an AuditLog event.
+        """
         existing = await self.repo.get_by_email(data.email)
         if existing:
             raise HTTPException(status_code=409, detail="Email already registered")
             
         hashed_password = await asyncio.to_thread(pwd_context.hash, data.password)
         new_employee = Employee(
-            organization_id=self.repo.organization_id,
+            organization_id=self.repo.organization_id, # Safely bound to current tenant
             name=data.name,
             email=data.email,
             password_hash=hashed_password,
@@ -62,7 +85,7 @@ class EmployeeService:
         
         current_year = datetime.now().year
         
-        # Load defaults from per-tenant SystemSetting (DB model, not config)
+        # Load defaults from per-tenant SystemSetting
         from sqlalchemy.future import select
         from app.modules.settings.models import SystemSetting, LeavePolicy
         settings_res = await self.repo.db.execute(
@@ -77,13 +100,13 @@ class EmployeeService:
             "miscarriage": org_settings.max_miscarriage_leave if org_settings else 42
         }
         
-        # Load custom policies (filtered by organization)
+        # Load custom policies specific to this organization
         policies_res = await self.repo.db.execute(
             select(LeavePolicy).where(LeavePolicy.organization_id == self.repo.organization_id)
         )
         policies = policies_res.scalars().all()
         
-        # Apply policies (department-specific or role-specific overrides)
+        # Apply policies (department-specific or role-specific overrides supersede defaults)
         for p in policies:
             if (p.department is None or p.department == new_employee.department) and \
                (p.role is None or p.role == new_employee.role):
@@ -92,6 +115,7 @@ class EmployeeService:
                 else:
                     default_balances[p.leave_type] = p.base_days
 
+        # Provision the computed balances
         for leave_type, days in default_balances.items():
             balance = LeaveBalance(
                 organization_id=self.repo.organization_id,
@@ -102,7 +126,7 @@ class EmployeeService:
             )
             self.repo.db.add(balance)
             
-        # Log audit trail
+        # Log audit trail for security tracking
         await AuditLogService.log_action(
             db=self.repo.db,
             actor_id=actor_id,
@@ -120,10 +144,14 @@ class EmployeeService:
         return new_employee
 
     async def update_employee(self, employee_id: int, data: EmployeeUpdate, actor_id: Optional[int] = None) -> Employee:
+        """
+        Updates administrative fields (role, department, manager) for an employee.
+        """
         emp = await self.repo.get_by_id(employee_id)
         if not emp:
             raise HTTPException(status_code=404, detail="Employee not found")
             
+        # Capture old state for auditing
         old_data = {
             "name": emp.name,
             "role": emp.role,
@@ -132,6 +160,7 @@ class EmployeeService:
             "gender": emp.gender
         }
         
+        # Apply partial updates dynamically
         if data.name is not None: emp.name = data.name
         if data.role is not None: emp.role = data.role
         if data.department is not None: emp.department = data.department
@@ -160,17 +189,23 @@ class EmployeeService:
         return emp
 
     async def update_profile(self, employee_id: int, data: "EmployeeProfileUpdate") -> Employee:
+        """
+        Allows an employee to update their own personal information (password, phone).
+        """
         emp = await self.repo.get_by_id(employee_id)
         if not emp:
             raise HTTPException(status_code=404, detail="Employee not found")
             
         if data.name is not None: emp.name = data.name
+        
+        # Validate email collisions if they change their email
         if data.email is not None:
             existing = await self.repo.get_by_email(data.email)
             if existing and existing.id != employee_id:
                 raise HTTPException(status_code=409, detail="Email already in use")
             emp.email = data.email
             
+        # Update password securely
         if data.password is not None and data.password.strip():
             hashed_password = await asyncio.to_thread(pwd_context.hash, data.password)
             emp.password_hash = hashed_password
@@ -193,6 +228,10 @@ class EmployeeService:
         return emp
 
     async def deactivate_employee(self, employee_id: int, current_user_id: int) -> Employee:
+        """
+        Soft-deletes an employee account by setting is_active=False.
+        Prevents users from accidentally deactivating their own account.
+        """
         if current_user_id == employee_id:
             raise HTTPException(status_code=400, detail="Cannot deactivate your own account")
             

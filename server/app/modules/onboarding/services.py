@@ -12,10 +12,20 @@ from app.modules.leaves.models import LeaveBalance
 from app.modules.onboarding.repositories import OnboardingRepository
 
 class OnboardingService:
+    """
+    Onboarding Service Layer
+    ------------------------
+    Manages the B2B enterprise onboarding workflow. Handles lead generation (applications),
+    CRM operations (status tracking, notes), and automated tenant provisioning (approvals).
+    """
     def __init__(self):
         self.repository = OnboardingRepository()
 
     async def submit_application(self, request_data, db: AsyncSession) -> dict:
+        """
+        Processes a new incoming application from the public landing page.
+        """
+        # Ensure duplicate applications for the same email are blocked
         existing_app = await self.repository.get_by_email(request_data.super_admin_email, db)
         if existing_app:
             raise HTTPException(
@@ -25,6 +35,7 @@ class OnboardingService:
 
         password_hash = None
         if request_data.admin_password:
+            # Hash password in background thread to avoid blocking async loop
             password_hash = await asyncio.to_thread(pwd_context.hash, request_data.admin_password)
 
         new_app = OnboardingApplication(
@@ -55,6 +66,9 @@ class OnboardingService:
         }
 
     async def list_applications(self, status_filter: Optional[str], db: AsyncSession) -> dict:
+        """
+        Retrieves applications for the CRM view, including aggregate pipeline counts.
+        """
         applications = await self.repository.list_applications(status_filter, db)
         counts = await self.repository.get_counts(db)
 
@@ -88,6 +102,9 @@ class OnboardingService:
         }
 
     async def update_status(self, application_id: int, new_status: str, db: AsyncSession) -> dict:
+        """
+        Updates the CRM pipeline status of a lead.
+        """
         application = await self.repository.get_by_id(application_id, db)
         if not application:
             raise HTTPException(status_code=404, detail="Application not found.")
@@ -98,6 +115,10 @@ class OnboardingService:
         return {"message": f"Status updated to '{new_status}'.", "id": application.id, "status": new_status}
 
     async def get_application(self, application_id: int, db: AsyncSession) -> dict:
+        """
+        Fetches detailed information about a single lead, including tenant expiration
+        if the tenant has already been provisioned.
+        """
         application = await self.repository.get_by_id(application_id, db)
         if not application:
             raise HTTPException(status_code=404, detail="Application not found.")
@@ -149,6 +170,17 @@ class OnboardingService:
         return {"message": f"Plan updated to '{plan}'.", "id": application.id, "selected_plan": application.selected_plan}
 
     async def approve_application(self, application_id: int, request_data, db: AsyncSession) -> dict:
+        """
+        Core logic for approving an application and provisioning a new tenant.
+        
+        Flow:
+        1. Validates the application state.
+        2. Determines the tenant's trial duration (access_days) and expiration date.
+        3. If already provisioned (e.g. updating an active tenant), updates their expiration date.
+        4. If new, creates the Organization record with a generated subdomain.
+        5. Creates the Super Admin Employee record.
+        6. Provisions default leave balances for the Super Admin.
+        """
         application = await self.repository.get_by_id(application_id, db)
         if not application:
             raise HTTPException(status_code=404, detail="Application not found.")
@@ -157,18 +189,22 @@ class OnboardingService:
         if application.status == "not_interested":
             raise HTTPException(status_code=400, detail="Cannot provision an application marked as 'not interested'. Update the status first.")
 
+        # Update notes simultaneously if provided in approval modal
         if request_data and request_data.internal_notes is not None:
             application.internal_notes = request_data.internal_notes
 
+        # Calculate expiration timeframe
         access_days_val = 30
         if request_data and request_data.access_days is not None:
             access_days_val = request_data.access_days
         expires_at_val = datetime.utcnow() + timedelta(days=access_days_val)
 
+        # Handle updating an already provisioned tenant
         existing_admin = await self.repository.get_employee_by_email(application.super_admin_email, db)
         if existing_admin:
             org = await self.repository.get_org_by_id(existing_admin.organization_id, db)
             if org:
+                # Extend or shorten their active duration
                 org.access_days = access_days_val
                 org.expires_at = expires_at_val
                 application.organization_id = org.id
@@ -182,9 +218,12 @@ class OnboardingService:
                     "admin": {"id": existing_admin.id, "email": existing_admin.email},
                 }
 
+        # Handle new tenant provisioning
+        # 1. Generate a URL-safe subdomain based on company name
         base_slug = re.sub(r'[^a-z0-9]+', '-', application.company_name.lower()).strip('-')
         domain = f"{base_slug}-{application.id}.leaveflow.com"
 
+        # 2. Create the Organization record
         org = Organization(
             name=application.company_name,
             domain=domain,
@@ -194,9 +233,10 @@ class OnboardingService:
             expires_at=expires_at_val,
         )
         db.add(org)
-        await db.flush()
+        await db.flush() # Flush to get org.id for subsequent relations
         application.organization_id = org.id
 
+        # 3. Resolve password (from manual input or OAuth flow)
         password_hash = None
         if request_data and request_data.password:
             password_hash = await asyncio.to_thread(pwd_context.hash, request_data.password)
@@ -209,6 +249,7 @@ class OnboardingService:
                 detail="Cannot approve: no password set. Please provide a password in the request or ensure the lead has one."
             )
 
+        # 4. Create the Super Admin Employee
         admin_employee = Employee(
             organization_id=org.id,
             name=application.super_admin_name or "Admin User",
@@ -222,6 +263,7 @@ class OnboardingService:
         db.add(admin_employee)
         await db.flush()
 
+        # 5. Provision default leave balances
         current_year = datetime.today().year
         default_balances = [
             ("casual", 12),
@@ -250,6 +292,10 @@ class OnboardingService:
         }
 
     async def delete_tenant(self, application_id: int, db: AsyncSession) -> dict:
+        """
+        Hard-deletes an onboarding application and its associated tenant data.
+        Highly destructive operation used by Platform Owners to purge data.
+        """
         application = await self.repository.get_by_id(application_id, db)
         if not application:
             raise HTTPException(status_code=404, detail="Application not found")
@@ -257,14 +303,19 @@ class OnboardingService:
         admin_emp = await self.repository.get_employee_by_email(application.super_admin_email, db)
         
         if admin_emp:
+            # Delete entire tenant ecosystem (employees, leaves, settings)
             await self.repository.delete_tenant_data(admin_emp.organization_id, application_id, db)
         else:
+            # Delete just the un-provisioned application record
             await db.execute(delete(OnboardingApplication).where(OnboardingApplication.id == application_id))
             await db.commit()
 
         return {"message": "Tenant and application successfully deleted."}
 
     async def reject_application(self, application_id: int, db: AsyncSession) -> dict:
+        """
+        Marks an application as rejected without provisioning resources.
+        """
         application = await self.repository.get_by_id(application_id, db)
         if not application:
             raise HTTPException(status_code=404, detail="Application not found.")

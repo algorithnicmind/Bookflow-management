@@ -38,10 +38,17 @@ class ApplicationResponse(BaseModel):
 
 @router.post("/apply", response_model=ApplicationResponse, status_code=status.HTTP_201_CREATED)
 async def submit_application(request: ApplicationRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Submit a New Onboarding Application (Lead).
+    Publicly accessible endpoint used by the frontend landing page.
+    Saves the lead data into the database with a 'pending' status for review.
+    """
     service = OnboardingService()
     return await service.submit_application(request, db)
 
 # ─── Admin Endpoints (super_admin only) ───────────────────────────────────────
+# The following endpoints require the 'RequireOwner' dependency, meaning only
+# users in the 'System' department (Platform Owners) can access them.
 
 @router.get("/applications")
 async def list_applications(
@@ -49,7 +56,10 @@ async def list_applications(
     db: AsyncSession = Depends(get_db),
     current_user: Employee = Depends(RequireOwner),
 ):
-    """List all onboarding applications, optionally filtered by status."""
+    """
+    List all onboarding applications.
+    Optionally filterable by their current pipeline status (e.g., 'pending', 'approved', 'rejected').
+    """
     service = OnboardingService()
     return await service.list_applications(status_filter, db)
 
@@ -64,7 +74,9 @@ async def update_application_status(
     db: AsyncSession = Depends(get_db),
     current_user: Employee = Depends(RequireOwner),
 ):
-    """Update the status of an onboarding application (Platform Owner only)."""
+    """
+    Update the sales pipeline status of an onboarding application (e.g., from 'pending' to 'contacted').
+    """
     service = OnboardingService()
     return await service.update_status(application_id, body.status, db)
 
@@ -75,7 +87,10 @@ async def get_application(
     db: AsyncSession = Depends(get_db),
     current_user: Employee = Depends(RequireOwner),
 ):
-    """Get a single onboarding application by ID (Platform Owner only)."""
+    """
+    Fetch the detailed view of a single onboarding application.
+    Used when a Platform Owner clicks into a specific lead card on the CRM board.
+    """
     service = OnboardingService()
     return await service.get_application(application_id, db)
 
@@ -90,7 +105,10 @@ async def update_application_notes(
     db: AsyncSession = Depends(get_db),
     current_user: Employee = Depends(RequireOwner),
 ):
-    """Update internal CRM notes for a lead (Platform Owner only)."""
+    """
+    Update internal CRM notes for a lead.
+    These notes are strictly internal and only visible to Platform Owners.
+    """
     service = OnboardingService()
     return await service.update_notes(application_id, body.notes, db)
 
@@ -105,7 +123,10 @@ async def update_application_plan(
     db: AsyncSession = Depends(get_db),
     current_user: Employee = Depends(RequireOwner),
 ):
-    """Update the selected plan for an onboarding application (Platform Owner only)."""
+    """
+    Change the selected subscription plan for an onboarding application.
+    Useful if a lead negotiates a different tier before approval.
+    """
     service = OnboardingService()
     return await service.update_plan(application_id, body.selected_plan, db)
 
@@ -123,7 +144,14 @@ async def approve_application(
     db: AsyncSession = Depends(get_db),
     current_user: Employee = Depends(RequireOwner),
 ):
-    """Approve a pending application: create Organization + Super Admin + Leave Balances."""
+    """
+    Approve a pending application and provision the tenant.
+    This critical endpoint triggers:
+    1. Organization creation in the database.
+    2. Super Admin employee account creation.
+    3. Default leave balances generation.
+    4. Status update of the application to 'approved'.
+    """
     service = OnboardingService()
     return await service.approve_application(application_id, body, db)
 
@@ -134,7 +162,11 @@ async def delete_tenant(
     db: AsyncSession = Depends(get_db),
     current_user: Employee = Depends(RequireOwner),
 ):
-    """Completely delete an onboarding application and its associated Organization and Super Admin if provisioned."""
+    """
+    Completely delete an onboarding application.
+    If the application was already approved and provisioned, this ALSO deletes 
+    the associated Organization and Super Admin data.
+    """
     service = OnboardingService()
     return await service.delete_tenant(application_id, db)
 
@@ -145,6 +177,9 @@ async def reject_application(
     db: AsyncSession = Depends(get_db),
     current_user: Employee = Depends(RequireOwner),
 ):
-    """Reject a pending application."""
+    """
+    Reject a pending application.
+    Updates the status to 'rejected' without provisioning any tenant resources.
+    """
     service = OnboardingService()
     return await service.reject_application(application_id, db)

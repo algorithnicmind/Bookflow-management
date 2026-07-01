@@ -24,6 +24,10 @@ def get_employee_service(
     db: AsyncSession = Depends(get_db),
     tenant: Organization = Depends(get_current_tenant)
 ) -> EmployeeService:
+    """
+    Dependency injection for EmployeeService.
+    Automatically scoped to the current user's tenant (organization) to enforce multi-tenant isolation.
+    """
     repo = EmployeeRepository(db, tenant.id)
     return EmployeeService(repo)
 
@@ -39,9 +43,11 @@ async def get_my_profile(
     """
     from app.modules.employees.models import PlatformOwner
     
+    # Base validation mapping DB model to Pydantic schema
     resp = EmployeeResponse.model_validate(current_user)
     
-    # Only resolve tenant for users who actually belong to an organization
+    # Only resolve tenant information for users who actually belong to an organization
+    # (PlatformOwners bypass this as they manage the whole system)
     if current_user.organization_id:
         from app.modules.employees.repositories import EmployeeRepository
         repo = EmployeeRepository(db, current_user.organization_id)
@@ -53,7 +59,7 @@ async def get_my_profile(
             tenant = await get_current_tenant(current_user, db)
             resp.organization_name = tenant.name
         except Exception:
-            pass  # Organization might be inactive or missing — still return the profile
+            pass  # Organization might be inactive or missing — still return the profile without crashing
         
     return resp
 
@@ -67,9 +73,11 @@ async def update_my_profile(
 ):
     """
     Update Current User Profile.
-    Allows employees to update non-administrative fields like their name or password.
+    Allows employees to dynamically update non-administrative personal fields 
+    like their name, password, or department.
     """
     from app.modules.employees.models import PlatformOwner
+    # Handle Platform Owners who don't have a specific tenant logic
     if isinstance(current_user, PlatformOwner) or not current_user.organization_id:
         if request.name:
             current_user.name = request.name
@@ -80,11 +88,13 @@ async def update_my_profile(
             current_user.password_hash = hashed
         if request.department is not None:
             current_user.department = request.department
+        
         db.add(current_user)
         await db.commit()
         await db.refresh(current_user)
         return EmployeeResponse.model_validate(current_user)
 
+    # Handle standard employees by routing through the tenant-isolated EmployeeService
     from app.modules.organizations.models import Organization
     from app.core.tenant import get_current_tenant
     tenant = await get_current_tenant(current_user, db)
@@ -104,8 +114,8 @@ async def list_system_owners(
 ):
     """
     List System Owners.
-    Restricted entirely to users in the 'System' department.
-    Used for global platform management.
+    Restricted entirely to users in the 'System' department (RequireOwner).
+    Used for global platform management (viewing all root-level admins).
     """
     result = await db.execute(
         select(PlatformOwner).where(PlatformOwner.is_active == True)
@@ -131,6 +141,11 @@ async def create_system_owner(
     db: AsyncSession = Depends(get_db),
     current_user: Employee = Depends(RequireOwner)
 ):
+    """
+    Create a new System Owner.
+    Only an existing System Owner can call this endpoint to add a new colleague.
+    """
+    # Prevent duplicate emails
     result = await db.execute(select(PlatformOwner).where(PlatformOwner.email == request.email))
     if result.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -155,6 +170,11 @@ async def list_employees(
     service: EmployeeService = Depends(get_employee_service),
     current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
+    """
+    List all employees within the current organization.
+    Requires the user to hold the 'manage_employees' permission.
+    Can optionally filter the results via a search string.
+    """
     employees = await service.list_employees(search)
     return {"employees": employees}
 
@@ -164,6 +184,10 @@ async def create_employee(
     service: EmployeeService = Depends(get_employee_service),
     current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
+    """
+    Create a new employee profile in the current organization.
+    The service layer will ensure appropriate leave balances are automatically provisioned.
+    """
     employee = await service.create_employee(request, current_user.id)
     return {"message": "Employee created successfully", "employee": EmployeeResponse.model_validate(employee)}
 
@@ -174,6 +198,10 @@ async def update_employee(
     service: EmployeeService = Depends(get_employee_service),
     current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
+    """
+    Update an existing employee's administrative details (e.g., changing their role or manager).
+    Requires 'manage_employees' permission.
+    """
     await service.update_employee(employee_id, request, current_user.id)
     return {"message": "Employee updated successfully"}
 
@@ -183,5 +211,9 @@ async def deactivate_employee(
     service: EmployeeService = Depends(get_employee_service),
     current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
+    """
+    Soft-deletes (deactivates) an employee from the organization.
+    The employee's historical data (leaves, approvals) is retained for audit purposes.
+    """
     await service.deactivate_employee(employee_id, current_user.id)
     return {"message": "Employee deactivated successfully"}

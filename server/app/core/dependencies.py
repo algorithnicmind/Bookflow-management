@@ -20,8 +20,11 @@ from app.modules.employees.models import Employee, PlatformOwner
 from app.core.config import settings
 
 # This tells FastAPI where the login endpoint is for auto-generating Swagger UI docs
+# It also provides a fallback mechanism for retrieving the token if cookies aren't used.
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
 
+# Initialize the rate limiter, utilizing the client's IP address to track request counts.
+# This prevents brute-force login attempts and mitigates DDoS risks.
 limiter = Limiter(key_func=get_remote_address)
 
 async def get_current_user(request: Request, db: AsyncSession = Depends(get_db)) -> Employee | PlatformOwner:
@@ -33,8 +36,9 @@ async def get_current_user(request: Request, db: AsyncSession = Depends(get_db))
     2. Falls back to reading the `Authorization: Bearer <token>` header if cookies aren't used (e.g. for API integrations).
     3. Decodes the JWT using the server's `JWT_SECRET`.
     4. Extracts the 'sub' (subject) claim, which stores the user's email.
-    5. Looks up the active Employee record in the database.
+    5. Looks up the active Employee or PlatformOwner record in the database.
     """
+    # Standard exception to raise if any step of the validation fails
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -49,32 +53,41 @@ async def get_current_user(request: Request, db: AsyncSession = Depends(get_db))
         if auth_header and auth_header.startswith("Bearer "):
             token = auth_header.split(" ")[1]
             
+    # If no token is provided through either channel, reject the request
     if not token:
         raise credentials_exception
         
     try:
-        # 3. Decode JWT and verify signature
+        # 3. Decode JWT and verify cryptographic signature
         payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+        
+        # 4. Extract the user's email from the subject claim
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
     except JWTError:
+        # If the token is expired or the signature is invalid, reject the request
         raise credentials_exception
         
-    # 4. Look up user by email
+    # 5. Look up user by email in the Employee table
     result = await db.execute(select(Employee).where(Employee.email == email))
     user = result.scalar_one_or_none()
 
+    # If the user isn't a standard employee, check if they are a PlatformOwner
     if user is None:
         from app.modules.employees.models import PlatformOwner
         po_res = await db.execute(select(PlatformOwner).where(PlatformOwner.email == email))
         user = po_res.scalar_one_or_none()
 
+    # If neither an employee nor platform owner was found, reject the request
     if user is None:
         raise credentials_exception
+        
+    # Ensure the user account has not been deactivated
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Account is deactivated")
         
+    # Return the validated database user model
     return user
 
 class PermissionChecker:
@@ -83,42 +96,52 @@ class PermissionChecker:
     Checks against RolePermission table in DB based on dynamic role name.
     """
     def __init__(self, required_permission: str):
+        # The specific action permission this endpoint requires (e.g., 'manage_employees')
         self.required_permission = required_permission
         
     async def __call__(self, request: Request, current_user: Employee | PlatformOwner = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+        # Import dynamically to avoid circular dependencies
         from app.modules.employees.models import PlatformOwner
+        
+        # Platform Owners bypass standard tenant-level permission checks and receive global admin rights
         if isinstance(current_user, PlatformOwner):
-            current_user.permissions = ["manage_everything"] # Platform owner has all perms
+            current_user.permissions = ["manage_everything"] 
             return current_user
             
         from app.modules.organizations.models import RolePermission
-        # Check permissions in DB for this org and dynamic role
+        
+        # Look up the permissions assigned to the current user's role within their specific tenant
         res = await db.execute(select(RolePermission).where(
             (RolePermission.tenant_id == current_user.tenant_id) &
             (RolePermission.role_name == current_user.role)
         ))
         role_perm = res.scalar_one_or_none()
         
+        # If the role is entirely undocumented in the database, reject the request
         if not role_perm:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"No permissions found for role '{current_user.role}'.")
             
+        # Convert permissions list to a set for fast O(1) lookup
         user_perms = set(role_perm.permissions)
+        
+        # Check if the user possesses the specific permission required by the endpoint
         if self.required_permission not in user_perms:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Operation forbidden: Missing '{self.required_permission}' permission")
             
-        # Attach permissions so inline logic can check them
+        # Attach the resolved permissions to the user object so inline route logic can access them
         current_user.permissions = list(user_perms)
         return current_user
 
 async def RequireOwner(current_user: Employee | PlatformOwner = Depends(get_current_user)):
     """
     Dependency: Only allows access to the global Platform Owner (System department).
-    This restricts tenant users (even super_admins of a tenant) from accessing platform-wide operations.
+    This restricts tenant users (even super_admins of a tenant) from accessing platform-wide operations
+    such as onboarding new organizations or reviewing global leads.
     """
+    # Ensure the user belongs to the 'System' department (indicating PlatformOwner)
     if current_user.department != 'System':
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, 
             detail="Operation forbidden: This endpoint is restricted to the platform owner."
         )
     return current_user
-

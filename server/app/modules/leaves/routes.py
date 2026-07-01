@@ -22,6 +22,11 @@ def get_leave_service(
     db: AsyncSession = Depends(get_db),
     tenant: Organization = Depends(get_current_tenant)
 ) -> LeaveService:
+    """
+    Dependency injection for LeaveService.
+    Scopes all leave operations strictly to the user's organization (tenant)
+    to ensure isolated multi-tenancy.
+    """
     repo = LeaveRepository(db, tenant.id)
     return LeaveService(repo)
 
@@ -33,7 +38,9 @@ async def apply_leave(
 ):
     """
     Apply for a Leave.
-    Accessible by any authenticated employee. Validates dates and deducts balance.
+    Accessible by any authenticated employee. 
+    The service layer will validate dates against public holidays, ensure sufficient 
+    balance exists, deduct the balance iteratively, and log the action.
     """
     return await service.apply_leave(current_user.id, request)
 
@@ -45,8 +52,8 @@ async def get_leave_history(
 ):
     """
     View Leave History.
-    Returns all past and present leave requests for the logged-in employee.
-    Optionally filter by status (e.g. 'pending', 'approved').
+    Returns all past and present leave requests submitted by the logged-in employee.
+    Optionally filter by status (e.g. 'pending', 'approved', 'rejected').
     """
     leaves = await service.get_leave_history(current_user.id, status)
     return {"leaves": leaves}
@@ -56,6 +63,10 @@ async def get_balances(
     service: LeaveService = Depends(get_leave_service),
     current_user: Employee = Depends(get_current_user)
 ):
+    """
+    Fetch Leave Balances.
+    Returns the accrued and used leave days broken down by leave type for the current year.
+    """
     from datetime import datetime
     current_year = datetime.today().year
     balances = await service.get_balances(current_user.id)
@@ -67,6 +78,11 @@ async def cancel_leave(
     service: LeaveService = Depends(get_leave_service),
     current_user: Employee = Depends(get_current_user)
 ):
+    """
+    Cancel a Leave Request.
+    Allows an employee to cancel a pending or approved leave before it is fully taken,
+    which refunds their leave balance appropriately.
+    """
     return await service.cancel_leave(leave_id, current_user.id)
 
 @router.get("/pending")
@@ -76,9 +92,10 @@ async def get_pending_requests(
 ):
     """
     Get Pending Approvals.
-    Restricted to managers and admins. Returns a list of leave requests waiting
-    for the current user's approval in the approval chain.
+    Restricted to users with 'manage_leaves' permission (e.g., Managers, HR).
+    Returns a list of leave requests waiting for this specific user's approval in the multi-tier approval chain.
     """
+    # Check if the user is a super admin who can override and see all pending requests
     is_admin = "manage_everything" in getattr(current_user, "permissions", []) or "manage_employees" in getattr(current_user, "permissions", [])
     pending = await service.get_pending_requests(current_user.id, is_admin)
     return {"pending": pending}
@@ -93,8 +110,8 @@ async def approve_leave(
 ):
     """
     Approve a Leave Request.
-    Steps the request forward in the Approval Chain. If it's the final step,
-    marks it as fully approved.
+    Steps the request forward in the multi-tier Approval Chain. 
+    If it's the final required step, marks the leave request as fully approved.
     """
     is_admin = "manage_everything" in getattr(current_user, "permissions", []) or "manage_employees" in getattr(current_user, "permissions", [])
     return await service.approve_leave(leave_id, current_user.id, is_admin, action)
@@ -106,5 +123,10 @@ async def reject_leave(
     service: LeaveService = Depends(get_leave_service),
     current_user: Employee = Depends(PermissionChecker("manage_leaves"))
 ):
+    """
+    Reject a Leave Request.
+    Immediately halts the approval chain, marks the leave as rejected, 
+    and refunds the deducted leave balance back to the employee.
+    """
     is_admin = "manage_everything" in getattr(current_user, "permissions", []) or "manage_employees" in getattr(current_user, "permissions", [])
     return await service.reject_leave(leave_id, current_user.id, is_admin, action)

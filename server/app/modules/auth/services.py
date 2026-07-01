@@ -9,10 +9,20 @@ from app.modules.auth.schemas import AdminCreateRequest
 from app.modules.auth.repositories import AuthRepository
 
 class AuthService:
+    """
+    Authentication Service Layer
+    ----------------------------
+    Handles business logic for user authentication, session validation, OAuth processing,
+    and administrative impersonation.
+    """
     def __init__(self, repo: AuthRepository):
         self.repo = repo
 
     async def authenticate_user(self, username: str, password_plain: str) -> Employee | PlatformOwner:
+        """
+        Validates email and password against the database.
+        Checks standard Employees first, then falls back to Platform Owners.
+        """
         user = await self.repo.get_employee_by_email(username)
         if not user:
             user = await self.repo.get_platform_owner_by_email(username)
@@ -20,18 +30,25 @@ class AuthService:
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
             
+        # Verify bcrypt hash securely in a background thread to prevent blocking the async event loop
         is_valid = await asyncio.to_thread(pwd_context.verify, password_plain, user.password_hash)
         if not is_valid:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
             
+        # Ensure the account hasn't been soft-deleted or suspended
         if not user.is_active:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is deactivated")
             
+        # Update last login timestamp for auditing
         user.last_login = datetime.now(timezone.utc)
         await self.repo.commit()
         return user
 
     async def register_admin_user(self, request: AdminCreateRequest, org_id: int) -> Employee:
+        """
+        Creates a new admin-level employee within a specific tenant.
+        Automatically provisions their default leave balances for the current year.
+        """
         if await self.repo.get_employee_by_email(request.email):
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
             
@@ -42,13 +59,15 @@ class AuthService:
             name=request.name,
             email=request.email,
             password_hash=hashed_password,
-            role="admin",
+            role="admin", # Hardcoded elevated role
             department=None,
             gender=request.gender
         )
         
         await self.repo.add_employee(new_employee)
         
+        # Provision default leave balances (this should ideally read from settings, 
+        # but is hardcoded here for initial rapid provisioning).
         current_year = datetime.now().year
         for leave_type, days in [("casual", 12), ("sick", 12), ("earned", 18), ("maternity", 182), ("miscarriage", 42)]:
             balance = LeaveBalance(
@@ -64,6 +83,10 @@ class AuthService:
         return new_employee
 
     async def check_session(self, token: str) -> dict:
+        """
+        Validates an existing JWT token to restore a user session on the frontend.
+        Resolves the user's organization name if they belong to a tenant.
+        """
         from jose import jwt, JWTError
         try:
             payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
@@ -71,7 +94,7 @@ class AuthService:
             if not email:
                 return {"user": None}
         except JWTError:
-            return {"user": None}
+            return {"user": None} # Silent failure: Token expired or invalid signature
 
         user = await self.repo.get_employee_by_email(email)
         if user is None:
@@ -80,6 +103,7 @@ class AuthService:
         if user is None or not user.is_active:
             return {"user": None}
 
+        # Platform owners have a slightly different schema (no organization)
         if isinstance(user, PlatformOwner):
             return {
                 "user": {
@@ -94,21 +118,27 @@ class AuthService:
                 }
             }
 
+        # Standard employees need their tenant name resolved for UI display
         from app.modules.employees.schemas import EmployeeResponse
         resp = EmployeeResponse.model_validate(user)
         
         if user.organization_id:
             from app.core.tenant import get_current_tenant
             try:
-                # We can mock a minimal object to fetch tenant
+                # Mock a request-like context to fetch tenant cleanly using existing dependency logic
                 tenant = await get_current_tenant(user, self.repo.db)
                 resp.organization_name = tenant.name
             except Exception:
-                pass
+                pass # Graceful degradation if tenant is suspended
 
         return {"user": resp}
 
     async def oauth_login(self, email: str) -> dict:
+        """
+        Processes an OAuth login attempt.
+        If the email matches an active employee, generates a JWT session.
+        If it matches a pending onboarding application, returns a contextual error.
+        """
         user = await self.repo.get_employee_by_email(email)
         
         if user:
@@ -128,6 +158,7 @@ class AuthService:
                 "user": user
             }
             
+        # Check if they are a lead waiting for approval
         application = await self.repo.get_pending_application_by_email(email)
         if application:
             raise HTTPException(
@@ -138,6 +169,7 @@ class AuthService:
                 }
             )
             
+        # Completely unknown email
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail={
@@ -148,6 +180,9 @@ class AuthService:
         )
 
     async def upload_avatar(self, current_user: Employee | PlatformOwner, filename: str, content_type: str, file_data: bytes, base_url: str) -> str:
+        """
+        Processes a profile picture upload and saves the binary data to the DB.
+        """
         if not content_type.startswith("image/"):
             raise HTTPException(status_code=400, detail="File must be an image")
 
@@ -173,12 +208,17 @@ class AuthService:
         
         await self.repo.add_employee_image(image)
         
+        # Construct the API route URL that serves this image dynamically
         url = f"{base_url}/api/uploads/{image.id}"
         target_user.profile_image_url = url
         await self.repo.commit()
         return url
 
     async def impersonate_tenant(self, org_id: int) -> dict:
+        """
+        Allows a Platform Owner to securely log in as the primary Super Admin of a specific tenant.
+        This is a critical debugging feature that bypasses passwords.
+        """
         target_admin = await self.repo.get_active_super_admin_by_org(org_id)
         if not target_admin:
             raise HTTPException(status_code=404, detail="No active super_admin found for this organization")
@@ -195,6 +235,9 @@ class AuthService:
         }
 
     async def impersonate_employee(self, employee_id: int) -> dict:
+        """
+        Allows a Platform Owner to securely log in as a specific employee for deep debugging.
+        """
         target_employee = await self.repo.get_active_employee_by_id(employee_id)
         if not target_employee:
             raise HTTPException(status_code=404, detail="Active employee not found")
