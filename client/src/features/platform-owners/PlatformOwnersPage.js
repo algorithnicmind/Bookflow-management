@@ -9,7 +9,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useRouter } from 'next/navigation'
-import { systemOwnersApi } from '@/services/api'
+import { systemOwnersApi, platformConfigApi } from '@/services/api'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
@@ -21,13 +21,17 @@ export default function PlatformOwnersPage() {
   const [owners, setOwners] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
-  
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newOwner, setNewOwner] = useState({ name: '', email: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState(null)
   const [toast, setToast] = useState(null)
+
+  // Config state
+  const [config, setConfig] = useState(null)
+  const [configLoading, setConfigLoading] = useState(false)
+  const [configSaving, setConfigSaving] = useState(false)
 
   // Restrict to Platform Owner only
   useEffect(() => {
@@ -49,9 +53,22 @@ export default function PlatformOwnersPage() {
     }
   }
 
+  const fetchConfig = async () => {
+    setConfigLoading(true)
+    try {
+      const data = await platformConfigApi.get()
+      setConfig(data)
+    } catch (err) {
+      console.error('Failed to load platform config', err)
+    } finally {
+      setConfigLoading(false)
+    }
+  }
+
   useEffect(() => {
     if (user?.department === 'System') {
       fetchOwners()
+      fetchConfig()
     }
   }, [user])
 
@@ -83,6 +100,18 @@ export default function PlatformOwnersPage() {
     }
   }
 
+  const handleSaveConfig = async () => {
+    setConfigSaving(true)
+    try {
+      await platformConfigApi.update(config)
+      showToast('Platform config saved')
+    } catch (err) {
+      showToast(err.message || 'Failed to save config', 'error')
+    } finally {
+      setConfigSaving(false)
+    }
+  }
+
   if (user?.department !== 'System') return null
 
   return (
@@ -103,9 +132,41 @@ export default function PlatformOwnersPage() {
 
       <div className="page-header animate-in">
         <div>
-          <h1 className="page-title">Platform Owners</h1>
-          <p className="page-subtitle">Manage administrators who have system-wide access</p>
+          <h1 className="page-title">Platform Administration</h1>
+          <p className="page-subtitle">Manage system-wide configuration and platform owners</p>
         </div>
+      </div>
+
+      {config && (
+        <div style={{ marginBottom: 32 }} className="animate-in">
+          <Card>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: 20 }}>Platform Configuration</h3>
+            <div style={{ display: 'grid', gap: 16, maxWidth: 500 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <input 
+                  type="checkbox" 
+                  id="show_onboarding" 
+                  checked={config.show_onboarding_section} 
+                  onChange={(e) => setConfig({ ...config, show_onboarding_section: e.target.checked })} 
+                />
+                <label htmlFor="show_onboarding" style={{ margin: 0, fontSize: '0.88rem', fontWeight: 600 }}>Enable Public Onboarding (Landing Page)</label>
+              </div>
+              <div className="form-group">
+                <label>Onboarding Section Title</label>
+                <input value={config.onboarding_section_title} onChange={(e) => setConfig({ ...config, onboarding_section_title: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label>Onboarding Section Subtitle</label>
+                <input value={config.onboarding_section_subtitle} onChange={(e) => setConfig({ ...config, onboarding_section_subtitle: e.target.value })} />
+              </div>
+              <Button loading={configSaving} onClick={handleSaveConfig}>Save Configuration</Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }} className="animate-in">
+        <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>Platform Owners</h3>
         <Button onClick={() => setIsModalOpen(true)}>+ Add Platform Owner</Button>
       </div>
 

@@ -9,17 +9,21 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useRouter } from 'next/navigation'
-import { organizationsApi } from '@/services/api'
+import { organizationsApi, authApi } from '@/services/api'
 import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
+import AppleEmoji from '@/components/AppleEmoji'
 
 export default function OrganizationsPage() {
-  const { user } = useAuth()
+  const { user, login } = useAuth()
   const router = useRouter()
 
   const [organizations, setOrganizations] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [impersonateLoadingId, setImpersonateLoadingId] = useState(null)
+  const [toast, setToast] = useState(null)
 
   // Restrict to Platform Owner only
   useEffect(() => {
@@ -40,6 +44,20 @@ export default function OrganizationsPage() {
     }
   }
 
+  const handleImpersonate = async (orgId) => {
+    setImpersonateLoadingId(orgId)
+    try {
+      const data = await authApi.impersonate(orgId)
+      login(data.user)
+      router.push('/dashboard')
+    } catch (err) {
+      setToast({ message: err.message || 'Failed to impersonate', type: 'error' })
+      setTimeout(() => setToast(null), 4000)
+    } finally {
+      setImpersonateLoadingId(null)
+    }
+  }
+
   useEffect(() => {
     if (user?.department === 'System') {
       fetchOrganizations()
@@ -56,6 +74,19 @@ export default function OrganizationsPage() {
 
   return (
     <div className="page-container">
+      {toast && (
+        <div style={{
+          position: 'fixed', top: 24, right: 24, zIndex: 1100,
+          padding: '14px 24px', borderRadius: 12,
+          background: toast.type === 'error' ? 'rgba(239, 68, 68, 0.95)' : 'rgba(16, 185, 129, 0.95)',
+          color: '#fff', fontSize: '0.9rem', fontWeight: 600,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
+          animation: 'slideIn 0.3s ease-out', display: 'flex', alignItems: 'center', gap: 10,
+        }}>
+          <span>{toast.type === 'error' ? '✕' : '✓'}</span>
+          {toast.message}
+        </div>
+      )}
       <div className="page-header animate-in">
         <div>
           <h1 className="page-title">Organizations</h1>
@@ -92,7 +123,7 @@ export default function OrganizationsPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
-                  {['Organization', 'Domain', 'Plan', 'Max Employees', 'Status', 'Created'].map((col) => (
+                  {['Organization', 'Domain', 'Plan', 'Max Employees', 'Status', 'Created', 'Actions'].map((col) => (
                     <th key={col} style={{
                       textAlign: 'left',
                       padding: '12px 16px',
@@ -150,6 +181,11 @@ export default function OrganizationsPage() {
                     </td>
                     <td style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
                       {formatDate(org.created_at)}
+                    </td>
+                    <td style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
+                      <Button size="sm" variant="secondary" loading={impersonateLoadingId === org.id} onClick={() => handleImpersonate(org.id)}>
+                        <AppleEmoji char="🔑" /> Impersonate
+                      </Button>
                     </td>
                   </tr>
                 ))}

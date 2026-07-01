@@ -151,6 +151,7 @@ export const dashboardApi = {
 }
 
 export const settingsApi = {
+  get: () => request('/api/settings'),
   update: (body) => request('/api/settings', { method: 'PUT', body }),
   updateOrganizationName: (name) => request('/api/settings/organization-name', { method: 'PUT', body: { name } }),
   getHolidays: () => request('/api/settings/holidays'),
@@ -164,6 +165,9 @@ export const settingsApi = {
   deleteLeavePolicy: (id) => request(`/api/settings/leave-policies/${id}`, { method: 'DELETE' }),
   triggerMonthlyAccrual: () => request('/api/settings/debug/trigger-monthly-accrual', { method: 'POST' }),
   triggerYearlyCarryForward: () => request('/api/settings/debug/trigger-yearly-carry-forward', { method: 'POST' }),
+  getLeaveTypes: () => request('/api/settings/leave-types'),
+  createLeaveType: (body) => request('/api/settings/leave-types', { method: 'POST', body }),
+  deleteLeaveType: (id) => request(`/api/settings/leave-types/${id}`, { method: 'DELETE' }),
 }
 
 export const reportsApi = {
@@ -249,4 +253,8 @@ export const organizationsApi = {
   getLeaveTypes: (id) => request(`/api/organizations/${id}/leave-types`),
   createLeaveType: (id, body) => request(`/api/organizations/${id}/leave-types`, { method: 'POST', body }),
   deleteLeaveType: (id, leaveTypeId) => request(`/api/organizations/${id}/leave-types/${leaveTypeId}`, { method: 'DELETE' }),
+  getDepartments: (id) => request(`/api/organizations/${id}/departments`),
+  createDepartment: (id, body) => request(`/api/organizations/${id}/departments`, { method: 'POST', body }),
+  updateDepartment: (id, deptId, body) => request(`/api/organizations/${id}/departments/${deptId}`, { method: 'PUT', body }),
+  deleteDepartment: (id, deptId) => request(`/api/organizations/${id}/departments/${deptId}`, { method: 'DELETE' }),
 }
