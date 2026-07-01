@@ -13,7 +13,8 @@ import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
-import { formatDate, formatDateTime, getLeaveTypeIcon } from '@/lib/utils'
+import { formatDate, formatDateTime } from '@/lib/utils'
+import LeaveTypeIcon from '@/components/shared/LeaveTypeIcon'
 
 export default function PendingRequestsPage() {
   const [requests, setRequests] = useState([])
@@ -118,7 +119,7 @@ export default function PendingRequestsPage() {
                     </td>
                     <td style={{ padding: '12px', color: 'var(--text-muted)' }}>{req.department || '-'}</td>
                     <td style={{ padding: '12px', textTransform: 'capitalize' }}>
-                      {getLeaveTypeIcon(req.leave_type)} {req.leave_type}
+                      <LeaveTypeIcon type={req.leave_type} /> {req.leave_type}
                     </td>
                     <td style={{ padding: '12px', color: 'var(--text-muted)' }}>
                       {formatDate(req.start_date)} - {formatDate(req.end_date)}

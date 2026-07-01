@@ -13,7 +13,8 @@ import { useAuth } from '@/features/auth/AuthContext'
 import { dashboardApi } from '@/services/api'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
-import { formatDate, getLeaveTypeIcon } from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
+import LeaveTypeIcon from '@/components/shared/LeaveTypeIcon'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, RadialBarChart, RadialBar } from 'recharts'
 
 export default function DashboardPage() {
@@ -273,7 +274,7 @@ export default function DashboardPage() {
                   
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: '12px' }}>
-                      <span style={{ fontSize: '1.2rem' }}>{getLeaveTypeIcon(b.leave_type)}</span>
+                      <span style={{ fontSize: '1.2rem' }}><LeaveTypeIcon type={b.leave_type} /></span>
                       <span style={{ fontSize: '1.05rem', fontWeight: 600, textTransform: 'capitalize' }}>{b.leave_type}</span>
                     </div>
                     <div style={{ display: 'flex', gap: '20px' }}>

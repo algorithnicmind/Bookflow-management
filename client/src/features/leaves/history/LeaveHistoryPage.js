@@ -13,7 +13,8 @@ import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
-import { formatDate, formatDateTime, getLeaveTypeIcon } from '@/lib/utils'
+import { formatDate, formatDateTime } from '@/lib/utils'
+import LeaveTypeIcon from '@/components/shared/LeaveTypeIcon'
 
 export default function LeaveHistoryPage() {
   const [leaves, setLeaves] = useState([])
@@ -126,7 +127,7 @@ export default function LeaveHistoryPage() {
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
                     <td style={{ padding: '12px', fontWeight: 600, textTransform: 'capitalize' }}>
-                      {getLeaveTypeIcon(leave.leave_type)} {leave.leave_type}
+                      <LeaveTypeIcon type={leave.leave_type} /> {leave.leave_type}
                     </td>
                     <td style={{ padding: '12px', color: 'var(--text-muted)' }}>{formatDate(leave.start_date)}</td>
                     <td style={{ padding: '12px', color: 'var(--text-muted)' }}>{formatDate(leave.end_date)}</td>
@@ -179,7 +180,7 @@ export default function LeaveHistoryPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginBottom: 4 }}>Leave Type</div>
-                  <div style={{ fontWeight: 600, textTransform: 'capitalize' }}>{getLeaveTypeIcon(detailModal.leave_type)} {detailModal.leave_type}</div>
+                  <div style={{ fontWeight: 600, textTransform: 'capitalize' }}><LeaveTypeIcon type={detailModal.leave_type} /> {detailModal.leave_type}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginBottom: 4 }}>Status</div>

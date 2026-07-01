@@ -112,10 +112,6 @@ export const authApi = {
   uploadAvatar: async (file) => {
     const formData = new FormData()
     formData.append('file', file)
-    const token = document.cookie.split('; ').find(row => row.startsWith('access_token='))?.split('=')[1]
-    const headers = {}
-    // Next.js client uses credentials: 'include' by default in our wrapper, 
-    // but here we must use raw fetch to avoid JSON stringification
     const response = await fetch(`${API_BASE}/api/auth/upload-avatar`, {
       method: 'POST',
       credentials: 'include',
@@ -127,40 +123,8 @@ export const authApi = {
     }
     return response.json()
   },
-  impersonate: async (orgId) => {
-    const response = await fetch(`${API_BASE}/api/auth/impersonate/${orgId}`, {
-      method: 'POST',
-      credentials: 'include'
-    })
-    const contentType = response.headers.get('content-type') || ''
-    let data
-    if (contentType.includes('application/json')) {
-      data = await response.json()
-    } else {
-      data = { detail: response.statusText || 'Impersonation failed' }
-    }
-    if (!response.ok) {
-      throw new Error(typeof data.detail === 'string' ? data.detail : 'Impersonation failed')
-    }
-    return data
-  },
-  impersonateEmployee: async (employeeId) => {
-    const response = await fetch(`${API_BASE}/api/auth/impersonate/employee/${employeeId}`, {
-      method: 'POST',
-      credentials: 'include'
-    })
-    const contentType = response.headers.get('content-type') || ''
-    let data
-    if (contentType.includes('application/json')) {
-      data = await response.json()
-    } else {
-      data = { detail: response.statusText || 'Impersonation failed' }
-    }
-    if (!response.ok) {
-      throw new Error(typeof data.detail === 'string' ? data.detail : 'Impersonation failed')
-    }
-    return data
-  },
+  impersonate: (orgId) => request(`/api/auth/impersonate/${orgId}`, { method: 'POST' }),
+  impersonateEmployee: (employeeId) => request(`/api/auth/impersonate/employee/${employeeId}`, { method: 'POST' }),
 }
 
 export const leavesApi = {

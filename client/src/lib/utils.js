@@ -1,5 +1,3 @@
-import AppleEmoji from '@/components/AppleEmoji'
-
 export function formatDate(dateString) {
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
@@ -33,18 +31,6 @@ export function getStatusColor(status) {
     default:
       return { bg: 'rgba(139, 146, 182, 0.15)', text: '#8b92b6', dot: '#8b92b6' }
   }
-}
-
-export function getLeaveTypeIcon(type) {
-  const icons = {
-    casual: <AppleEmoji char="📅" />,
-    sick: <AppleEmoji char="🏥" />,
-    earned: <AppleEmoji char="🌴" />,
-    unpaid: <AppleEmoji char="📋" />,
-    maternity: <AppleEmoji char="👶" />,
-    miscarriage: <AppleEmoji char="💔" />,
-  }
-  return icons[type] || <AppleEmoji char="📋" />
 }
 
 

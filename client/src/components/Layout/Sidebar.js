@@ -4,60 +4,17 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/features/auth/AuthContext'
-
-import AppleEmoji from '@/components/AppleEmoji'
-
-const navItems = {
-  employee: [
-    { href: '/dashboard', label: 'Dashboard', icon: <AppleEmoji char="📊" /> },
-    { href: '/apply-leave', label: 'Apply Leave', icon: <AppleEmoji char="✏️" /> },
-    { href: '/leave-history', label: 'Leave History', icon: <AppleEmoji char="📋" /> },
-  ],
-  manager: [
-    { href: '/dashboard', label: 'Dashboard', icon: <AppleEmoji char="📊" /> },
-    { href: '/pending-requests', label: 'Pending Requests', icon: <AppleEmoji char="⏳" /> },
-    { href: '/team-overview', label: 'Team Overview', icon: <AppleEmoji char="👥" /> },
-    { href: '/apply-leave', label: 'Apply Leave', icon: <AppleEmoji char="✏️" /> },
-    { href: '/leave-history', label: 'Leave History', icon: <AppleEmoji char="📋" /> },
-  ],
-  admin: [
-    { href: '/dashboard', label: 'Dashboard', icon: <AppleEmoji char="📊" /> },
-    { href: '/employees', label: 'Employees', icon: <AppleEmoji char="👥" /> },
-    { href: '/pending-requests', label: 'Requests', icon: <AppleEmoji char="⏳" /> },
-    { href: '/system-settings', label: 'Settings', icon: <AppleEmoji char="⚙️" /> },
-    { href: '/audit-logs', label: 'Audit Logs', icon: <AppleEmoji char="🔍" /> },
-    { href: '/apply-leave', label: 'Apply Leave', icon: <AppleEmoji char="✏️" /> },
-    { href: '/leave-history', label: 'Leave History', icon: <AppleEmoji char="📋" /> },
-  ],
-  super_admin: [
-    { href: '/dashboard', label: 'Dashboard', icon: <AppleEmoji char="📊" /> },
-    { href: '/employees', label: 'Employees', icon: <AppleEmoji char="👥" /> },
-    { href: '/manage-admins', label: 'Manage Admins', icon: <AppleEmoji char="👑" /> },
-    { href: '/pending-requests', label: 'Requests', icon: <AppleEmoji char="⏳" /> },
-    { href: '/system-settings', label: 'Settings', icon: <AppleEmoji char="⚙️" /> },
-    { href: '/organization-reports', label: 'Reports', icon: <AppleEmoji char="📈" /> },
-    { href: '/audit-logs', label: 'Audit Logs', icon: <AppleEmoji char="🔍" /> },
-    { href: '/apply-leave', label: 'Apply Leave', icon: <AppleEmoji char="✏️" /> },
-    { href: '/leave-history', label: 'Leave History', icon: <AppleEmoji char="📋" /> },
-  ],
-}
+import { NAV_ITEMS, PLATFORM_OWNER_ITEMS } from '@/config'
 
 export default function Sidebar({ isOpen, onClose }) {
   const pathname = usePathname()
   const { user, logout } = useAuth()
   const role = user?.role || 'employee'
   
-  let items = navItems[role] || navItems.employee
+  let items = NAV_ITEMS[role] || NAV_ITEMS.employee
   
-  // Platform Owner specific tabs (Exclusive)
   if (user?.department === 'System') {
-    items = [
-      { href: '/leads', label: 'Leads', icon: <AppleEmoji char="🎯" /> },
-      { href: '/owner-contacts', label: 'Contact Messages', icon: <AppleEmoji char="📨" /> },
-      { href: '/platform-owners', label: 'Platform Owners', icon: <AppleEmoji char="👥" /> },
-      { href: '/tenants', label: 'Provisioning', icon: <AppleEmoji char="🏗️" /> },
-      { href: '/organizations', label: 'Organizations', icon: <AppleEmoji char="🏢" /> },
-    ]
+    items = PLATFORM_OWNER_ITEMS
   }
 
   return (

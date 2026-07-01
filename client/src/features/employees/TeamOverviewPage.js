@@ -11,7 +11,8 @@ import { dashboardApi, leavesApi } from '@/services/api'
 import Card from '@/components/ui/Card'
 import StatCard from '@/components/ui/StatCard'
 import Badge from '@/components/ui/Badge'
-import { formatDate, getLeaveTypeIcon } from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
+import LeaveTypeIcon from '@/components/shared/LeaveTypeIcon'
 
 export default function TeamOverviewPage() {
   const [data, setData] = useState(null)
@@ -83,7 +84,7 @@ export default function TeamOverviewPage() {
                 {pending.map((req) => (
                   <tr key={req.id} style={{ borderBottom: '1px solid var(--border)' }}>
                     <td style={{ padding: '12px', fontWeight: 600 }}>{req.employee_name || `#${req.employee_id}`}</td>
-                    <td style={{ padding: '12px', textTransform: 'capitalize' }}>{getLeaveTypeIcon(req.leave_type)} {req.leave_type}</td>
+                    <td style={{ padding: '12px', textTransform: 'capitalize' }}><LeaveTypeIcon type={req.leave_type} /> {req.leave_type}</td>
                     <td style={{ padding: '12px', color: 'var(--text-muted)' }}>{formatDate(req.start_date)} - {formatDate(req.end_date)}</td>
                     <td style={{ padding: '12px', fontWeight: 600 }}>{req.days || '-'}</td>
                     <td style={{ padding: '12px', textAlign: 'right' }}><Badge status={req.status} /></td>
