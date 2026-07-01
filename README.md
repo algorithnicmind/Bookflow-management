@@ -20,9 +20,9 @@
 
 ---
 
-## ✨ Enterprise Portals by Role
+## ✨ Dynamic Roles & Enterprise Portals
 
-The platform provides dedicated interfaces, operations, and dashboards tailored dynamically to four roles:
+The platform features a completely **Dynamic Role Architecture**. Organizations can create custom roles mapped to fixed system permissions (e.g., `manage_settings`, `manage_employees`, `approve_leaves`). Typical configurations map to the following core personas:
 
 | Role | Access Level & Capabilities | Primary Screens & Features |
 |:---:|---|---|
@@ -212,13 +212,13 @@ flowchart TD
     AuthCheck -->|Failed| FailMsg[❌ Show Bad Credentials]:::danger
     FailMsg --> Credentials
     
-    AuthCheck -->|Success| TokenGen[🔐 Return JWT Token + Role]:::success
-    TokenGen --> RoleSplit{Read User Role}
+    AuthCheck -->|Success| TokenGen[🔐 Return JWT Token + Permissions]:::success
+    TokenGen --> RoleSplit{Check User Permissions}
     
-    RoleSplit -->|employee| EmpDash[👤 Employee Dashboard]
-    RoleSplit -->|manager| MgrDash[👔 Manager Dashboard]
-    RoleSplit -->|admin| AdminDash[🛡️ Admin Dashboard]
-    RoleSplit -->|super_admin| SuperDash[👑 Super Admin Dashboard]
+    RoleSplit -->|Basic Auth| EmpDash[👤 Employee Dashboard]
+    RoleSplit -->|approve_leaves| MgrDash[👔 Manager Dashboard]
+    RoleSplit -->|manage_settings| AdminDash[🛡️ Admin Dashboard]
+    RoleSplit -->|Tenant Owner| SuperDash[👑 Super Admin Dashboard]
 ```
 
 ### 2. Leave Submission & Validation Cycle

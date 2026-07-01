@@ -30,13 +30,13 @@
 | 🔴 P0 | LLD & Database Schema | Dev | 5 | ✅ Done |
 | 🔴 P0 | API Documentation | Dev | 3 | ✅ Done |
 | 🔴 P0 | UI Wireframes | Dev | 3 | ✅ Done |
-| 🔴 P0 | Authentication (Login/Logout) | Dev | 5 | ⬜ To Do |
-| 🔴 P0 | B2B Enterprise Onboarding Flow | Dev | 5 | ⬜ To Do |
-| 🔴 P0 | Leave Application Feature | Dev | 5 | ⬜ To Do |
-| 🔴 P0 | Leave History & Balance | Dev | 3 | ⬜ To Do |
-| 🔴 P0 | Manager Approval Workflow | Dev | 5 | ⬜ To Do |
-| 🟡 P1 | Admin Employee & Settings Mgmt | Dev | 5 | ⬜ To Do |
-| 🟡 P1 | Dashboard & Analytics | Dev | 5 | ⬜ To Do |
+| 🔴 P0 | Authentication (Login/Logout) | Dev | 5 | ✅ Done |
+| 🔴 P0 | B2B Enterprise Onboarding Flow | Dev | 5 | ✅ Done |
+| 🔴 P0 | Leave Application Feature | Dev | 5 | ✅ Done |
+| 🔴 P0 | Leave History & Balance | Dev | 3 | ✅ Done |
+| 🔴 P0 | Manager Approval Workflow | Dev | 5 | ✅ Done |
+| 🟡 P1 | Admin Employee & Settings Mgmt | Dev | 5 | ✅ Done |
+| 🟡 P1 | Dashboard & Analytics | Dev | 5 | ✅ Done |
 | 🔴 P0 | Test Plan & Test Cases | Tester | 3 | ✅ Done |
 | 🔴 P0 | Functional Testing Execution | Tester | 5 | ⬜ To Do |
 | 🟡 P1 | Negative & Edge Case Testing | Tester | 3 | ⬜ To Do |
@@ -112,11 +112,11 @@ Each standup answers three questions:
 | **Tester** | Completed test plan | Review dev progress, prepare test environment, begin smoke testing | Waiting for first build |
 
 **Day 4 Outcomes:**
-- [ ] Login/OAuth functional
-- [ ] B2B Onboarding Form (Lead capture) working
-- [ ] Apply Leave form working
-- [ ] Leave History page displaying data
-- [ ] Database seeded with demo tenant data
+- [x] Login/OAuth functional
+- [x] B2B Onboarding Form (Lead capture) working
+- [x] Apply Leave form working
+- [x] Leave History page displaying data
+- [x] Database seeded with demo tenant data
 
 ---
 
@@ -129,9 +129,9 @@ Each standup answers three questions:
 | **Tester** | Prepared test environment | Execute functional tests, negative tests, report bugs | Need stable build for full testing |
 
 **Day 5 Outcomes:**
-- [ ] Manager approval/rejection working
-- [ ] Admin employee CRUD functional
-- [ ] Dashboard showing real statistics
+- [x] Manager approval/rejection working
+- [x] Admin employee CRUD functional
+- [x] Dashboard showing real statistics
 - [ ] First round of testing completed
 - [ ] Bug reports filed (if any)
 

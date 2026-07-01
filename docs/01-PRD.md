@@ -32,7 +32,7 @@ A **Multi-Tenant B2B web-based Leave Management System** that digitizes the enti
 | **Multi-Tenant B2B Architecture** | Separate data workspaces for different client organizations. |
 | **Enterprise Onboarding** | Landing page with pricing, OAuth/Email signup, and contact application forms for manual Sales provisioning. |
 | **User Authentication** | Secure login with email/password or OAuth (Google/Facebook), JWT-based sessions |
-| **Role-Based Access** | Four roles per organization: Super Admin, Admin, Manager, Employee |
+| **Role-Based Access** | Dynamic roles per organization with fixed underlying permissions |
 | **Leave Application** | Employees can apply for leave with type, date range, and reason |
 | **Leave Approval Chains** | Managers can approve/reject, with support for multi-tier dynamic approval workflows |
 | **System Settings & Holidays** | Admins can configure global rules, approval chains, and company-wide holiday calendars |
@@ -55,85 +55,48 @@ A **Multi-Tenant B2B web-based Leave Management System** that digitizes the enti
 
 ## 3. User Roles & Permissions
 
-### 3.1 Role Definitions
+### 3.1 Dynamic Roles (New Architecture)
 
-#### 👤 Employee
-The primary user of the system. Applies for leave and tracks request status.
+The system uses a completely dynamic role architecture per tenant. Organizations can create their own custom roles (e.g., "HR Manager", "Team Lead", "Senior Developer") and assign specific system permissions to them.
 
-**Permissions:**
-- Log in to the system
-- View personal dashboard with leave balance
-- Apply for new leave
-- View leave request history and status
-- Cancel pending leave requests
+Fixed permissions dictate access control across the application:
+- `manage_settings`: Configure organization settings, holidays, and leave types.
+- `manage_employees`: Add, edit, or remove employees and manage their role assignments.
+- `approve_leaves`: View and approve/reject leave requests from assigned team members.
+- `view_reports`: Access organization-wide analytics and leave reports.
+- Basic permissions (implied for all authenticated users): View own dashboard, apply for leave, view own history.
 
-#### 👔 Manager
-Oversees a team of employees. Responsible for approving or rejecting leave requests.
-
-**Permissions:**
-- All Employee permissions
-- View pending leave requests from direct reports
-- Approve leave requests with optional comments
-- Reject leave requests with mandatory reason
-- View team leave calendar/overview
-
-#### 🛡️ Admin
-System administrator responsible for managing users, roles, system configuration, holidays, and approval chains.
-
-**Permissions:**
-- All Manager permissions
-- Create roles (Manager, Employee)
-- Add new employees to the system
-- Edit employee details (role, department, manager assignment)
-- Remove employees from the system
-- Manage Company Holidays and Approval Chains
-- View system-wide dashboard and statistics
-
-#### 👑 Super Admin (Tenant Owner)
-The highest-level authority within a client's specific organization/tenant. This role is provisioned automatically or manually after onboarding.
-
-**Permissions:**
-- All Admin permissions
-- Create Custom Roles via Dynamic RBAC Matrix
-- Create and manage Dynamic Leave Types
-- Manage organization-wide system settings
-- Ultimate authority over their company's workspace
+#### 👑 Super Admin (Initial Tenant Owner)
+When a tenant is created, the initial account is granted a Super Admin role that typically has all available permissions to configure the workspace.
 
 #### ⚙️ Platform Owner (System Operators)
 The internal LeaveFlow team that manages the platform globally.
-
 **Permissions:**
+- Built-in `manage_everything` permission
 - Review incoming onboarding applications from the Landing Page
 - Verify identities and provision new workspaces/organizations
-- Deep Impersonation: Can impersonate *any* employee across any tenant for support purposes.
+- Deep Impersonation: Can impersonate *any* employee across any tenant for support purposes
 - View system-wide metrics and connected tenants
 
-#### ⚙️ Internal LeaveFlow Team (System Operators)
-The internal sales and administration team that manages the platform globally.
-
-**Permissions:**
-- Review incoming onboarding applications from the Landing Page
-- Verify identities and manually provision new workspaces/organizations
-- Elevate an authenticated user to the Super Admin role for their new organization
 ### 3.2 Permissions Matrix
 
-| Action | Employee | Manager | Admin | Super Admin |
-|--------|:--------:|:-------:|:-----:|:-----------:|
-| Login | ✅ | ✅ | ✅ | ✅ |
-| View Own Dashboard | ✅ | ✅ | ✅ | ✅ |
-| Apply for Leave | ✅ | ✅ | ✅ | ✅ |
-| View Own Leave History | ✅ | ✅ | ✅ | ✅ |
-| Cancel Own Pending Leave | ✅ | ✅ | ✅ | ✅ |
-| View Team Pending Requests | ❌ | ✅ | ✅ | ✅ |
-| Approve/Reject Leave | ❌ | ✅ | ✅ | ✅ |
-| View Team Calendar | ❌ | ✅ | ✅ | ✅ |
-| Create Roles | ❌ | ❌ | ✅ | ✅ |
-| Add/Edit/Remove Employees | ❌ | ❌ | ✅ | ✅ |
-| View System-Wide Stats | ❌ | ❌ | ✅ | ✅ |
-| Reset Leave Balances | ❌ | ❌ | ✅ | ✅ |
-| Create Admin Accounts | ❌ | ❌ | ❌ | ✅ |
-| Manage System Settings | ❌ | ❌ | ❌ | ✅ |
-| View Organization Reports | ❌ | ❌ | ❌ | ✅ |
+Instead of a fixed role matrix, access is evaluated at the route level using a `PermissionChecker`.
+
+| Action | Required Permission |
+|--------|---------------------|
+| Login | (None - valid JWT) |
+| View Own Dashboard | (None - valid JWT) |
+| Apply for Leave | (None - valid JWT) |
+| View Own Leave History | (None - valid JWT) |
+| Cancel Own Pending Leave | (None - valid JWT) |
+| View Team Pending Requests | `approve_leaves` |
+| Approve/Reject Leave | `approve_leaves` |
+| View Team Calendar | `approve_leaves` |
+| Add/Edit/Remove Employees | `manage_employees` |
+| Create Custom Roles | `manage_settings` |
+| Manage System Settings | `manage_settings` |
+| View Organization Reports | `view_reports` |
+| Manage Tenants/Billing | Platform Owner only |
 
 ---
 

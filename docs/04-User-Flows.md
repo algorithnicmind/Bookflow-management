@@ -44,14 +44,14 @@ flowchart TD
     A[🌐 Open Application] --> B[📄 Login Page]
     B --> C[✍️ Enter Email & Password]
     C --> D{Valid Credentials?}
-    D -->|Yes| E{Check User Role}
+    D -->|Yes| E{Check Permissions}
     D -->|No| F[❌ Show Error Message]
     F --> C
-    E -->|Employee| G[📊 Employee Dashboard]
-    E -->|Manager| H[📊 Manager Dashboard]
-    E -->|Admin| I[📊 Admin Dashboard]
-    E -->|Super Admin| SA[📊 Super Admin Dashboard]
-    E -->|System| PO[⚙️ Platform Owner Leads Dashboard]
+    E -->|Basic Auth| G[📊 Employee Dashboard]
+    E -->|approve_leaves| H[📊 Manager Dashboard]
+    E -->|manage_settings| I[📊 Admin Dashboard]
+    E -->|Tenant Owner| SA[📊 Super Admin Dashboard]
+    E -->|manage_everything| PO[⚙️ Platform Owner Leads Dashboard]
     
     style A fill:#1e1b4b,color:#fff
     style G fill:#065f46,color:#fff
