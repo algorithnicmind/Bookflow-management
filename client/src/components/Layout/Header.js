@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import LiveClock from '@/components/Layout/LiveClock'
+
 import OrganizationBadge from './Header/OrganizationBadge'
 import ThemeToggle from './Header/ThemeToggle'
 import NotificationsDropdown from './Header/NotificationsDropdown'
@@ -48,7 +48,7 @@ export default function Header({ onToggleSidebar }) {
       <OrganizationBadge />
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <LiveClock />
+
         <ThemeToggle />
         
         {/* We can just render them since they manage their own click outside behavior. 
