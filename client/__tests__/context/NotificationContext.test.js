@@ -37,15 +37,15 @@ const TestComponent = () => {
 }
 
 // Helper to mock useAuth
-jest.mock('@/context/AuthContext', () => {
-  const actual = jest.requireActual('@/context/AuthContext')
+jest.mock('@/features/auth/AuthContext', () => {
+  const actual = jest.requireActual('@/features/auth/AuthContext')
   return {
     ...actual,
     useAuth: jest.fn(),
   }
 })
 
-import { useAuth as useAuthMock } from '@/context/AuthContext'
+import { useAuth as useAuthMock } from '@/features/auth/AuthContext'
 
 describe('NotificationContext', () => {
   test('fetches on mount if user is logged in', async () => {

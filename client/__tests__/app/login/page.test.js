@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import LoginPage from '@/app/login/page'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
+import { useAuth } from '@/features/auth/AuthContext'
 import { authApi } from '@/services/api'
 import React from 'react'
 
@@ -9,7 +9,7 @@ jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
 }))
 
-jest.mock('@/context/AuthContext', () => ({
+jest.mock('@/features/auth/AuthContext', () => ({
   useAuth: jest.fn(),
 }))
 

@@ -1,5 +1,5 @@
 import { render, screen, act, waitFor } from '@testing-library/react'
-import { AuthProvider, useAuth } from '@/context/AuthContext'
+import { AuthProvider, useAuth } from '@/features/auth/AuthContext'
 import React from 'react'
 
 // Mock fetch globally
