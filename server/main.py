@@ -233,3 +233,9 @@ app.include_router(organizations_router)
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+
+file_handler = logging.FileHandler('server_debug.log')
+file_handler.setLevel(logging.ERROR)
+logger.addHandler(file_handler)
+
+ 
