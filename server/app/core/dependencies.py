@@ -112,7 +112,7 @@ class PermissionChecker:
         
         # Look up the permissions assigned to the current user's role within their specific tenant
         res = await db.execute(select(RolePermission).where(
-            (RolePermission.tenant_id == current_user.tenant_id) &
+            (RolePermission.organization_id == current_user.organization_id) &
             (RolePermission.role_name == current_user.role)
         ))
         role_perm = res.scalar_one_or_none()
