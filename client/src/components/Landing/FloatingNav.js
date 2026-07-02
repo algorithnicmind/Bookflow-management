@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'motion/react'
-import LiveClock from '@/components/Layout/LiveClock'
+
 import { useRouter } from 'next/navigation'
 
 export default function FloatingNav({ isDarkMode, toggleTheme }) {
@@ -37,7 +37,7 @@ export default function FloatingNav({ isDarkMode, toggleTheme }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 32, color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 600 }}>
         <a href="#features" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='var(--text-main)'} onMouseLeave={(e) => e.target.style.color='var(--text-muted)'}>Features</a>
         <a href="#solutions" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='var(--text-main)'} onMouseLeave={(e) => e.target.style.color='var(--text-muted)'}>Solutions</a>
-        <LiveClock compact />
+
         <a href="#contact" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='var(--text-main)'} onMouseLeave={(e) => e.target.style.color='var(--text-muted)'}>Contact</a>
         <a href="#pricing" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color='var(--text-main)'} onMouseLeave={(e) => e.target.style.color='var(--text-muted)'}>Pricing</a>
       </div>
