@@ -41,6 +41,40 @@ class LeaveService:
         )
         self.repo.db.add(notification)
 
+    async def _validate_approval_authority(self, leave, emp, manager_id: int, is_admin: bool, action: str):
+        """Shared helper: validate manager's authority to approve/reject based on approval chain."""
+        from app.modules.settings.models import ApprovalChain, ApprovalStep
+        chain_res = await self.repo.db.execute(select(ApprovalChain).where(
+            ApprovalChain.organization_id == self.repo.organization_id,
+            ApprovalChain.department == emp.department
+        ))
+        chain = chain_res.scalar_one_or_none()
+        if not chain:
+            chain_res = await self.repo.db.execute(select(ApprovalChain).where(
+                ApprovalChain.organization_id == self.repo.organization_id,
+                ApprovalChain.department == None
+            ))
+            chain = chain_res.scalar_one_or_none()
+
+        steps = []
+        if chain:
+            steps_res = await self.repo.db.execute(select(ApprovalStep).where(ApprovalStep.chain_id == chain.id).order_by(ApprovalStep.step_order))
+            steps = steps_res.scalars().all()
+
+        current_step_idx = leave.current_approval_step - 1
+        approver = await self._get_employee(manager_id)
+
+        if steps and current_step_idx < len(steps):
+            required_role = steps[current_step_idx].role_required
+            if required_role == "manager":
+                if emp.manager_id != manager_id and not is_admin:
+                    raise HTTPException(status_code=403, detail=f"You can only {action} requests from your direct reports for this step")
+            else:
+                if approver.role != required_role and not is_admin:
+                    raise HTTPException(status_code=403, detail=f"This step requires {required_role} role")
+        else:
+            if emp.manager_id != manager_id and not is_admin:
+                raise HTTPException(status_code=403, detail=f"You can only {action} requests from your direct reports")
 
     async def apply_leave(self, employee_id: int, request: LeaveApplication) -> dict:
         """
@@ -370,40 +404,8 @@ class LeaveService:
         leave, emp = row
         if leave.status != "pending":
             raise HTTPException(status_code=400, detail="Only pending leaves can be approved")
-            
-        from app.modules.settings.models import ApprovalChain, ApprovalStep
-        chain_res = await self.repo.db.execute(select(ApprovalChain).where(
-            ApprovalChain.organization_id == self.repo.organization_id,
-            ApprovalChain.department == emp.department
-        ))
-        chain = chain_res.scalar_one_or_none()
-        if not chain:
-            chain_res = await self.repo.db.execute(select(ApprovalChain).where(
-                ApprovalChain.organization_id == self.repo.organization_id,
-                ApprovalChain.department == None
-            ))
-            chain = chain_res.scalar_one_or_none()
-
-        steps = []
-        if chain:
-            steps_res = await self.repo.db.execute(select(ApprovalStep).where(ApprovalStep.chain_id == chain.id).order_by(ApprovalStep.step_order))
-            steps = steps_res.scalars().all()
-
-        current_step_idx = leave.current_approval_step - 1
-        approver = await self._get_employee(manager_id)
         
-        # Enforce step-specific role validations
-        if steps and current_step_idx < len(steps):
-            required_role = steps[current_step_idx].role_required
-            if required_role == "manager":
-                if emp.manager_id != manager_id and not is_admin:
-                    raise HTTPException(status_code=403, detail="You can only approve requests from your direct reports for this step")
-            else:
-                if approver.role != required_role and not is_admin:
-                    raise HTTPException(status_code=403, detail=f"This step requires {required_role} role")
-        else:
-            if emp.manager_id != manager_id and not is_admin:
-                raise HTTPException(status_code=403, detail="You can only approve requests from your direct reports")
+        await self._validate_approval_authority(leave, emp, manager_id, is_admin, "approve")
 
         approval = LeaveApproval(
             organization_id=self.repo.organization_id,
@@ -493,40 +495,8 @@ class LeaveService:
         leave, emp = row
         if leave.status != "pending":
             raise HTTPException(status_code=400, detail="Only pending leaves can be rejected")
-            
-        from app.modules.settings.models import ApprovalChain, ApprovalStep
-        chain_res = await self.repo.db.execute(select(ApprovalChain).where(
-            ApprovalChain.organization_id == self.repo.organization_id,
-            ApprovalChain.department == emp.department
-        ))
-        chain = chain_res.scalar_one_or_none()
-        if not chain:
-            chain_res = await self.repo.db.execute(select(ApprovalChain).where(
-                ApprovalChain.organization_id == self.repo.organization_id,
-                ApprovalChain.department == None
-            ))
-            chain = chain_res.scalar_one_or_none()
-
-        steps = []
-        if chain:
-            steps_res = await self.repo.db.execute(select(ApprovalStep).where(ApprovalStep.chain_id == chain.id).order_by(ApprovalStep.step_order))
-            steps = steps_res.scalars().all()
-
-        current_step_idx = leave.current_approval_step - 1
-        approver = await self._get_employee(manager_id)
         
-        # Enforce step-specific role validations
-        if steps and current_step_idx < len(steps):
-            required_role = steps[current_step_idx].role_required
-            if required_role == "manager":
-                if emp.manager_id != manager_id and not is_admin:
-                    raise HTTPException(status_code=403, detail="You can only reject requests from your direct reports for this step")
-            else:
-                if approver.role != required_role and not is_admin:
-                    raise HTTPException(status_code=403, detail=f"This step requires {required_role} role")
-        else:
-            if emp.manager_id != manager_id and not is_admin:
-                raise HTTPException(status_code=403, detail="You can only reject requests from your direct reports")
+        await self._validate_approval_authority(leave, emp, manager_id, is_admin, "reject")
 
         leave.status = "rejected"
         approval = LeaveApproval(

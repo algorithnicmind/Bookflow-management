@@ -29,6 +29,29 @@ def get_auth_service(db: AsyncSession = Depends(get_db)) -> AuthService:
     repo = AuthRepository(db)
     return AuthService(repo)
 
+def _set_token_cookie(response: Response, token: str):
+    """Set JWT as an HttpOnly cookie — used by login, OAuth, and impersonation endpoints."""
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        secure=settings.ENVIRONMENT != "development",
+        samesite="lax",
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    )
+
+def _build_user_response(user) -> dict:
+    """Build the standardised user dict returned by login/impersonation responses."""
+    return {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "role": user.role,
+        "department": getattr(user, "department", None),
+        "profile_image_url": getattr(user, "profile_image_url", None),
+        **({"organization_id": user.organization_id} if hasattr(user, "organization_id") else {})
+    }
+
 @router.get("/session")
 async def check_session(request: Request, service: AuthService = Depends(get_auth_service)):
     """
@@ -51,29 +74,11 @@ async def oauth_login(request: OAuthRequest, response: Response, service: AuthSe
     If the email exists in the system, it generates a session and returns a JWT.
     """
     result = await service.oauth_login(request.email)
-    
-    # Set the JWT securely as an HttpOnly cookie to prevent XSS attacks
-    response.set_cookie(
-        key="access_token",
-        value=result["access_token"],
-        httponly=True,
-        secure=settings.ENVIRONMENT != "development",
-        samesite="lax",
-        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
-    )
-    
-    user = result["user"]
+    _set_token_cookie(response, result["access_token"])
     return {
         "access_token": result["access_token"],
         "token_type": "bearer",
-        "user": {
-            "id": user.id,
-            "name": user.name,
-            "email": user.email,
-            "role": user.role,
-            "department": getattr(user, 'department', None),
-            "profile_image_url": getattr(user, "profile_image_url", None)
-        }
+        "user": _build_user_response(result["user"])
     }
 
 @router.post("/login", response_model=Token)
@@ -101,27 +106,11 @@ async def login_for_access_token(
         expires_delta=access_token_expires
     )
     
-    # Store token in a secure HttpOnly cookie for browser clients
-    response.set_cookie(
-        key="access_token",
-        value=access_token,
-        httponly=True,
-        secure=settings.ENVIRONMENT != "development",
-        samesite="lax",
-        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
-    )
-    
+    _set_token_cookie(response, access_token)
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "user": {
-            "id": user.id,
-            "name": user.name,
-            "email": user.email,
-            "role": user.role,
-            "department": getattr(user, "department", None),
-            "profile_image_url": getattr(user, "profile_image_url", None)
-        }
+        "user": _build_user_response(user)
     }
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
@@ -233,28 +222,11 @@ async def impersonate_tenant(
     as the primary super admin of that organization.
     """
     result = await service.impersonate_tenant(org_id)
-    
-    response.set_cookie(
-        key="access_token",
-        value=result["access_token"],
-        httponly=True,
-        secure=settings.ENVIRONMENT != "development",
-        samesite="lax",
-        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
-    )
-    
-    target_admin = result["user"]
+    _set_token_cookie(response, result["access_token"])
     return {
         "access_token": result["access_token"],
         "token_type": "bearer",
-        "user": {
-            "id": target_admin.id,
-            "email": target_admin.email,
-            "name": target_admin.name,
-            "role": target_admin.role,
-            "department": target_admin.department,
-            "organization_id": target_admin.organization_id
-        }
+        "user": _build_user_response(result["user"])
     }
 
 @router.post("/impersonate/employee/{employee_id}", response_model=Token)
@@ -268,26 +240,9 @@ async def impersonate_employee(
     [Platform Owner Only] Impersonates a specific employee by ID for deep debugging.
     """
     result = await service.impersonate_employee(employee_id)
-    
-    response.set_cookie(
-        key="access_token",
-        value=result["access_token"],
-        httponly=True,
-        secure=settings.ENVIRONMENT != "development",
-        samesite="lax",
-        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
-    )
-    
-    target_employee = result["user"]
+    _set_token_cookie(response, result["access_token"])
     return {
         "access_token": result["access_token"],
         "token_type": "bearer",
-        "user": {
-            "id": target_employee.id,
-            "email": target_employee.email,
-            "name": target_employee.name,
-            "role": target_employee.role,
-            "department": target_employee.department,
-            "organization_id": target_employee.organization_id
-        }
+        "user": _build_user_response(result["user"])
     }

@@ -94,7 +94,7 @@ async def delete_leave_policy(
     await service.delete_leave_policy(policy_id)
     return {"message": "Leave policy deleted"}
 
-from app.modules.settings.schemas import LeaveTypeCreate, LeaveTypeUpdate, LeaveTypeResponse
+from app.modules.settings.schemas import LeaveTypeCreate, LeaveTypeResponse
 from app.modules.settings.models import LeaveType
 
 @router.get("/leave-types", response_model=List[LeaveTypeResponse])
@@ -121,31 +121,6 @@ async def create_leave_type(
         is_paid=request.is_paid
     )
     db.add(leave_type)
-    await db.commit()
-    await db.refresh(leave_type)
-    return leave_type
-
-@router.put("/leave-types/{type_id}", response_model=LeaveTypeResponse)
-async def update_leave_type(
-    type_id: int,
-    request: LeaveTypeUpdate,
-    db: AsyncSession = Depends(get_db),
-    tenant: Organization = Depends(get_current_tenant),
-    current_user: Employee = Depends(PermissionChecker("manage_employees"))
-):
-    leave_type = await db.get(LeaveType, type_id)
-    if not leave_type or leave_type.organization_id != tenant.id:
-        raise HTTPException(status_code=404, detail="Leave Type not found")
-        
-    if request.name is not None:
-        leave_type.name = request.name
-    if request.description is not None:
-        leave_type.description = request.description
-    if request.default_days is not None:
-        leave_type.default_days = request.default_days
-    if request.is_paid is not None:
-        leave_type.is_paid = request.is_paid
-        
     await db.commit()
     await db.refresh(leave_type)
     return leave_type

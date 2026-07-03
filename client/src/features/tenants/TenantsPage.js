@@ -123,7 +123,7 @@ export default function TenantsPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
-                  {['Company', 'Industry', 'Super Super Admin Email', 'Super Super Admin Name', 'Role', 'Phone', 'Setup Profile'].map((col) => (
+                  {['Company', 'Industry', 'Super Admin Email', 'Super Admin Name', 'Role', 'Phone', 'Setup Profile'].map((col) => (
                     <th key={col} style={{
                       textAlign: 'left',
                       padding: '12px 16px',

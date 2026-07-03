@@ -16,8 +16,8 @@ export default function SystemSettingsPage() {
     max_casual_leave: 12,
     max_sick_leave: 12,
     max_earned_leave: 18,
-    max_maternity_leave: 90,
-    max_miscarriage_leave: 15,
+    max_maternity_leave: 182,
+    max_miscarriage_leave: 42,
   })
   const [loading, setLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
@@ -33,8 +33,8 @@ export default function SystemSettingsPage() {
             max_casual_leave: data.max_casual_leave ?? 12,
             max_sick_leave: data.max_sick_leave ?? 12,
             max_earned_leave: data.max_earned_leave ?? 18,
-            max_maternity_leave: data.max_maternity_leave ?? 90,
-            max_miscarriage_leave: data.max_miscarriage_leave ?? 15,
+            max_maternity_leave: data.max_maternity_leave ?? 182,
+            max_miscarriage_leave: data.max_miscarriage_leave ?? 42,
           })
         }
       } catch (err) {
