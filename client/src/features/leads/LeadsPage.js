@@ -89,12 +89,6 @@ export default function LeadsPage() {
     }
   }
 
-  const formatDate = (isoDate) => {
-    if (!isoDate) return '—'
-    const d = new Date(isoDate)
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-  }
-
   const filterTabs = [
     { key: null, label: 'All', count: counts.total || 0 },
     { key: 'pending', label: 'Pending', count: counts.pending || 0 },
