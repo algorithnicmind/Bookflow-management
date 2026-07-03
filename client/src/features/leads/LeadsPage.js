@@ -15,6 +15,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import AppleEmoji from '@/components/AppleEmoji'
 import { LEAD_STATUS_OPTIONS as STATUS_OPTIONS, getStatusMeta } from '@/lib/constants'
+import { formatDate } from '@/lib/utils'
 
 export default function LeadsPage() {
   const { user } = useAuth()
