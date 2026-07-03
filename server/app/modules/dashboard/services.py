@@ -11,6 +11,19 @@ class DashboardService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
+    async def _get_user_permissions(self, current_user: Employee) -> set:
+        from app.modules.organizations.models import RolePermission
+        res = await self.db.execute(
+            select(RolePermission).where(
+                RolePermission.organization_id == current_user.organization_id,
+                RolePermission.role_name == current_user.role
+            )
+        )
+        role_perm = res.scalar_one_or_none()
+        if not role_perm:
+            return set()
+        return set(role_perm.permissions)
+
     async def get_stats(self, current_user: Employee) -> DashboardResponse:
         stats = DashboardStats()
         recent_leaves = []
@@ -68,7 +81,8 @@ class DashboardService:
         
         # 2. Manager-specific stats
         if current_user.role in ["manager", "admin", "super_admin"]:
-            is_admin = "manage_everything" in current_user.permissions or "manage_employees" in current_user.permissions
+            user_permissions = await self._get_user_permissions(current_user)
+            is_admin = "manage_everything" in user_permissions or "manage_employees" in user_permissions
             if is_admin:
                 p_res = await self.db.execute(
                     select(func.count(LeaveRequest.id))

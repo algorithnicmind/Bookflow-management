@@ -117,9 +117,19 @@ class PermissionChecker:
         ))
         role_perm = res.scalar_one_or_none()
         
-        # If the role is entirely undocumented in the database, reject the request
+        # If the role is undocumented in the database, fall back to sensible defaults
+        # based on the role name so that new organizations work out of the box.
         if not role_perm:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"No permissions found for role '{current_user.role}'.")
+            default_permissions = {
+                "super_admin": ["manage_everything", "manage_employees", "approve_leaves", "view_reports"],
+                "admin": ["manage_employees", "approve_leaves", "view_reports"],
+                "manager": ["approve_leaves", "view_reports"],
+            }
+            user_perms = set(default_permissions.get(current_user.role, []))
+            if self.required_permission not in user_perms:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Operation forbidden: Missing '{self.required_permission}' permission")
+            current_user.permissions = list(user_perms)
+            return current_user
             
         # Convert permissions list to a set for fast O(1) lookup
         user_perms = set(role_perm.permissions)
