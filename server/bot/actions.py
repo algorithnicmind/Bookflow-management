@@ -81,7 +81,7 @@ async def apply_leave_action(
                 "message": f"Invalid leave type '{leave_type}'. Allowed types are: {', '.join(valid_types)}."
             }
 
-        repo = LeaveRepository(db)
+        repo = await _get_repo(db, employee_id)
         service = LeaveService(repo)
         
         # Prepare schema

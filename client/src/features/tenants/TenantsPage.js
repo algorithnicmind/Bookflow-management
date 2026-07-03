@@ -15,6 +15,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import AppleEmoji from '@/components/AppleEmoji'
+import { formatDate } from '@/lib/utils'
 
 export default function TenantsPage() {
   const { user } = useAuth()
