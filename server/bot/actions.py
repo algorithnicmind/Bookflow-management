@@ -1,14 +1,24 @@
 from datetime import date
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from app.modules.leaves.repositories import LeaveRepository
 from app.modules.leaves.services import LeaveService
 from app.modules.leaves.schemas import LeaveApplication
+from app.modules.employees.models import Employee
+
+async def _get_repo(db: AsyncSession, employee_id: int) -> LeaveRepository:
+    """Helper: fetch employee's org_id and create a LeaveRepository."""
+    result = await db.execute(select(Employee).where(Employee.id == employee_id))
+    emp = result.scalar_one_or_none()
+    if not emp:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    return LeaveRepository(db, emp.organization_id)
 
 async def get_balances_action(db: AsyncSession, employee_id: int) -> dict:
     """Fetch leave balances for the given employee."""
     try:
-        repo = LeaveRepository(db)
+        repo = await _get_repo(db, employee_id)
         service = LeaveService(repo)
         balances = await service.get_balances(employee_id)
         
