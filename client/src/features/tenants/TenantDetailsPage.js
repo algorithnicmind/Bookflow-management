@@ -158,12 +158,6 @@ export default function TenantDetailsPage() {
     }
   }
 
-  const formatDate = (isoDate) => {
-    if (!isoDate) return '—'
-    const d = new Date(isoDate)
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-  }
-
   if (user?.department !== 'System') return null
 
   return (
@@ -264,7 +258,7 @@ export default function TenantDetailsPage() {
                 { label: 'Super Admin Email', value: app.super_admin_email },
                 { label: 'Phone', value: app.super_admin_phone || '—' },
                 { label: 'Special Requirements', value: app.special_requirements || '—' },
-                { label: 'Submitted', value: formatDate(app.created_at) },
+                { label: 'Submitted', value: formatDateTime(app.created_at) },
               ].map(({ label, value }) => (
                 <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
                   <span style={{ fontSize: '0.85rem', color: 'var(--text-dim)', fontWeight: 600, minWidth: 140 }}>{label}</span>
