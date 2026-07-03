@@ -60,12 +60,6 @@ export default function TenantsPage() {
     router.push(`/tenants/${app.id}`)
   }
 
-  const formatDate = (isoDate) => {
-    if (!isoDate) return '—'
-    const d = new Date(isoDate)
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-  }
-
   if (user?.department !== 'System') return null
 
   return (
