@@ -40,7 +40,7 @@ async def get_balances_action(db: AsyncSession, employee_id: int) -> dict:
 async def get_history_action(db: AsyncSession, employee_id: int, status: str = "all") -> dict:
     """Fetch leave request history for the given employee."""
     try:
-        repo = LeaveRepository(db)
+        repo = await _get_repo(db, employee_id)
         service = LeaveService(repo)
         history = await service.get_leave_history(employee_id, status)
         
