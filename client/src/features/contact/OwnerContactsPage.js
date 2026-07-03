@@ -99,7 +99,7 @@ export default function OwnerContactsPage() {
                   </a>
                 </div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  {formatDate(msg.created_at)}
+                  {formatDateTime(msg.created_at)}
                 </div>
               </div>
               <div style={{ 

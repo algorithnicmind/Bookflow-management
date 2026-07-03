@@ -16,6 +16,7 @@ import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
 import Badge from '@/components/ui/Badge'
 import AppleEmoji from '@/components/AppleEmoji'
+import { formatDateTime } from '@/lib/utils'
 
 const PLAN_OPTIONS = [
   { value: 'free_trial', label: 'Free Trial' },
