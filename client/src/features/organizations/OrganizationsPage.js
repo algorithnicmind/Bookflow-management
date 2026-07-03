@@ -14,6 +14,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import AppleEmoji from '@/components/AppleEmoji'
+import { formatDate } from '@/lib/utils'
 
 export default function OrganizationsPage() {
   const { user, login } = useAuth()
@@ -63,12 +64,6 @@ export default function OrganizationsPage() {
       fetchOrganizations()
     }
   }, [user])
-
-  const formatDate = (isoDate) => {
-    if (!isoDate) return '—'
-    const d = new Date(isoDate)
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-  }
 
   if (user?.department !== 'System') return null
 
