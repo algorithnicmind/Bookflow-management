@@ -47,12 +47,6 @@ export default function OwnerContactsPage() {
     }
   }, [user])
 
-  const formatDate = (isoDate) => {
-    if (!isoDate) return '—'
-    const d = new Date(isoDate)
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-  }
-
   if (user?.department !== 'System') return null
 
   return (
