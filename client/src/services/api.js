@@ -32,6 +32,7 @@ export async function request(endpoint, options = {}) {
     method: options.method || 'GET',
     headers,
     credentials: 'include',
+    signal: options.signal,
     ...(options.body ? { body: JSON.stringify(options.body) } : {}),
   }
 
@@ -83,7 +84,7 @@ export async function request(endpoint, options = {}) {
 }
 
 export const authApi = {
-  login: async (email, password) => {
+  login: async (email, password, signal) => {
     const formData = new URLSearchParams()
     formData.append('username', email)
     formData.append('password', password)
@@ -92,6 +93,7 @@ export const authApi = {
       credentials: 'include',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: formData.toString(),
+      signal,
     })
     const contentType = response.headers.get('content-type') || ''
     let data
@@ -109,13 +111,14 @@ export const authApi = {
   getProfile: () => request('/api/employees/me'),
   updateProfile: (body) => request('/api/employees/me', { method: 'PUT', body }),
   logout: () => request('/api/auth/logout', { method: 'POST' }),
-  uploadAvatar: async (file) => {
+  uploadAvatar: async (file, signal) => {
     const formData = new FormData()
     formData.append('file', file)
     const response = await fetch(`${API_BASE}/api/auth/upload-avatar`, {
       method: 'POST',
       credentials: 'include',
-      body: formData
+      body: formData,
+      signal,
     })
     if (!response.ok) {
       const error = await response.json().catch(() => ({}))
@@ -213,7 +216,7 @@ export const onboardingApi = {
 export const integrationsApi = {
   getCalendarStatus: () => request('/api/integrations/calendar/status'),
   connectCalendar: (provider) => request(`/api/integrations/calendar/connect/${provider}`),
-  simulateSlackAction: async (payload) => {
+  simulateSlackAction: async (payload, signal) => {
     const formData = new URLSearchParams()
     formData.append('payload', JSON.stringify(payload))
     const response = await fetch(`${API_BASE}/api/integrations/slack/actions`, {
@@ -221,7 +224,8 @@ export const integrationsApi = {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: formData.toString()
+      body: formData.toString(),
+      signal,
     })
     const contentType = response.headers.get('content-type') || ''
     if (contentType.includes('application/json')) {
