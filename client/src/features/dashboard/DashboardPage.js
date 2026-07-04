@@ -27,18 +27,20 @@ export default function DashboardPage() {
   useEffect(() => {
     if (user?.department === 'System') {
       router.push('/leads')
-    } else {
-      fetchDashboard()
+      return
     }
+    const controller = new AbortController()
+    fetchDashboard(controller.signal)
+    return () => controller.abort()
   }, [user, router])
 
-  const fetchDashboard = async () => {
+  const fetchDashboard = async (signal) => {
     setLoading(true)
     try {
-      const res = await dashboardApi.stats()
+      const res = await dashboardApi.stats(signal)
       setData(res)
     } catch (err) {
-      setError(err.message)
+      if (err.name !== 'AbortError') setError(err.message)
     } finally {
       setLoading(false)
     }

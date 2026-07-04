@@ -108,7 +108,7 @@ export const authApi = {
     return data
   },
   register: (body) => request('/api/auth/register', { method: 'POST', body }),
-  getProfile: () => request('/api/employees/me'),
+  getProfile: (signal) => request('/api/employees/me', { signal }),
   updateProfile: (body) => request('/api/employees/me', { method: 'PUT', body }),
   logout: () => request('/api/auth/logout', { method: 'POST' }),
   uploadAvatar: async (file, signal) => {
@@ -132,10 +132,10 @@ export const authApi = {
 
 export const leavesApi = {
   apply: (body) => request('/api/leaves', { method: 'POST', body }),
-  history: (params) => request('/api/leaves', { params }),
-  balance: () => request('/api/leaves/balance'),
+  history: (params, signal) => request('/api/leaves', { params, signal }),
+  balance: (signal) => request('/api/leaves/balance', { signal }),
   cancel: (id) => request(`/api/leaves/${id}/cancel`, { method: 'PUT' }),
-  pending: () => request('/api/leaves/pending'),
+  pending: (signal) => request('/api/leaves/pending', { signal }),
   approve: (id, comments) =>
     request(`/api/leaves/${id}/approve`, { method: 'PUT', body: { comments } }),
   reject: (id, comments) =>
@@ -143,21 +143,21 @@ export const leavesApi = {
 }
 
 export const employeesApi = {
-  list: (params) => request('/api/employees', { params }),
+  list: (params, signal) => request('/api/employees', { params, signal }),
   create: (body) => request('/api/employees', { method: 'POST', body }),
   update: (id, body) => request(`/api/employees/${id}`, { method: 'PUT', body }),
   deactivate: (id) => request(`/api/employees/${id}`, { method: 'DELETE' }),
 }
 
 export const dashboardApi = {
-  stats: () => request('/api/dashboard/stats'),
+  stats: (signal) => request('/api/dashboard/stats', { signal }),
 }
 
 export const settingsApi = {
-  get: () => request('/api/settings'),
+  get: (signal) => request('/api/settings', { signal }),
   update: (body) => request('/api/settings', { method: 'PUT', body }),
   updateOrganizationName: (name) => request('/api/settings/organization-name', { method: 'PUT', body: { name } }),
-  getHolidays: () => request('/api/settings/holidays'),
+  getHolidays: (signal) => request('/api/settings/holidays', { signal }),
   createHoliday: (body) => request('/api/settings/holidays', { method: 'POST', body }),
   deleteHoliday: (id) => request(`/api/settings/holidays/${id}`, { method: 'DELETE' }),
   getApprovalChains: () => request('/api/settings/approval-chains'),
@@ -174,16 +174,16 @@ export const settingsApi = {
 }
 
 export const reportsApi = {
-  organization: () => request('/api/reports/organization'),
+  organization: (signal) => request('/api/reports/organization', { signal }),
   exportLeaves: () => request('/api/reports/leaves-export'),
 }
 
 export const auditApi = {
-  list: (params) => request('/api/audit-logs', { params }),
+  list: (params, signal) => request('/api/audit-logs', { params, signal }),
 }
 
 export const notificationsApi = {
-  list: () => request('/api/notifications'),
+  list: (signal) => request('/api/notifications', { signal }),
   markRead: (id) => request(`/api/notifications/${id}/read`, { method: 'PUT' }),
   markAllRead: () => request('/api/notifications/read-all', { method: 'PUT' }),
 }
@@ -198,13 +198,13 @@ export const botApi = {
 
 export const contactApi = {
   submit: (body) => request('/api/contact', { method: 'POST', body }),
-  list: () => request('/api/contact'),
+  list: (signal) => request('/api/contact', { signal }),
 }
 
 export const onboardingApi = {
   apply: (body) => request('/api/onboarding/apply', { method: 'POST', body }),
-  list: (params) => request('/api/onboarding/applications', { params }),
-  get: (id) => request(`/api/onboarding/applications/${id}`),
+  list: (params, signal) => request('/api/onboarding/applications', { params, signal }),
+  get: (id, signal) => request(`/api/onboarding/applications/${id}`, { signal }),
   updateStatus: (id, status) => request(`/api/onboarding/applications/${id}/status`, { method: 'PATCH', body: { status } }),
   updateNotes: (id, notes) => request(`/api/onboarding/applications/${id}/notes`, { method: 'PATCH', body: { notes } }),
   updatePlan: (id, selected_plan) => request(`/api/onboarding/applications/${id}/plan`, { method: 'PATCH', body: { selected_plan } }),
@@ -214,7 +214,7 @@ export const onboardingApi = {
 }
 
 export const integrationsApi = {
-  getCalendarStatus: () => request('/api/integrations/calendar/status'),
+  getCalendarStatus: (signal) => request('/api/integrations/calendar/status', { signal }),
   connectCalendar: (provider) => request(`/api/integrations/calendar/connect/${provider}`),
   simulateSlackAction: async (payload, signal) => {
     const formData = new URLSearchParams()
@@ -237,27 +237,27 @@ export const integrationsApi = {
 }
 
 export const systemOwnersApi = {
-  list: () => request('/api/employees/system-owners'),
+  list: (signal) => request('/api/employees/system-owners', { signal }),
   create: (body) => request('/api/employees/system-owners', { method: 'POST', body }),
 }
 
 export const platformConfigApi = {
-  get: () => request('/api/settings/platform-config'),
+  get: (signal) => request('/api/settings/platform-config', { signal }),
   update: (body) => request('/api/settings/platform-config', { method: 'PUT', body }),
 }
 
 export const organizationsApi = {
-  list: () => request('/api/organizations'),
-  get: (id) => request(`/api/organizations/${id}`),
+  list: (signal) => request('/api/organizations', { signal }),
+  get: (id, signal) => request(`/api/organizations/${id}`, { signal }),
   update: (id, body) => request(`/api/organizations/${id}`, { method: 'PUT', body }),
-  getRoles: (id) => request(`/api/organizations/${id}/roles`),
+  getRoles: (id, signal) => request(`/api/organizations/${id}/roles`, { signal }),
   updateRole: (id, roleName, permissions) => request(`/api/organizations/${id}/roles/${roleName}`, { method: 'PUT', body: { permissions } }),
   deleteRole: (id, roleName) => request(`/api/organizations/${id}/roles/${roleName}`, { method: 'DELETE' }),
-  getDashboard: (id) => request(`/api/organizations/${id}/dashboard`),
-  getLeaveTypes: (id) => request(`/api/organizations/${id}/leave-types`),
+  getDashboard: (id, signal) => request(`/api/organizations/${id}/dashboard`, { signal }),
+  getLeaveTypes: (id, signal) => request(`/api/organizations/${id}/leave-types`, { signal }),
   createLeaveType: (id, body) => request(`/api/organizations/${id}/leave-types`, { method: 'POST', body }),
   deleteLeaveType: (id, leaveTypeId) => request(`/api/organizations/${id}/leave-types/${leaveTypeId}`, { method: 'DELETE' }),
-  getDepartments: (id) => request(`/api/organizations/${id}/departments`),
+  getDepartments: (id, signal) => request(`/api/organizations/${id}/departments`, { signal }),
   createDepartment: (id, body) => request(`/api/organizations/${id}/departments`, { method: 'POST', body }),
   updateDepartment: (id, deptId, body) => request(`/api/organizations/${id}/departments/${deptId}`, { method: 'PUT', body }),
   deleteDepartment: (id, deptId) => request(`/api/organizations/${id}/departments/${deptId}`, { method: 'DELETE' }),

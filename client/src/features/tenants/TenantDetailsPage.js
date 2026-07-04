@@ -65,12 +65,12 @@ export default function TenantDetailsPage() {
     setTimeout(() => setToast(null), 4000)
   }
 
-  const fetchApplication = async () => {
+  const fetchApplication = async (signal) => {
     if (!applicationId) return
     setIsLoading(true)
     setError(null)
     try {
-      const data = await onboardingApi.get(applicationId)
+      const data = await onboardingApi.get(applicationId, signal)
       setApp(data)
       setNotes(data.internal_notes || '')
       setSelectedPlan(data.selected_plan || 'free_trial')
@@ -82,9 +82,10 @@ export default function TenantDetailsPage() {
   }
 
   useEffect(() => {
-    if (user?.department === 'System' && applicationId) {
-      fetchApplication()
-    }
+    if (user?.department !== 'System' || !applicationId) return
+    const controller = new AbortController()
+    fetchApplication(controller.signal)
+    return () => controller.abort()
   }, [user, applicationId])
 
   const handleSaveNotes = async () => {

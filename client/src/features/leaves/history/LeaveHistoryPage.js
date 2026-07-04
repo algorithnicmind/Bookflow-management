@@ -24,12 +24,16 @@ export default function LeaveHistoryPage() {
   const [detailModal, setDetailModal] = useState(null)
   const [error, setError] = useState('')
 
-  useEffect(() => { fetchLeaves() }, [filter])
+  useEffect(() => {
+    const controller = new AbortController()
+    fetchLeaves(controller.signal)
+    return () => controller.abort()
+  }, [filter])
 
-  const fetchLeaves = async () => {
+  const fetchLeaves = async (signal) => {
     setLoading(true)
     try {
-      const res = await leavesApi.history({ status: filter !== 'all' ? filter : undefined })
+      const res = await leavesApi.history({ status: filter !== 'all' ? filter : undefined }, signal)
       setLeaves(res.leaves || [])
     } catch (err) {
       setError(err.message)

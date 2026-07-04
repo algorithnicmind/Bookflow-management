@@ -24,15 +24,16 @@ export function NotificationProvider({ children }) {
   const consecutiveFailures = useRef(0)
   const timerRef = useRef(null)
 
-  const fetchNotifications = useCallback(async () => {
+  const fetchNotifications = useCallback(async (signal) => {
     if (!user) return
     try {
-      const data = await notificationsApi.list()
+      const data = await notificationsApi.list(signal)
       const list = data.notifications || []
       setNotifications(list)
       setUnreadCount(list.filter(n => !n.is_read).length)
       consecutiveFailures.current = 0
     } catch (err) {
+      if (err.name === 'AbortError') return
       if (err.message?.includes('Session expired')) {
         setNotifications([])
         setUnreadCount(0)
@@ -69,14 +70,17 @@ export function NotificationProvider({ children }) {
       return
     }
 
-    fetchNotifications()
+    const controller = new AbortController()
+    fetchNotifications(controller.signal)
 
     timerRef.current = setInterval(() => {
-      const delay = consecutiveFailures.current > 0 ? BACKOFF_INTERVAL : POLL_INTERVAL
-      fetchNotifications()
+      fetchNotifications(controller.signal)
     }, consecutiveFailures.current > 0 ? BACKOFF_INTERVAL : POLL_INTERVAL)
 
-    return () => { if (timerRef.current) clearInterval(timerRef.current) }
+    return () => {
+      controller.abort()
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
   }, [user, fetchNotifications])
 
   return (

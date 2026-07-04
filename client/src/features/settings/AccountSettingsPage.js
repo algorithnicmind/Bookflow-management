@@ -35,9 +35,9 @@ export default function AccountSettingsPage() {
   const [calendarStatus, setCalendarStatus] = useState({ connected: false })
   const [checkingCalendar, setCheckingCalendar] = useState(true)
 
-  const fetchCalendarStatus = async () => {
+  const fetchCalendarStatus = async (signal) => {
     try {
-      const status = await integrationsApi.getCalendarStatus()
+      const status = await integrationsApi.getCalendarStatus(signal)
       setCalendarStatus(status)
     } catch (err) {
       console.error('Failed to fetch calendar status:', err)
@@ -47,9 +47,10 @@ export default function AccountSettingsPage() {
   }
 
   useEffect(() => {
+    const controller = new AbortController()
     const fetchProfile = async () => {
       try {
-        const data = await authApi.getProfile()
+        const data = await authApi.getProfile(controller.signal)
         setForm({
           name: data.name || '',
           email: data.email || '',
@@ -67,7 +68,8 @@ export default function AccountSettingsPage() {
       }
     }
     fetchProfile()
-    fetchCalendarStatus()
+    fetchCalendarStatus(controller.signal)
+    return () => controller.abort()
   }, [])
 
   const handleConnectCalendar = async (provider) => {

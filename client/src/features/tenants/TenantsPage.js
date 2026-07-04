@@ -33,10 +33,10 @@ export default function TenantsPage() {
     }
   }, [user, router])
 
-  const fetchApplications = async () => {
+  const fetchApplications = async (signal) => {
     try {
       setIsLoading(true)
-      const data = await onboardingApi.list({ status: 'connected' })
+      const data = await onboardingApi.list({ status: 'connected' }, signal)
       setApplications(data.applications || [])
     } catch (err) {
       setError(err.message || 'Failed to load tenants.')
@@ -46,9 +46,10 @@ export default function TenantsPage() {
   }
 
   useEffect(() => {
-    if (user?.department === 'System') {
-      fetchApplications()
-    }
+    if (user?.department !== 'System') return
+    const controller = new AbortController()
+    fetchApplications(controller.signal)
+    return () => controller.abort()
   }, [user])
 
   const showToast = (message, type = 'success') => {

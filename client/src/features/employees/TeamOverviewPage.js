@@ -19,14 +19,18 @@ export default function TeamOverviewPage() {
   const [pending, setPending] = useState([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => { fetchData() }, [])
+  useEffect(() => {
+    const controller = new AbortController()
+    fetchData(controller.signal)
+    return () => controller.abort()
+  }, [])
 
-  const fetchData = async () => {
+  const fetchData = async (signal) => {
     setLoading(true)
     try {
       const [statsRes, pendingRes] = await Promise.all([
-        dashboardApi.stats(),
-        leavesApi.pending(),
+        dashboardApi.stats(signal),
+        leavesApi.pending(signal),
       ])
       setData(statsRes)
       setPending(pendingRes.pending || [])

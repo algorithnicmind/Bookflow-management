@@ -31,7 +31,7 @@ export default function AuditLogsPage() {
   // Modal details state
   const [activeLog, setActiveLog] = useState(null)
 
-  const fetchLogs = async () => {
+  const fetchLogs = async (signal) => {
     setLoading(true)
     setError('')
     try {
@@ -42,7 +42,7 @@ export default function AuditLogsPage() {
         target_type: targetType || undefined,
         limit,
         offset,
-      })
+      }, signal)
       setLogs(data.logs || [])
       setTotal(data.total || 0)
     } catch (err) {
@@ -54,7 +54,9 @@ export default function AuditLogsPage() {
 
   // Trigger search on filter changes or page transition
   useEffect(() => {
-    fetchLogs()
+    const controller = new AbortController()
+    fetchLogs(controller.signal)
+    return () => controller.abort()
   }, [page, action, targetType])
 
   const handleSearch = (e) => {

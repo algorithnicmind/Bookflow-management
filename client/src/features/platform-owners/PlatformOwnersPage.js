@@ -40,11 +40,11 @@ export default function PlatformOwnersPage() {
     }
   }, [user, router])
 
-  const fetchOwners = async () => {
+  const fetchOwners = async (signal) => {
     setIsLoading(true)
     setError(null)
     try {
-      const data = await systemOwnersApi.list()
+      const data = await systemOwnersApi.list(signal)
       setOwners(data.owners || [])
     } catch (err) {
       setError(err.message || 'Failed to load owners.')
@@ -53,10 +53,10 @@ export default function PlatformOwnersPage() {
     }
   }
 
-  const fetchConfig = async () => {
+  const fetchConfig = async (signal) => {
     setConfigLoading(true)
     try {
-      const data = await platformConfigApi.get()
+      const data = await platformConfigApi.get(signal)
       setConfig(data)
     } catch (err) {
       console.error('Failed to load platform config', err)
@@ -66,10 +66,11 @@ export default function PlatformOwnersPage() {
   }
 
   useEffect(() => {
-    if (user?.department === 'System') {
-      fetchOwners()
-      fetchConfig()
-    }
+    if (user?.department !== 'System') return
+    const controller = new AbortController()
+    fetchOwners(controller.signal)
+    fetchConfig(controller.signal)
+    return () => controller.abort()
   }, [user])
 
   const showToast = (message, type = 'success') => {

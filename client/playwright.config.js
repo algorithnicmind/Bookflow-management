@@ -1,0 +1,29 @@
+const { defineConfig } = require('@playwright/test')
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') })
+
+module.exports = defineConfig({
+  testDir: './e2e',
+  fullyParallel: false,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : 1,
+  reporter: 'list',
+  globalSetup: require.resolve('./e2e/global-setup'),
+  use: {
+    baseURL: 'http://localhost:3000',
+    trace: 'on-first-retry',
+    storageState: 'e2e/.auth/user.json',
+  },
+  projects: [
+    {
+      name: 'chromium',
+      use: { browserName: 'chromium' },
+    },
+  ],
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120000,
+  },
+})

@@ -25,9 +25,10 @@ export default function SystemSettingsPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
+    const controller = new AbortController()
     async function fetchSettings() {
       try {
-        const data = await settingsApi.get()
+        const data = await settingsApi.get(controller.signal)
         if (data) {
           setForm({
             max_casual_leave: data.max_casual_leave ?? 12,
@@ -44,6 +45,7 @@ export default function SystemSettingsPage() {
       }
     }
     fetchSettings()
+    return () => controller.abort()
   }, [])
 
   const handleSubmit = async (e) => {

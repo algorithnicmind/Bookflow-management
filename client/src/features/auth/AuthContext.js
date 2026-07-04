@@ -22,11 +22,13 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const controller = new AbortController()
     async function fetchLocalProfile() {
       try {
         const res = await fetch('/api/auth/session', {
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
         })
         if (!res.ok) {
           setUser(null)
@@ -46,6 +48,7 @@ export function AuthProvider({ children }) {
       }
     }
     fetchLocalProfile()
+    return () => controller.abort()
   }, [])
 
   useEffect(() => {

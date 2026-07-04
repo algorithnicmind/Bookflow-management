@@ -28,11 +28,11 @@ export default function OwnerContactsPage() {
     }
   }, [user, router])
 
-  const fetchMessages = async () => {
+  const fetchMessages = async (signal) => {
     setIsLoading(true)
     setError(null)
     try {
-      const data = await contactApi.list()
+      const data = await contactApi.list(signal)
       setMessages(data)
     } catch (err) {
       setError(err.message || 'Failed to load contact messages.')
@@ -42,9 +42,10 @@ export default function OwnerContactsPage() {
   }
 
   useEffect(() => {
-    if (user?.department === 'System') {
-      fetchMessages()
-    }
+    if (user?.department !== 'System') return
+    const controller = new AbortController()
+    fetchMessages(controller.signal)
+    return () => controller.abort()
   }, [user])
 
   if (user?.department !== 'System') return null

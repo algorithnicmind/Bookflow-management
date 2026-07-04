@@ -30,10 +30,10 @@ export default function ManageAdminsPage() {
   const [submitting, setSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
-  const fetchAdmins = async () => {
+  const fetchAdmins = async (signal) => {
     try {
       setLoading(true)
-      const res = await employeesApi.list()
+      const res = await employeesApi.list({}, signal)
       const adminList = res.employees?.filter(e => e.role === 'admin') || []
       setAdmins(adminList)
       setFilteredAdmins(adminList)
@@ -45,7 +45,9 @@ export default function ManageAdminsPage() {
   }
 
   useEffect(() => {
-    fetchAdmins()
+    const controller = new AbortController()
+    fetchAdmins(controller.signal)
+    return () => controller.abort()
   }, [])
 
   useEffect(() => {

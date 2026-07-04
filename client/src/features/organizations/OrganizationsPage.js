@@ -33,10 +33,10 @@ export default function OrganizationsPage() {
     }
   }, [user, router])
 
-  const fetchOrganizations = async () => {
+  const fetchOrganizations = async (signal) => {
     try {
       setIsLoading(true)
-      const data = await organizationsApi.list()
+      const data = await organizationsApi.list(signal)
       setOrganizations(data || [])
     } catch (err) {
       setError(err.message || 'Failed to load organizations.')
@@ -60,9 +60,10 @@ export default function OrganizationsPage() {
   }
 
   useEffect(() => {
-    if (user?.department === 'System') {
-      fetchOrganizations()
-    }
+    if (user?.department !== 'System') return
+    const controller = new AbortController()
+    fetchOrganizations(controller.signal)
+    return () => controller.abort()
   }, [user])
 
   if (user?.department !== 'System') return null

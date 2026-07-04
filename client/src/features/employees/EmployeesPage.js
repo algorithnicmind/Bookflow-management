@@ -33,14 +33,18 @@ export default function EmployeesPage() {
   const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
-    const timer = setTimeout(() => fetchEmployees(), 300)
-    return () => clearTimeout(timer)
+    const controller = new AbortController()
+    const timer = setTimeout(() => fetchEmployees(controller.signal), 300)
+    return () => {
+      clearTimeout(timer)
+      controller.abort()
+    }
   }, [search])
 
-  const fetchEmployees = async () => {
+  const fetchEmployees = async (signal) => {
     setLoading(true)
     try {
-      const res = await employeesApi.list({ search: search || undefined })
+      const res = await employeesApi.list({ search: search || undefined }, signal)
       setEmployees(res.employees || [])
     } catch (err) {
       setError(err.message)

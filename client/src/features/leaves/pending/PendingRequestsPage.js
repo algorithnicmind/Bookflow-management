@@ -24,12 +24,16 @@ export default function PendingRequestsPage() {
   const [comments, setComments] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  useEffect(() => { fetchPending() }, [])
+  useEffect(() => {
+    const controller = new AbortController()
+    fetchPending(controller.signal)
+    return () => controller.abort()
+  }, [])
 
-  const fetchPending = async () => {
+  const fetchPending = async (signal) => {
     setLoading(true)
     try {
-      const res = await leavesApi.pending()
+      const res = await leavesApi.pending(signal)
       setRequests(res.pending || [])
     } catch (err) {
       setError(err.message)

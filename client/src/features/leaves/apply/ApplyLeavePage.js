@@ -38,7 +38,9 @@ export default function ApplyLeavePage() {
   const [holidays, setHolidays] = useState([])
 
   useEffect(() => {
-    settingsApi.getHolidays().then(setHolidays).catch(console.error)
+    const controller = new AbortController()
+    settingsApi.getHolidays(controller.signal).then(setHolidays).catch(console.error)
+    return () => controller.abort()
   }, [])
 
   const calculateDays = () => {

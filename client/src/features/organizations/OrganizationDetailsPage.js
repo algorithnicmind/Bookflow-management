@@ -84,12 +84,12 @@ export default function OrganizationDetailsPage() {
     setTimeout(() => setToast(null), 4000)
   }
 
-  const fetchOrg = useCallback(async () => {
+  const fetchOrg = useCallback(async (signal) => {
     if (!orgId) return
     setIsLoading(true)
     setError(null)
     try {
-      const data = await organizationsApi.get(orgId)
+      const data = await organizationsApi.get(orgId, signal)
       setOrg(data)
       setEditForm({
         name: data.name || '',
@@ -106,41 +106,44 @@ export default function OrganizationDetailsPage() {
   }, [orgId])
 
   useEffect(() => {
-    if (user?.department === 'System' && orgId) fetchOrg()
+    if (user?.department !== 'System' || !orgId) return
+    const controller = new AbortController()
+    fetchOrg(controller.signal)
+    return () => controller.abort()
   }, [user, orgId, fetchOrg])
 
   // Tab data loaders
-  const loadRoles = async () => {
+  const loadRoles = async (signal) => {
     setRolesLoading(true)
     try {
-      const data = await organizationsApi.getRoles(orgId)
+      const data = await organizationsApi.getRoles(orgId, signal)
       setRoles(data || [])
     } catch (err) { showToast(err.message, 'error') }
     finally { setRolesLoading(false) }
   }
 
-  const loadDepartments = async () => {
+  const loadDepartments = async (signal) => {
     setDeptsLoading(true)
     try {
-      const data = await organizationsApi.getDepartments(orgId)
+      const data = await organizationsApi.getDepartments(orgId, signal)
       setDepartments(data || [])
     } catch (err) { showToast(err.message, 'error') }
     finally { setDeptsLoading(false) }
   }
 
-  const loadLeaveTypes = async () => {
+  const loadLeaveTypes = async (signal) => {
     setLtLoading(true)
     try {
-      const data = await organizationsApi.getLeaveTypes(orgId)
+      const data = await organizationsApi.getLeaveTypes(orgId, signal)
       setLeaveTypes(data || [])
     } catch (err) { showToast(err.message, 'error') }
     finally { setLtLoading(false) }
   }
 
-  const loadDashboard = async () => {
+  const loadDashboard = async (signal) => {
     setDashLoading(true)
     try {
-      const data = await organizationsApi.getDashboard(orgId)
+      const data = await organizationsApi.getDashboard(orgId, signal)
       setDashboard(data)
     } catch (err) { showToast(err.message, 'error') }
     finally { setDashLoading(false) }
@@ -148,10 +151,12 @@ export default function OrganizationDetailsPage() {
 
   useEffect(() => {
     if (!orgId || !user || user.department !== 'System') return
-    if (activeTab === 'roles') loadRoles()
-    if (activeTab === 'departments') loadDepartments()
-    if (activeTab === 'leave-types') loadLeaveTypes()
-    if (activeTab === 'dashboard') loadDashboard()
+    const controller = new AbortController()
+    if (activeTab === 'roles') loadRoles(controller.signal)
+    if (activeTab === 'departments') loadDepartments(controller.signal)
+    if (activeTab === 'leave-types') loadLeaveTypes(controller.signal)
+    if (activeTab === 'dashboard') loadDashboard(controller.signal)
+    return () => controller.abort()
   }, [activeTab, orgId, user])
 
   // Handlers

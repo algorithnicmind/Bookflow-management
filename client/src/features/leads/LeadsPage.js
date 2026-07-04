@@ -43,13 +43,13 @@ export default function LeadsPage() {
     }
   }, [user, router])
 
-  const fetchApplications = async (statusFilter = null) => {
+  const fetchApplications = async (statusFilter = null, signal) => {
     if (!user) return
     setIsLoading(true)
     setError(null)
     try {
       const params = statusFilter ? { status: statusFilter } : {}
-      const data = await onboardingApi.list(params)
+      const data = await onboardingApi.list(params, signal)
       
       let finalApplications = data.applications || []
       setApplications(finalApplications)
@@ -62,7 +62,9 @@ export default function LeadsPage() {
   }
 
   useEffect(() => {
-    fetchApplications(activeFilter)
+    const controller = new AbortController()
+    fetchApplications(activeFilter, controller.signal)
+    return () => controller.abort()
   }, [activeFilter])
 
   const showToast = (message, type = 'success') => {

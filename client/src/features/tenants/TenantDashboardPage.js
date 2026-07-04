@@ -33,24 +33,26 @@ export default function TenantDashboardPage() {
   }, [user, router])
 
   useEffect(() => {
+    if (!user || user.department !== 'System' || !applicationId) return
+    const controller = new AbortController()
     async function loadData() {
-      if (!user || user.department !== 'System' || !applicationId) return
       setIsLoading(true)
       setError(null)
       try {
-        const appData = await onboardingApi.get(applicationId)
+        const appData = await onboardingApi.get(applicationId, controller.signal)
         setApp(appData)
         if (appData.organization_id) {
-          const dashData = await organizationsApi.getDashboard(appData.organization_id)
+          const dashData = await organizationsApi.getDashboard(appData.organization_id, controller.signal)
           setDashboard(dashData)
         }
       } catch (err) {
-        setError(err.message || 'Failed to load dashboard.')
+        if (err.name !== 'AbortError') setError(err.message || 'Failed to load dashboard.')
       } finally {
         setIsLoading(false)
       }
     }
     loadData()
+    return () => controller.abort()
   }, [user, applicationId])
 
   if (user?.department !== 'System') return null

@@ -23,12 +23,16 @@ export default function OrganizationReportsPage() {
   const [exporting, setExporting] = useState(false)
   const [error, setError] = useState('')
 
-  useEffect(() => { fetchReports() }, [])
+  useEffect(() => {
+    const controller = new AbortController()
+    fetchReports(controller.signal)
+    return () => controller.abort()
+  }, [])
 
-  const fetchReports = async () => {
+  const fetchReports = async (signal) => {
     setLoading(true)
     try {
-      const res = await reportsApi.organization()
+      const res = await reportsApi.organization(signal)
       setData(res.org_stats)
     } catch (err) {
       setError(err.message)
