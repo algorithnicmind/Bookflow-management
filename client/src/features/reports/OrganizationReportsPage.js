@@ -10,6 +10,8 @@ import { useState, useEffect } from 'react'
 import { reportsApi } from '@/services/api'
 import Card from '@/components/ui/Card'
 import StatCard from '@/components/ui/StatCard'
+import Button from '@/components/ui/Button'
+import { SkeletonLayout } from '@/components/ui/Skeleton'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts'
 import Papa from 'papaparse'
 import jsPDF from 'jspdf'
@@ -104,11 +106,7 @@ export default function OrganizationReportsPage() {
   }
 
   if (loading) {
-    return (
-      <div className="page-container">
-        <div className="loading-screen"><div className="spinner" /><span>Loading reports...</span></div>
-      </div>
-    )
+    return <SkeletonLayout />
   }
 
   if (error) {

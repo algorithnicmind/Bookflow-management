@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
+import { SkeletonTable } from '@/components/ui/Skeleton'
 
 export default function LeaveTypesPage() {
   const router = useRouter()
@@ -111,8 +112,8 @@ export default function LeaveTypesPage() {
 
       <div style={{ maxWidth: 800, margin: '0 auto' }}>
         {isLoading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
-            <div className="spinner" style={{ width: 32, height: 32 }} />
+          <div style={{ padding: '24px' }}>
+            <SkeletonTable rows={4} columns={5} />
           </div>
         ) : error ? (
           <Card>
