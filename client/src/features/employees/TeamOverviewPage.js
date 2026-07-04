@@ -13,6 +13,8 @@ import StatCard from '@/components/ui/StatCard'
 import Badge from '@/components/ui/Badge'
 import { formatDate } from '@/lib/utils'
 import LeaveTypeIcon from '@/components/shared/LeaveTypeIcon'
+import MetricCard from '@/components/dashboard/MetricCard'
+import { SkeletonLayout } from '@/components/ui/Skeleton'
 
 export default function TeamOverviewPage() {
   const [data, setData] = useState(null)
@@ -42,11 +44,7 @@ export default function TeamOverviewPage() {
   }
 
   if (loading) {
-    return (
-      <div className="page-container">
-        <div className="loading-screen"><div className="spinner" /><span>Loading team overview...</span></div>
-      </div>
-    )
+    return <SkeletonLayout />
   }
 
   return (
