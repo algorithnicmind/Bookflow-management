@@ -13,6 +13,7 @@ import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
+import { SkeletonTable } from '@/components/ui/Skeleton'
 import { formatDate, formatDateTime } from '@/lib/utils'
 import LeaveTypeIcon from '@/components/shared/LeaveTypeIcon'
 
@@ -77,9 +78,8 @@ export default function PendingRequestsPage() {
 
       <Card>
         {loading ? (
-          <div className="loading-screen">
-            <div className="spinner" />
-            <span>Loading pending requests...</span>
+          <div style={{ padding: '24px' }}>
+            <SkeletonTable rows={4} columns={6} />
           </div>
         ) : error ? (
           <div className="empty-state">

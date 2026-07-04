@@ -10,8 +10,10 @@ import { useState, useEffect } from 'react'
 import { authApi, employeesApi } from '@/services/api'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
+import Badge from '@/components/ui/Badge'
 import Modal from '@/components/ui/Modal'
 import StatCard from '@/components/ui/StatCard'
+import { SkeletonTable } from '@/components/ui/Skeleton'
 
 export default function ManageAdminsPage() {
   const [admins, setAdmins] = useState([])
@@ -157,9 +159,8 @@ export default function ManageAdminsPage() {
         </div>
 
         {loading ? (
-          <div className="loading-screen">
-            <div className="spinner" />
-            <span>Loading admins...</span>
+          <div style={{ padding: '24px' }}>
+            <SkeletonTable rows={4} columns={5} />
           </div>
         ) : filteredAdmins.length === 0 ? (
           <div className="empty-state">

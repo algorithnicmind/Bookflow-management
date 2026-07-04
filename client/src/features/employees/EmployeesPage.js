@@ -13,6 +13,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
 import Badge from '@/components/ui/Badge'
+import { SkeletonTable } from '@/components/ui/Skeleton'
 import { formatDate } from '@/lib/utils'
 
 const roles = ['employee', 'manager', 'admin']
@@ -140,9 +141,8 @@ export default function EmployeesPage() {
         </div>
 
         {loading ? (
-          <div className="loading-screen">
-            <div className="spinner" />
-            <span>Loading employees...</span>
+          <div style={{ padding: '24px' }}>
+            <SkeletonTable rows={5} columns={6} />
           </div>
         ) : error ? (
           <div className="empty-state">
