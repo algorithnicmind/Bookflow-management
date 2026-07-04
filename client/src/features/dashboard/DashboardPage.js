@@ -11,6 +11,10 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/features/auth/AuthContext'
 import { dashboardApi } from '@/services/api'
+import Modal from '@/components/ui/Modal'
+import { SkeletonLayout } from '@/components/ui/Skeleton'
+
+import MetricCard from '@/components/dashboard/MetricCard'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import { formatDate } from '@/lib/utils'
@@ -47,14 +51,7 @@ export default function DashboardPage() {
   }
 
   if (loading) {
-    return (
-      <div className="page-container">
-        <div className="loading-screen">
-          <div className="spinner" />
-          <span>Loading dashboard...</span>
-        </div>
-      </div>
-    )
+    return <SkeletonLayout />
   }
 
   if (error) {
