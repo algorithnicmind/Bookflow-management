@@ -15,6 +15,7 @@ import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import AppleEmoji from '@/components/AppleEmoji'
 import { formatDate } from '@/lib/utils'
+import { SkeletonTable } from '@/components/ui/Skeleton'
 
 export default function OrganizationsPage() {
   const { user, login } = useAuth()
@@ -91,8 +92,8 @@ export default function OrganizationsPage() {
       </div>
 
       {isLoading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
-          <div className="spinner" style={{ width: 32, height: 32 }} />
+        <div style={{ width: '100%' }}>
+          <SkeletonTable rows={6} columns={5} />
         </div>
       ) : error ? (
         <Card>
