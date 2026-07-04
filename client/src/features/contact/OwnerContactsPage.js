@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation'
 import { contactApi } from '@/services/api'
 import Card from '@/components/ui/Card'
 import AppleEmoji from '@/components/AppleEmoji'
+import { SkeletonCard } from '@/components/ui/Skeleton'
 
 export default function OwnerContactsPage() {
   const { user } = useAuth()
@@ -62,8 +63,10 @@ export default function OwnerContactsPage() {
 
       {/* Content */}
       {isLoading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
-          <div className="spinner" style={{ width: 32, height: 32 }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
         </div>
       ) : error ? (
         <Card>
