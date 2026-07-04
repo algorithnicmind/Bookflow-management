@@ -15,6 +15,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import AppleEmoji from '@/components/AppleEmoji'
+import { SkeletonTable } from '@/components/ui/Skeleton'
 import { formatDate } from '@/lib/utils'
 
 export default function TenantsPage() {
@@ -94,8 +95,8 @@ export default function TenantsPage() {
 
       {/* Main List */}
       {isLoading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
-          <div className="spinner" style={{ width: 32, height: 32 }} />
+        <div style={{ width: '100%' }}>
+          <SkeletonTable rows={6} columns={5} />
         </div>
       ) : error ? (
         <Card>

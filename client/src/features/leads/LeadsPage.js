@@ -16,6 +16,8 @@ import Button from '@/components/ui/Button'
 import AppleEmoji from '@/components/AppleEmoji'
 import { LEAD_STATUS_OPTIONS as STATUS_OPTIONS, getStatusMeta } from '@/lib/constants'
 import { formatDate } from '@/lib/utils'
+import Badge from '@/components/ui/Badge'
+import { SkeletonTable } from '@/components/ui/Skeleton'
 
 export default function LeadsPage() {
   const { user } = useAuth()
@@ -221,8 +223,8 @@ export default function LeadsPage() {
 
       {/* Content */}
       {isLoading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
-          <div className="spinner" style={{ width: 32, height: 32 }} />
+        <div style={{ width: '100%' }}>
+          <SkeletonTable rows={8} columns={5} />
         </div>
       ) : error ? (
         <Card>
