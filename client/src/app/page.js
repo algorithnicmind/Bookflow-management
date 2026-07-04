@@ -14,6 +14,7 @@ import { platformConfigApi } from '@/services/api'
 import LeadModal from '@/components/LeadModal'
 import OnboardingModal from '@/components/OnboardingModal'
 import { useTheme } from '@/hooks'
+import { SkeletonLayout } from '@/components/ui/Skeleton'
 
 import FloatingNav from '@/components/Landing/FloatingNav'
 import HeroSection from '@/components/Landing/HeroSection'
@@ -61,17 +62,7 @@ export default function LandingPage() {
   }, [user, loading, router])
 
   if (loading || !mounted) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'var(--bg-primary)',
-      }}>
-        <div className="spinner" style={{ width: 36, height: 36 }} />
-      </div>
-    )
+    return <SkeletonLayout />
   }
 
   if (user) return null

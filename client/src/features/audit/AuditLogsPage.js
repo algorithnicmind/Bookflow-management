@@ -12,6 +12,7 @@ import { formatDateTime } from '@/lib/utils'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
+import { SkeletonTable } from '@/components/ui/Skeleton'
 
 export default function AuditLogsPage() {
   const [logs, setLogs] = useState([])
@@ -196,9 +197,8 @@ export default function AuditLogsPage() {
       {/* Audit Logs Table */}
       <Card style={{ padding: 0, overflow: 'hidden' }}>
         {loading ? (
-          <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--text-muted)' }}>
-            <div className="spinner" style={{ marginBottom: 12 }} />
-            Retrieving audit logs...
+          <div style={{ padding: '24px' }}>
+            <SkeletonTable rows={10} columns={6} />
           </div>
         ) : error ? (
           <div style={{ padding: 40, textAlign: 'center', color: 'var(--danger)' }}>

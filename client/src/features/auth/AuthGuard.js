@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/features/auth/AuthContext'
+import { SkeletonLayout } from '@/components/ui/Skeleton'
 
 export default function AuthGuard({ children }) {
   const { user, loading } = useAuth()
@@ -18,17 +19,7 @@ export default function AuthGuard({ children }) {
   }, [user, loading, mounted, router])
 
   if (!mounted || loading) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'var(--bg-primary)',
-      }}>
-        <div className="spinner" style={{ width: 36, height: 36 }} />
-      </div>
-    )
+    return <SkeletonLayout />
   }
 
   if (!user) return null
