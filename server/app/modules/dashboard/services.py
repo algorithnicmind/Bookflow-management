@@ -22,7 +22,7 @@ class DashboardService:
         role_perm = res.scalar_one_or_none()
         if not role_perm:
             return set()
-        return set(role_perm.permissions)
+        return set(role_perm.permissions or [])
 
     async def get_stats(self, current_user: Employee) -> DashboardResponse:
         stats = DashboardStats()

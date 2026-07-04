@@ -416,13 +416,32 @@ class LeaveService:
         )
         await self.repo.add_approval(approval)
         
+        # Fetch approval chain steps to determine if this is the final step
+        from app.modules.settings.models import ApprovalChain, ApprovalStep
+        chain_res = await self.repo.db.execute(select(ApprovalChain).where(
+            ApprovalChain.organization_id == self.repo.organization_id,
+            ApprovalChain.department == emp.department
+        ))
+        chain = chain_res.scalar_one_or_none()
+        if not chain:
+            chain_res = await self.repo.db.execute(select(ApprovalChain).where(
+                ApprovalChain.organization_id == self.repo.organization_id,
+                ApprovalChain.department == None
+            ))
+            chain = chain_res.scalar_one_or_none()
+
+        steps = []
+        if chain:
+            steps_res = await self.repo.db.execute(
+                select(ApprovalStep).where(ApprovalStep.chain_id == chain.id).order_by(ApprovalStep.step_order)
+            )
+            steps = steps_res.scalars().all()
+
         is_final = True
         if steps and leave.current_approval_step < len(steps):
-            # Advance to next approval step
             leave.current_approval_step += 1
             is_final = False
         else:
-            # Mark as completely approved
             leave.status = "approved"
         
         # Log audit trail

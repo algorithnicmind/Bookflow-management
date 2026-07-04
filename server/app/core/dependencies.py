@@ -132,7 +132,7 @@ class PermissionChecker:
             return current_user
             
         # Convert permissions list to a set for fast O(1) lookup
-        user_perms = set(role_perm.permissions)
+        user_perms = set(role_perm.permissions or [])
         
         # Check if the user possesses the specific permission required by the endpoint
         if self.required_permission not in user_perms:

@@ -165,7 +165,7 @@ export default function OrganizationReportsPage() {
         {data.total_admins !== undefined && (
           <StatCard label="Total Admins" value={data.total_admins} icon="👑" color="var(--accent)" />
         )}
-        <StatCard label="Total Leave Requests" value={data.total_leave_requests || data.total_requests || 0} icon="📋" color="var(--warning)" />
+        <StatCard label="Total Leave Requests" value={data.total_leave_requests || 0} icon="📋" color="var(--warning)" />
         <StatCard label="Approved / Rejected" value={`${data.approved_leaves || 0} / ${data.rejected_leaves || 0}`} icon="📊" color="var(--success)" />
       </div>
 
