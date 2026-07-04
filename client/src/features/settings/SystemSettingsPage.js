@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react'
 import { settingsApi } from '@/services/api'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
+import { SkeletonText } from '@/components/ui/Skeleton'
 
 export default function SystemSettingsPage() {
   const [form, setForm] = useState({
@@ -97,8 +98,8 @@ export default function SystemSettingsPage() {
             )}
 
             {initialLoading ? (
-              <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
-                <div className="spinner" style={{ width: 24, height: 24 }} />
+              <div style={{ padding: 40 }}>
+                <SkeletonText lines={5} gap="20px" />
               </div>
             ) : (
               <>

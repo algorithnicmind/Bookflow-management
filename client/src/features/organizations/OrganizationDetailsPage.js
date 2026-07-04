@@ -17,6 +17,7 @@ import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
 import Badge from '@/components/ui/Badge'
 import AppleEmoji from '@/components/AppleEmoji'
+import { SkeletonLayout, SkeletonCard } from '@/components/ui/Skeleton'
 
 const TABS = [
   { key: 'overview', label: 'Overview', emoji: '🏢' },
@@ -298,9 +299,7 @@ export default function OrganizationDetailsPage() {
       </div>
 
       {isLoading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
-          <div className="spinner" style={{ width: 32, height: 32 }} />
-        </div>
+        <SkeletonLayout />
       ) : error ? (
         <Card>
           <div style={{ textAlign: 'center', padding: 40, color: 'var(--danger)' }}>
@@ -360,7 +359,10 @@ export default function OrganizationDetailsPage() {
             <Card>
               <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: 20 }}>Role Permissions</h3>
               {rolesLoading ? (
-                <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}><div className="spinner" style={{ width: 24, height: 24 }} /></div>
+                <div style={{ display: 'grid', gap: 12 }}>
+                  <SkeletonCard />
+                  <SkeletonCard />
+                </div>
               ) : roles.length === 0 ? (
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No custom roles defined.</p>
               ) : (
@@ -400,7 +402,10 @@ export default function OrganizationDetailsPage() {
                 <Button size="sm" onClick={() => setDeptModal(true)}>+ Add Department</Button>
               </div>
               {deptsLoading ? (
-                <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}><div className="spinner" style={{ width: 24, height: 24 }} /></div>
+                <div style={{ display: 'grid', gap: 10 }}>
+                  <SkeletonCard />
+                  <SkeletonCard />
+                </div>
               ) : departments.length === 0 ? (
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No departments created.</p>
               ) : (
@@ -430,7 +435,10 @@ export default function OrganizationDetailsPage() {
                 <Button size="sm" onClick={() => setLtModal(true)}>+ Add Leave Type</Button>
               </div>
               {ltLoading ? (
-                <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}><div className="spinner" style={{ width: 24, height: 24 }} /></div>
+                <div style={{ display: 'grid', gap: 10 }}>
+                  <SkeletonCard />
+                  <SkeletonCard />
+                </div>
               ) : leaveTypes.length === 0 ? (
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No custom leave types defined.</p>
               ) : (
@@ -463,7 +471,12 @@ export default function OrganizationDetailsPage() {
           {/* Dashboard Tab */}
           {activeTab === 'dashboard' && (
             dashLoading ? (
-              <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}><div className="spinner" style={{ width: 32, height: 32 }} /></div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </div>
             ) : !dashboard ? (
               <Card><p style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>No dashboard data available.</p></Card>
             ) : (
