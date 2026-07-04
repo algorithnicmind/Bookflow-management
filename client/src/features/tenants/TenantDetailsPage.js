@@ -16,6 +16,7 @@ import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
 import Badge from '@/components/ui/Badge'
 import AppleEmoji from '@/components/AppleEmoji'
+import { SkeletonCard } from '@/components/ui/Skeleton'
 import { formatDateTime } from '@/lib/utils'
 
 const PLAN_OPTIONS = [
@@ -226,8 +227,11 @@ export default function TenantDetailsPage() {
 
       {/* Content */}
       {isLoading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
-          <div className="spinner" style={{ width: 32, height: 32 }} />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
         </div>
       ) : error ? (
         <Card>

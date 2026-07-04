@@ -14,6 +14,7 @@ import { onboardingApi, organizationsApi } from '@/services/api'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import AppleEmoji from '@/components/AppleEmoji'
+import { SkeletonLayout } from '@/components/ui/Skeleton'
 
 export default function TenantDashboardPage() {
   const { user } = useAuth()
@@ -77,9 +78,7 @@ export default function TenantDashboardPage() {
       </div>
 
       {isLoading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
-          <div className="spinner" style={{ width: 32, height: 32 }} />
-        </div>
+        <SkeletonLayout />
       ) : error ? (
         <Card>
           <div style={{ textAlign: 'center', padding: 40, color: 'var(--danger)' }}>
