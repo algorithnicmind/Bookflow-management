@@ -4,8 +4,9 @@ Employee Management API Routes
 This module provides endpoints for managing employee profiles, viewing directories,
 and securely managing system owner accounts.
 """
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from typing import Optional
 import asyncio
 from app.core.database import get_db
@@ -14,9 +15,7 @@ from app.core.tenant import get_current_tenant
 from app.core.security import pwd_context
 from app.core.pagination import PaginationParams
 from app.modules.organizations.models import Organization
-from app.modules.employees.models import Employee
-from fastapi import HTTPException
-from sqlalchemy.future import select
+from app.modules.employees.models import Employee, PlatformOwner
 from app.modules.employees.schemas import EmployeeResponse, EmployeeCreate, EmployeeUpdate, EmployeeProfileUpdate
 from app.modules.employees.repositories import EmployeeRepository
 from app.modules.employees.services import EmployeeService
@@ -44,8 +43,6 @@ async def get_my_profile(
     Used by the frontend to hydrate the AuthContext state on mount.
     Handles both regular Employees (who belong to an org) and PlatformOwners (who don't).
     """
-    from app.modules.employees.models import PlatformOwner
-    
     # Base validation mapping DB model to Pydantic schema
     resp = EmployeeResponse.model_validate(current_user)
     
@@ -76,7 +73,6 @@ async def update_my_profile(
     Allows employees to dynamically update non-administrative personal fields 
     like their name, password, or department.
     """
-    from app.modules.employees.models import PlatformOwner
     # Handle Platform Owners who don't have a specific tenant logic
     if isinstance(current_user, PlatformOwner) or not current_user.organization_id:
         if request.name:

@@ -77,7 +77,6 @@ async def get_balances(
     Fetch Leave Balances.
     Returns the accrued and used leave days broken down by leave type for the current year.
     """
-    from datetime import datetime
     current_year = datetime.today().year
     balances = await service.get_balances(current_user.id)
     return {"balances": balances, "year": current_year}
