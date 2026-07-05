@@ -1,102 +1,14 @@
-'use client'
+import LandingClient from './LandingClient'
 
-/**
- * Landing Page
- * ------------
- * The public-facing marketing page. Contains the "Get Started" contact form 
- * which submits data to the backend /api/contact endpoint.
- */
+// Enable Incremental Static Regeneration (ISR)
+// Revalidates the page on the server every 3600 seconds (1 hour)
+export const revalidate = 3600
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/features/auth/AuthContext'
-import { platformConfigApi } from '@/services/api'
-import LeadModal from '@/components/LeadModal'
-import OnboardingModal from '@/components/OnboardingModal'
-import { useTheme } from '@/hooks'
-import { SkeletonLayout } from '@/components/ui/Skeleton'
+export const metadata = {
+  title: 'LeaveFlow - The Best Leave Management System',
+  description: 'Manage your team\'s leave efficiently with LeaveFlow.',
+}
 
-import FloatingNav from '@/components/Landing/FloatingNav'
-import HeroSection from '@/components/Landing/HeroSection'
-import FeatureGrid from '@/components/Landing/FeatureGrid'
-import SolutionsSection from '@/components/Landing/SolutionsSection'
-import PricingSection from '@/components/Landing/PricingSection'
-import ContactSection from '@/components/Landing/ContactSection'
-
-export default function LandingPage() {
-  const router = useRouter()
-  const { user, loading } = useAuth()
-  const [mounted, setMounted] = useState(false)
-  const [leadModalOpen, setLeadModalOpen] = useState(false)
-  const [onboardingModalOpen, setOnboardingModalOpen] = useState(false)
-  const [selectedPlan, setSelectedPlan] = useState('free_trial')
-  const [platformConfig, setPlatformConfig] = useState({
-    show_onboarding_section: true,
-    onboarding_section_title: 'Get Started with LeaveFlow',
-    onboarding_section_subtitle: 'Fill out the form below and our team will set up your organization.'
-  })
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  const { isDarkMode, toggleTheme } = useTheme()
-
-  useEffect(() => {
-    // Fetch platform config (public endpoint)
-    platformConfigApi.get()
-      .then(config => setPlatformConfig(config))
-      .catch(() => {
-        // Use defaults if fetch fails
-      })
-  }, [])
-
-  useEffect(() => {
-    if (!loading && user) {
-      if (user.department === 'System') {
-        router.push('/leads')
-      } else {
-        router.push('/dashboard')
-      }
-    }
-  }, [user, loading, router])
-
-  if (loading || !mounted) {
-    return <SkeletonLayout />
-  }
-
-  if (user) return null
-
-  return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'var(--bg-primary)',
-      display: 'flex',
-      flexDirection: 'column',
-      overflowX: 'hidden',
-      position: 'relative'
-    }}>
-      
-      <FloatingNav isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
-
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 10 }}>
-        <HeroSection 
-          platformConfig={platformConfig} 
-          setOnboardingModalOpen={setOnboardingModalOpen}
-        />
-        <FeatureGrid />
-        <SolutionsSection />
-        <PricingSection 
-          platformConfig={platformConfig} 
-          setSelectedPlan={setSelectedPlan}
-          setOnboardingModalOpen={setOnboardingModalOpen}
-          setLeadModalOpen={setLeadModalOpen}
-        />
-        <ContactSection />
-      </main>
-
-      <LeadModal isOpen={leadModalOpen} onClose={() => setLeadModalOpen(false)} />
-      <OnboardingModal isOpen={onboardingModalOpen} onClose={() => setOnboardingModalOpen(false)} selectedPlan={selectedPlan} />
-    </div>
-  )
+export default function Page() {
+  return <LandingClient />
 }

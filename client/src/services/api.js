@@ -183,7 +183,7 @@ export const auditApi = {
 }
 
 export const notificationsApi = {
-  list: (signal) => request('/api/notifications', { signal }),
+  list: (params, signal) => request('/api/notifications', { params, signal }),
   markRead: (id) => request(`/api/notifications/${id}/read`, { method: 'PUT' }),
   markAllRead: () => request('/api/notifications/read-all', { method: 'PUT' }),
 }

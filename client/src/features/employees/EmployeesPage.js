@@ -15,6 +15,7 @@ import Modal from '@/components/ui/Modal'
 import Badge from '@/components/ui/Badge'
 import { SkeletonTable } from '@/components/ui/Skeleton'
 import { formatDate } from '@/lib/utils'
+import { useDebounce } from '@/hooks'
 
 const roles = ['employee', 'manager', 'admin']
 const departments = ['Engineering', 'Marketing', 'Sales', 'HR', 'Finance', 'Operations', 'Design', 'Management', 'General']
@@ -24,6 +25,10 @@ export default function EmployeesPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 300)
+  const [page, setPage] = useState(1)
+  const [perPage, setPerPage] = useState(20)
+  const [total, setTotal] = useState(0)
   const [addModal, setAddModal] = useState(false)
   const [editModal, setEditModal] = useState(null)
   const [deleteModal, setDeleteModal] = useState(null)
@@ -33,20 +38,23 @@ export default function EmployeesPage() {
   const [submitting, setSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
+  // Reset page when search changes
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedSearch])
+
   useEffect(() => {
     const controller = new AbortController()
-    const timer = setTimeout(() => fetchEmployees(controller.signal), 300)
-    return () => {
-      clearTimeout(timer)
-      controller.abort()
-    }
-  }, [search])
+    fetchEmployees(controller.signal)
+    return () => controller.abort()
+  }, [debouncedSearch, page, perPage])
 
   const fetchEmployees = async (signal) => {
     setLoading(true)
     try {
-      const res = await employeesApi.list({ search: search || undefined }, signal)
+      const res = await employeesApi.list({ search: debouncedSearch || undefined, page, per_page: perPage }, signal)
       setEmployees(res.employees || [])
+      setTotal(res.total || 0)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -222,6 +230,28 @@ export default function EmployeesPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+        
+        {total > 0 && !loading && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+              Showing {((page - 1) * perPage) + 1} to {Math.min(page * perPage, total)} of {total} results
+            </div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <select 
+                value={perPage} 
+                onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+                style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid var(--border)', background: 'var(--surface)' }}
+              >
+                <option value={10}>10 per page</option>
+                <option value={20}>20 per page</option>
+                <option value={50}>50 per page</option>
+              </select>
+              <Button size="sm" variant="secondary" disabled={page === 1} onClick={() => setPage(p => p - 1)}>Previous</Button>
+              <span style={{ fontSize: '0.85rem', padding: '0 8px' }}>Page {page} of {Math.ceil(total / perPage)}</span>
+              <Button size="sm" variant="secondary" disabled={page >= Math.ceil(total / perPage)} onClick={() => setPage(p => p + 1)}>Next</Button>
+            </div>
           </div>
         )}
       </Card>

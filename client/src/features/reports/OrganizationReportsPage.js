@@ -68,6 +68,7 @@ export default function OrganizationReportsPage() {
     try {
       setExporting(true)
       const res = await reportsApi.exportLeaves()
+      const Papa = await loadPapaParse()
       const csvData = Papa.unparse(res.leaves)
       
       const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' })
@@ -91,6 +92,7 @@ export default function OrganizationReportsPage() {
       setExporting(true)
       const res = await reportsApi.exportLeaves()
       
+      const jsPDF = await loadJsPDF()
       const doc = new jsPDF()
       doc.text("Organization Leave Reports", 14, 15)
       
@@ -193,17 +195,19 @@ export default function OrganizationReportsPage() {
           <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 16 }}>Department Breakdown</h3>
           <div style={{ width: '100%', height: 300 }}>
             {deptData.length > 0 ? (
-              <ResponsiveContainer>
-                <PieChart>
-                  <Pie data={deptData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} fill="#8884d8" label>
-                    {deptData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
+              <RechartsComponents render={({ PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend }) => (
+                <ResponsiveContainer>
+                  <PieChart>
+                    <Pie data={deptData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} fill="#8884d8" label>
+                      {deptData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              )} />
             ) : (
               <p>No department data available.</p>
             )}
@@ -214,15 +218,17 @@ export default function OrganizationReportsPage() {
           <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 16 }}>Role Distribution</h3>
           <div style={{ width: '100%', height: 300 }}>
             {roleData.length > 0 ? (
-              <ResponsiveContainer>
-                <BarChart data={roleData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="var(--primary)" />
-                </BarChart>
-              </ResponsiveContainer>
+              <RechartsComponents render={({ BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer }) => (
+                <ResponsiveContainer>
+                  <BarChart data={roleData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="var(--primary)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              )} />
             ) : (
               <p>No role data available.</p>
             )}
