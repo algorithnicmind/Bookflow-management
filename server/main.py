@@ -24,6 +24,7 @@ from app.core.database import engine, Base, AsyncSessionLocal
 from app.core.dependencies import limiter
 from app.core.config import settings
 from app.core.errors import APIError, api_error_handler
+from app.core.csrf import CSRFMiddleware
 import logging
 from fastapi.responses import JSONResponse
 
@@ -222,6 +223,9 @@ app.add_middleware(
 
 # GZip compression — reduces bandwidth by 70-80% for JSON responses
 app.add_middleware(GZipMiddleware, minimum_size=500)
+
+# CSRF Protection using Double-Submit Cookie pattern
+app.add_middleware(CSRFMiddleware)
 
 # Attach rate limiter to app state and register its exception handler
 app.state.limiter = limiter
