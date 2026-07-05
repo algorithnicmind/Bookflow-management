@@ -802,3 +802,59 @@ All passwords default to `password123`. You can reset the database and seed thes
 * **Stateless Auth**: Enforces JWT token authorization filters with Bcrypt cryptography hashing for login keys.
 * **Parameter Validation**: Restricts SQL injection vulnerability using async SQLAlchemy parameterized queries.
 * **Business Safe Rails**: Employs backend check boundaries and schema Constraints to lock leave applications against invalid dates, overlaps, and negative balances.
+
+---
+
+## 🏗️ Detailed File Architecture & Component Breakdown
+
+*Note: There are **no duplicate files** in the repository. If you saw files like `account-settings...` in the directory tree above, it was just a visual truncation (the command output was cut off). The project is fully clean and organized.*
+
+Below is a detailed breakdown of the largest and most critical files in the system, explaining exactly what each one does:
+
+### 🖥️ Frontend (Next.js - `client/src/`)
+
+**1. `features/dashboard/DashboardPage.js`**
+
+- **What it does:** The main landing page after a user logs in. It calculates and displays key metrics (like pending approvals, leave balances) using dynamic charts (Recharts). It shows different data depending on whether you are an Employee, Manager, or Admin.
+
+**2. `features/leaves/apply/ApplyLeavePage.js` (and related leave files)**
+
+- **What it does:** Contains the logic and forms for employees to request time off. It handles date picking, validates if the user has enough balance, checks for overlapping leaves, and submits the request to the backend.
+
+**3. `features/organizations/OrganizationDetailsPage.js` & `TenantDetailsPage.js`**
+
+- **What it does:** Used by the Platform Owners (Super Admins) to manage different client organizations (tenants). It allows creating new companies in the system, managing their admin users, and viewing cross-organization reports.
+
+**4. `features/employees/EmployeesPage.js`**
+
+- **What it does:** The employee directory. Managers and Admins use this to view all staff, add new employees, assign roles (like making someone a Manager), and organize departments.
+
+**5. `features/reports/OrganizationReportsPage.js`**
+
+- **What it does:** Generates heavy data tables and charts for HR/Admins. It includes logic to dynamically export this data into CSV (`papaparse`) and PDF (`jsPDF`) formats without slowing down the initial page load.
+
+**6. `services/api.js`**
+
+- **What it does:** The central nervous system of the frontend. Every time the frontend needs to talk to the backend (to login, fetch leaves, or submit data), it uses the functions defined in this file. It automatically attaches JWT security tokens to every request.
+
+### ⚙️ Backend (FastAPI - `server/app/`)
+
+**1. `server/main.py`**
+
+- **What it does:** The primary entry point for the backend server. It starts the FastAPI application, configures security middlewares (CORS, CSRF, Rate Limiting), sets up database connections, and registers all the API routes.
+
+**2. `modules/auth/services.py` & `routes.py`**
+
+- **What it does:** Handles everything related to security. When a user types their email and password, this file verifies the hash (Bcrypt), creates a secure JWT session token, and tracks failed login attempts to prevent brute-force attacks.
+
+**3. `modules/leaves/services.py` & `cron.py`**
+
+- **What it does:** The core business logic of the app. `services.py` ensures that when someone applies for leave, they aren't breaking any company policies (like going into a negative balance). `cron.py` is a background job that automatically adds new leave days to every employee's account at the end of the month.
+
+**4. `modules/dashboard/services.py`**
+
+- **What it does:** Runs heavy database queries to aggregate data for the frontend dashboard. It counts how many people are on leave today, how many requests are pending, and caches the results in Redis so the dashboard loads instantly.
+
+**5. `migrations/versions/` (Alembic Files)**
+
+- **What it does:** These are database history files. Whenever we change a database table (like adding a new column), Alembic creates a migration file here so we can safely update the production database without losing data.
