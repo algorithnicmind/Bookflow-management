@@ -10,6 +10,7 @@ Provides:
 
 import os
 import sys
+import tempfile
 import pytest
 from typing import AsyncGenerator
 from datetime import datetime, timedelta
@@ -30,22 +31,33 @@ from app.modules.leaves.models import LeaveRequest, LeaveBalance, LeaveApproval
 from app.modules.settings.models import SystemSetting
 from app.modules.notifications.models import Notification
 from main import app
+from app.core.dependencies import limiter
+
+# Disable rate limiting during tests to avoid 429 errors from repeated test requests
+limiter.enabled = False
 
 
-# ─── Test Database (PostgreSQL) ───────────────────────────────────────
+# ─── Test Database (SQLite by default, PostgreSQL via TEST_DATABASE_URL) ─────
 
 from sqlalchemy.pool import NullPool
 
+# Use a temporary file for SQLite so connections share the same database
+_test_db_path = os.path.join(tempfile.gettempdir(), "leaveflow_test.db")
+
 TEST_DATABASE_URL = os.environ.get(
     "TEST_DATABASE_URL",
-    settings.async_database_url
+    f"sqlite+aiosqlite:///{_test_db_path}"
 )
+
+_connect_args = {}
+if "postgresql" in TEST_DATABASE_URL or "asyncpg" in TEST_DATABASE_URL:
+    _connect_args["prepared_statement_cache_size"] = 0
 
 test_engine = create_async_engine(
     TEST_DATABASE_URL, 
     echo=False, 
     poolclass=NullPool,
-    connect_args={"prepared_statement_cache_size": 0}
+    connect_args=_connect_args,
 )
 TestSessionLocal = async_sessionmaker(
     bind=test_engine,
@@ -54,6 +66,15 @@ TestSessionLocal = async_sessionmaker(
     autocommit=False,
     autoflush=False,
 )
+
+
+def _cleanup_test_db():
+    """Remove the temporary SQLite test database file."""
+    if os.path.exists(_test_db_path):
+        try:
+            os.remove(_test_db_path)
+        except PermissionError:
+            pass
 
 
 # ─── Database Session Fixture ────────────────────────────────────────
@@ -74,6 +95,7 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
     finally:
         async with test_engine.begin() as conn:
             await conn.run_sync(Base.metadata.drop_all)
+        _cleanup_test_db()
 
 
 # ─── FastAPI Test Client ──────────────────────────────────────────────
