@@ -19,7 +19,23 @@ import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import { formatDate } from '@/lib/utils'
 import LeaveTypeIcon from '@/components/shared/LeaveTypeIcon'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, RadialBarChart, RadialBar } from 'recharts'
+import dynamic from 'next/dynamic'
+
+const RechartsSkeleton = () => <div className="h-64 w-full bg-gray-100 animate-pulse rounded-xl" />
+
+const PieChart = dynamic(() => import('recharts').then(mod => mod.PieChart), { ssr: false, loading: RechartsSkeleton })
+const Pie = dynamic(() => import('recharts').then(mod => mod.Pie), { ssr: false })
+const Cell = dynamic(() => import('recharts').then(mod => mod.Cell), { ssr: false })
+const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false })
+const RechartsTooltip = dynamic(() => import('recharts').then(mod => mod.Tooltip), { ssr: false })
+const BarChart = dynamic(() => import('recharts').then(mod => mod.BarChart), { ssr: false, loading: RechartsSkeleton })
+const Bar = dynamic(() => import('recharts').then(mod => mod.Bar), { ssr: false })
+const XAxis = dynamic(() => import('recharts').then(mod => mod.XAxis), { ssr: false })
+const YAxis = dynamic(() => import('recharts').then(mod => mod.YAxis), { ssr: false })
+const CartesianGrid = dynamic(() => import('recharts').then(mod => mod.CartesianGrid), { ssr: false })
+const Legend = dynamic(() => import('recharts').then(mod => mod.Legend), { ssr: false })
+const RadialBarChart = dynamic(() => import('recharts').then(mod => mod.RadialBarChart), { ssr: false, loading: RechartsSkeleton })
+const RadialBar = dynamic(() => import('recharts').then(mod => mod.RadialBar), { ssr: false })
 
 export default function DashboardPage() {
   const { user } = useAuth()
