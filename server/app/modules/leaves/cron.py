@@ -2,6 +2,7 @@ import logging
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from sqlalchemy.future import select
+from sqlalchemy import text
 from datetime import datetime
 from app.core.database import AsyncSessionLocal
 from app.modules.settings.models import LeavePolicy
@@ -16,34 +17,22 @@ async def run_monthly_accruals():
     """Runs monthly to add earned leave days based on policy accrual rates."""
     logger.info("Starting monthly accruals job...")
     async with AsyncSessionLocal() as db:
-        policies_res = await db.execute(select(LeavePolicy).where(LeavePolicy.accrual_rate > 0))
-        policies = policies_res.scalars().all()
-        
-        employees_res = await db.execute(select(Employee).where(Employee.is_active == True))
-        employees = employees_res.scalars().all()
-        
         current_year = datetime.now().year
         
-        # We need balances for current year
-        balances_res = await db.execute(select(LeaveBalance).where(LeaveBalance.year == current_year))
-        balances = balances_res.scalars().all()
-        
-        emp_balance_map = {}
-        for b in balances:
-            if b.employee_id not in emp_balance_map:
-                emp_balance_map[b.employee_id] = {}
-            emp_balance_map[b.employee_id][b.leave_type] = b
-            
-        for emp in employees:
-            # Find applicable policy — must match the employee's organization
-            for p in policies:
-                if p.organization_id == emp.organization_id and \
-                   (p.department is None or p.department == emp.department) and \
-                   (p.role is None or p.role == emp.role):
-                    
-                    b = emp_balance_map.get(emp.id, {}).get(p.leave_type)
-                    if b:
-                        b.total_days += p.accrual_rate
+        # Bulk UPDATE using PostgreSQL FROM clause for joining tables
+        await db.execute(text("""
+            UPDATE leave_balances lb
+            SET total_days = lb.total_days + lp.accrual_rate
+            FROM employees e
+            JOIN leave_policy lp ON e.organization_id = lp.organization_id
+                AND (lp.department IS NULL OR lp.department = e.department)
+                AND (lp.role IS NULL OR lp.role = e.role)
+            WHERE lb.employee_id = e.id
+              AND lb.leave_type = lp.leave_type
+              AND lb.year = :year
+              AND lp.accrual_rate > 0
+              AND e.is_active = true
+        """), {"year": current_year})
                         
         from app.modules.settings.models import AccrualLog
         log = AccrualLog(job_type="monthly_accrual", status="success", details="Processed monthly accruals")
