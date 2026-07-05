@@ -1,5 +1,7 @@
 import os
 import socket
+import time
+from uuid import uuid4
 
 # Monkey-patch socket.getaddrinfo to force IPv4 and prevent Neon DB connection hangs over IPv6
 # This is a known issue with some async Postgres drivers when IPv6 is preferred but not fully supported by the network/DB.
@@ -13,6 +15,7 @@ from datetime import datetime
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from sqlalchemy.future import select
 from sqlalchemy import text
 from slowapi import _rate_limit_exceeded_handler
@@ -20,6 +23,7 @@ from slowapi.errors import RateLimitExceeded
 from app.core.database import engine, Base, AsyncSessionLocal
 from app.core.dependencies import limiter
 from app.core.config import settings
+from app.core.errors import APIError, api_error_handler
 import logging
 from fastapi.responses import JSONResponse
 
@@ -52,15 +56,22 @@ from bot.router import router as bot_router
 from app.modules.integrations.routes import router as integrations_router
 from app.modules.uploads.routes import router as uploads_router
 from app.modules.organizations.routes import router as organizations_router
+from app.modules.health.routes import router as health_router
 
 from contextlib import asynccontextmanager
+
+# Reference to the scheduler for graceful shutdown
+_scheduler = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
     Lifespan context manager runs startup and shutdown events.
     Startup: Initializes DB, seeds data, handles migrations, and starts background schedulers.
+    Shutdown: Gracefully stops scheduler and disposes DB connections.
     """
+    global _scheduler
+    
     # Initialize DB (Only auto-create tables in development; use Alembic migrations in production)
     if settings.ENVIRONMENT == "development":
         async with engine.begin() as conn:
@@ -170,45 +181,120 @@ async def lifespan(app: FastAPI):
             await session.commit()
 
     # Start the background cron scheduler for automated leave accruals and reminders
-    from app.modules.leaves.cron import start_scheduler
+    from app.modules.leaves.cron import start_scheduler, scheduler
     start_scheduler()
+    _scheduler = scheduler
 
     # Yield control back to FastAPI (application runs during this time)
     yield
-    # Shutdown logic would go here
+    
+    # === Graceful Shutdown ===
+    # Stop the APScheduler, waiting for running jobs to complete
+    if _scheduler and _scheduler.running:
+        logger.info("Shutting down APScheduler...")
+        _scheduler.shutdown(wait=True)
+    
+    # Dispose the async engine to close all DB connections cleanly
+    logger.info("Disposing database engine...")
+    await engine.dispose()
+    logger.info("Shutdown complete.")
 
 # Initialize FastAPI application instance
+# Conditionally disable OpenAPI docs in production to prevent API structure leakage
 app = FastAPI(
     title="Leave Management System API",
     version="1.0",
     description="API for managing employee leaves, approvals, and balances.",
-    lifespan=lifespan
+    lifespan=lifespan,
+    docs_url="/docs" if settings.ENVIRONMENT == "development" else None,
+    redoc_url="/redoc" if settings.ENVIRONMENT == "development" else None,
 )
 
 # Configure CORS (Cross-Origin Resource Sharing) to allow frontend access
-# Restrict origins in production as per TRD
+# Uses explicit methods and headers instead of wildcards for security hardening
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://leaveflow.com", "http://localhost:3000"],
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-CSRF-Token", "X-Request-ID"],
 )
+
+# GZip compression — reduces bandwidth by 70-80% for JSON responses
+app.add_middleware(GZipMiddleware, minimum_size=500)
 
 # Attach rate limiter to app state and register its exception handler
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+# Register standardized APIError exception handler
+app.add_exception_handler(APIError, api_error_handler)
+
 # Global exception handler for unexpected server errors
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
+    request_id = getattr(request.state, "request_id", None)
     logger.error(f"Unhandled error processing {request.method} {request.url.path}: {exc}", exc_info=True)
     return JSONResponse(
         status_code=500,
-        content={"detail": "An unexpected error occurred. Please try again later."}
+        content={
+            "error": "INTERNAL_SERVER_ERROR",
+            "message": "An unexpected error occurred. Please try again later.",
+            "request_id": request_id,
+        }
     )
 
-# Basic health check endpoint
+
+# === Security & Observability Middleware ===
+
+@app.middleware("http")
+async def combined_middleware(request: Request, call_next):
+    """
+    Combined middleware for performance and security.
+    Handles: Request-ID tracing, response time monitoring, security headers, request size limiting.
+    """
+    # --- Request-ID Tracing ---
+    request_id = request.headers.get("X-Request-ID", str(uuid4()))
+    request.state.request_id = request_id
+    
+    # --- Request Size Limiting (skip file uploads which have their own validation) ---
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > settings.MAX_REQUEST_SIZE_BYTES:
+        return JSONResponse(
+            status_code=413,
+            content={
+                "error": "PAYLOAD_TOO_LARGE",
+                "message": f"Request body exceeds maximum size of {settings.MAX_REQUEST_SIZE_BYTES // (1024 * 1024)}MB",
+                "request_id": request_id,
+            }
+        )
+    
+    # --- Response Time Monitoring ---
+    start_time = time.time()
+    response = await call_next(request)
+    duration = time.time() - start_time
+    
+    # Log slow requests (>1 second)
+    if duration > 1.0:
+        logger.warning(f"Slow request: {request.method} {request.url.path} took {duration:.2f}s [request_id={request_id}]")
+    
+    # --- Attach Response Headers ---
+    # Tracing & performance
+    response.headers["X-Request-ID"] = request_id
+    response.headers["X-Response-Time"] = f"{duration:.3f}s"
+    
+    # Security headers
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    
+    return response
+
+
+# Basic health check endpoint (legacy — detailed health at /api/health)
 @app.get("/")
 def root():
     return {"message": "Leave Management API is running"}
@@ -228,14 +314,10 @@ app.include_router(bot_router)
 app.include_router(integrations_router)
 app.include_router(uploads_router)
 app.include_router(organizations_router)
+app.include_router(health_router)
     
 # Entry point for running the application via Uvicorn programmatically
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
 
-file_handler = logging.FileHandler('server_debug.log')
-file_handler.setLevel(logging.ERROR)
-logger.addHandler(file_handler)
-
- 

@@ -12,6 +12,7 @@ from app.core.database import get_db
 from app.core.dependencies import PermissionChecker, get_current_user, RequireOwner
 from app.core.tenant import get_current_tenant
 from app.core.security import pwd_context
+from app.core.pagination import PaginationParams
 from app.modules.organizations.models import Organization
 from app.modules.employees.models import Employee
 from app.modules.employees.schemas import EmployeeResponse, EmployeeCreate, EmployeeUpdate
@@ -167,16 +168,25 @@ async def create_system_owner(
 @router.get("", response_model=dict)
 async def list_employees(
     search: Optional[str] = None,
+    pagination: PaginationParams = Depends(),
     service: EmployeeService = Depends(get_employee_service),
     current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
     """
     List all employees within the current organization.
     Requires the user to hold the 'manage_employees' permission.
-    Can optionally filter the results via a search string.
+    Supports pagination (page, per_page) and optional search filtering.
     """
     employees = await service.list_employees(search)
-    return {"employees": employees}
+    # Apply in-memory pagination (until repository supports SQL-level pagination)
+    total = len(employees)
+    paginated = employees[pagination.offset:pagination.offset + pagination.per_page]
+    return {
+        "employees": paginated,
+        "total": total,
+        "page": pagination.page,
+        "per_page": pagination.per_page,
+    }
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_employee(

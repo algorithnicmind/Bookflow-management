@@ -6,16 +6,37 @@
  * Provides data visualization and CSV exports of company-wide leave statistics.
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react'
+import dynamic from 'next/dynamic'
 import { reportsApi } from '@/services/api'
 import Card from '@/components/ui/Card'
 import StatCard from '@/components/ui/StatCard'
 import Button from '@/components/ui/Button'
-import { SkeletonLayout } from '@/components/ui/Skeleton'
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts'
-import Papa from 'papaparse'
-import jsPDF from 'jspdf'
-import 'jspdf-autotable'
+import { SkeletonLayout, SkeletonBox } from '@/components/ui/Skeleton'
+
+/**
+ * Dynamic imports for heavy libraries — loaded only when this page is rendered.
+ * This prevents recharts (~300KB), papaparse (~50KB), and jspdf (~200KB) from
+ * being bundled into the initial app shell, reducing main bundle by ~500KB.
+ */
+
+// Recharts components loaded dynamically (client-side only, no SSR)
+const RechartsComponents = dynamic(
+  () => import('recharts').then(mod => {
+    // Return a wrapper component that passes through all recharts exports
+    const Wrapper = ({ children, render }) => render(mod)
+    return Wrapper
+  }),
+  { ssr: false, loading: () => <SkeletonBox height="300px" width="100%" borderRadius="12px" /> }
+)
+
+// Lazy-load CSV/PDF libraries only when export is triggered (not on page load)
+const loadPapaParse = () => import('papaparse')
+const loadJsPDF = async () => {
+  const jsPDFModule = await import('jspdf')
+  await import('jspdf-autotable')
+  return jsPDFModule.default
+}
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D']
 

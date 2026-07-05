@@ -92,9 +92,17 @@ async def login_for_access_token(
     """
     Standard email/password login endpoint.
     Verifies credentials and issues a JWT if successful.
+    Passes client IP and user-agent for security audit logging.
     """
+    # Extract client info for audit trail
+    ip_address = request.client.host if request.client else None
+    user_agent = request.headers.get("user-agent")
+    
     # Authenticate credentials against the database
-    user = await service.authenticate_user(form_data.username, form_data.password)
+    user = await service.authenticate_user(
+        form_data.username, form_data.password,
+        ip_address=ip_address, user_agent=user_agent
+    )
     
     from app.core.security import create_access_token
     from datetime import timedelta
@@ -117,7 +125,9 @@ BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 FRONTEND_URL = os.getenv("NEXT_PUBLIC_FRONTEND_URL", "http://localhost:3000")
 
 @router.post("/upload-avatar")
+@limiter.limit("10/minute")  # Rate limit avatar uploads to prevent abuse
 async def upload_avatar(
+    request: Request,
     file: UploadFile = File(...),
     service: AuthService = Depends(get_auth_service),
     current_user: Employee | PlatformOwner = Depends(get_current_user)
@@ -125,8 +135,16 @@ async def upload_avatar(
     """
     Allows the authenticated user to upload a profile picture/avatar.
     Saves the file data directly into the database.
+    Validates file size (max 5MB) and content type.
     """
     file_data = await file.read()
+    # Enforce file size limit (5MB)
+    max_size = settings.MAX_REQUEST_SIZE_BYTES
+    if len(file_data) > max_size:
+        raise HTTPException(
+            status_code=413,
+            detail=f"File too large. Maximum size is {max_size // (1024 * 1024)}MB."
+        )
     url = await service.upload_avatar(current_user, file.filename, file.content_type, file_data, BACKEND_URL)
     return {"profile_image_url": url}
 
@@ -188,7 +206,9 @@ async def logout(response: Response):
     return {"message": "Logged out successfully"}
 
 @router.post("/register", response_model=dict, status_code=status.HTTP_201_CREATED)
+@limiter.limit("5/minute")  # Rate limit registration to prevent abuse
 async def register_admin(
+    http_request: Request,
     request: AdminCreateRequest,
     service: AuthService = Depends(get_auth_service),
     current_user: Employee = Depends(PermissionChecker("manage_settings")),

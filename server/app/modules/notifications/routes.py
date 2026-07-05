@@ -4,7 +4,7 @@ Notifications API Routes
 Manages the in-app notification center. Allows users to fetch their unread notifications
 and mark them as read.
 """
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import update
@@ -18,15 +18,25 @@ router = APIRouter(prefix="/api/notifications", tags=["notifications"])
 
 @router.get("")
 async def get_notifications(
+    limit: int = Query(20, ge=1, le=100, description="Max notifications to return"),
+    offset: int = Query(0, ge=0, description="Pagination offset"),
     current_user: Employee = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     try:
+        # Count total for pagination metadata
+        from sqlalchemy import func
+        count_result = await db.execute(
+            select(func.count()).select_from(Notification).where(Notification.user_id == current_user.id)
+        )
+        total = count_result.scalar() or 0
+
         result = await db.execute(
             select(Notification)
             .where(Notification.user_id == current_user.id)
             .order_by(Notification.created_at.desc())
-            .limit(20)
+            .limit(limit)
+            .offset(offset)
         )
         notifications = result.scalars().all()
         return {
@@ -41,10 +51,13 @@ async def get_notifications(
                     "created_at": n.created_at.isoformat() if n.created_at else None,
                 }
                 for n in notifications
-            ]
+            ],
+            "total": total,
+            "limit": limit,
+            "offset": offset,
         }
     except Exception:
-        return {"notifications": []}
+        return {"notifications": [], "total": 0, "limit": limit, "offset": offset}
 
 
 @router.put("/{notification_id}/read")

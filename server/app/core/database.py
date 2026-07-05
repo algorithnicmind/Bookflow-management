@@ -14,12 +14,16 @@ from app.core.config import settings
 # Create async SQLAlchemy engine
 # - pool_pre_ping: Tests connections before using them to prevent "MySQL/Postgres has gone away" errors.
 # - pool_recycle: Recycles connections older than 5 minutes to prevent stale connections on serverless DBs (like Neon DB).
+# - pool_size: Base number of persistent connections (tuned for concurrent SaaS workload).
+# - max_overflow: Extra connections allowed beyond pool_size during peak load.
 engine = create_async_engine(
     settings.async_database_url,
     # Echo SQL queries to the terminal only in development mode for debugging
     echo=settings.ENVIRONMENT == "development",
     pool_pre_ping=True,
     pool_recycle=300,
+    pool_size=10,
+    max_overflow=20,
     # Disable prepared statement caching to avoid issues with connection poolers (like PgBouncer)
     connect_args={"prepared_statement_cache_size": 0}
 )

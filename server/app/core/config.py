@@ -1,5 +1,5 @@
 import os
-from typing import Optional
+from typing import Optional, List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
@@ -31,6 +31,17 @@ class Settings(BaseSettings):
     # OAuth configuration
     GOOGLE_CLIENT_ID: Optional[str] = None
     GOOGLE_CLIENT_SECRET: Optional[str] = None
+
+    # CORS — explicit origin allowlist instead of wildcards
+    CORS_ORIGINS: List[str] = ["https://leaveflow.com", "http://localhost:3000"]
+
+    # Brute-force protection — progressive lockout thresholds (no Redis required)
+    FAILED_LOGIN_MAX_ATTEMPTS: int = 5          # Attempts before first lockout
+    LOCKOUT_DURATION_MINUTES: int = 1            # Initial lockout duration
+    LOCKOUT_ESCALATION_FACTOR: int = 5           # Multiplier for escalating lockouts
+
+    # Request size limiting — maximum payload size in bytes (default 5MB)
+    MAX_REQUEST_SIZE_BYTES: int = 5 * 1024 * 1024
 
     @property
     def async_database_url(self) -> str:

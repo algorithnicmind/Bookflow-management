@@ -4,11 +4,11 @@ Contact & Support API Routes
 Handles incoming contact form submissions from the landing page.
 Stores inquiries as leads for the Platform Owner to review.
 """
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.core.database import get_db
-from app.core.dependencies import RequireOwner
+from app.core.dependencies import RequireOwner, limiter
 from app.modules.contact.models import ContactMessage
 from app.modules.contact.schemas import ContactMessageCreate, ContactMessageResponse
 from typing import List
@@ -16,7 +16,8 @@ from typing import List
 router = APIRouter(prefix="/api/contact", tags=["Contact"])
 
 @router.post("", response_model=ContactMessageResponse)
-async def submit_contact_message(message: ContactMessageCreate, db: AsyncSession = Depends(get_db)):
+@limiter.limit("10/hour")  # Rate limit contact form to prevent spam
+async def submit_contact_message(request: Request, message: ContactMessageCreate, db: AsyncSession = Depends(get_db)):
     try:
         new_msg = ContactMessage(
             name=message.name,

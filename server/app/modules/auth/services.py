@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta, timezone
 import asyncio
+import logging
+import threading
 from fastapi import HTTPException, status
 from app.core.security import pwd_context, create_access_token
 from app.core.config import settings
@@ -7,6 +9,76 @@ from app.modules.employees.models import Employee, PlatformOwner
 from app.modules.leaves.models import LeaveBalance
 from app.modules.auth.schemas import AdminCreateRequest
 from app.modules.auth.repositories import AuthRepository
+
+logger = logging.getLogger("leaveflow.auth")
+
+
+class LoginAttemptTracker:
+    """
+    In-memory progressive brute-force lockout.
+    Thread-safe dict tracks failed attempts per email with escalating cooldowns.
+    
+    Lockout schedule (configurable via settings):
+        5 failures  → 1 min lockout
+        10 failures → 5 min lockout
+        20 failures → 30 min lockout (capped)
+    
+    NOTE: This is process-local. For multi-worker deployments, migrate to Redis.
+    """
+    def __init__(self):
+        self._lock = threading.Lock()
+        # {email: {"count": int, "locked_until": datetime | None}}
+        self._attempts: dict = {}
+
+    def check_lockout(self, email: str) -> None:
+        """Raises HTTPException if the email is currently locked out."""
+        with self._lock:
+            record = self._attempts.get(email)
+            if not record:
+                return
+            locked_until = record.get("locked_until")
+            if locked_until and datetime.now(timezone.utc) < locked_until:
+                remaining = int((locked_until - datetime.now(timezone.utc)).total_seconds())
+                raise HTTPException(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    detail=f"Too many failed attempts. Account locked for {remaining} seconds. Try again later."
+                )
+            # If lockout expired, leave record for count tracking
+    
+    def record_failure(self, email: str) -> None:
+        """Records a failed login and applies progressive lockout if threshold met."""
+        with self._lock:
+            if email not in self._attempts:
+                self._attempts[email] = {"count": 0, "locked_until": None}
+            self._attempts[email]["count"] += 1
+            count = self._attempts[email]["count"]
+            
+            # Progressive lockout escalation
+            if count >= 20:
+                lockout_mins = 30
+            elif count >= 10:
+                lockout_mins = settings.LOCKOUT_ESCALATION_FACTOR
+            elif count >= settings.FAILED_LOGIN_MAX_ATTEMPTS:
+                lockout_mins = settings.LOCKOUT_DURATION_MINUTES
+            else:
+                return  # Not enough failures yet
+            
+            self._attempts[email]["locked_until"] = (
+                datetime.now(timezone.utc) + timedelta(minutes=lockout_mins)
+            )
+            logger.warning(
+                f"Account locked: email={email}, attempts={count}, lockout_mins={lockout_mins}"
+            )
+    
+    def reset(self, email: str) -> None:
+        """Clears the failure counter on successful login."""
+        with self._lock:
+            self._attempts.pop(email, None)
+
+
+# Module-level singleton — shared across all AuthService instances within this worker
+_login_tracker = LoginAttemptTracker()
+
 
 class AuthService:
     """
@@ -18,31 +90,84 @@ class AuthService:
     def __init__(self, repo: AuthRepository):
         self.repo = repo
 
-    async def authenticate_user(self, username: str, password_plain: str) -> Employee | PlatformOwner:
+    async def authenticate_user(
+        self, username: str, password_plain: str,
+        ip_address: str = None, user_agent: str = None
+    ) -> Employee | PlatformOwner:
         """
         Validates email and password against the database.
         Checks standard Employees first, then falls back to Platform Owners.
+        Enforces progressive brute-force lockout and logs failures to audit_logs.
         """
+        # 1. Check if the email is currently locked out
+        _login_tracker.check_lockout(username)
+        
         user = await self.repo.get_employee_by_email(username)
         if not user:
             user = await self.repo.get_platform_owner_by_email(username)
             
         if not user:
+            # Log the failed attempt for security auditing
+            await self._log_auth_failure(username, ip_address, user_agent, "user_not_found")
+            _login_tracker.record_failure(username)
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
             
         # Verify bcrypt hash securely in a background thread to prevent blocking the async event loop
         is_valid = await asyncio.to_thread(pwd_context.verify, password_plain, user.password_hash)
         if not is_valid:
+            await self._log_auth_failure(username, ip_address, user_agent, "invalid_password")
+            _login_tracker.record_failure(username)
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
             
         # Ensure the account hasn't been soft-deleted or suspended
         if not user.is_active:
+            await self._log_auth_failure(username, ip_address, user_agent, "account_deactivated")
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is deactivated")
-            
-        # Update last login timestamp for auditing
+        
+        # Successful login — reset lockout counter and update last_login
+        _login_tracker.reset(username)
         user.last_login = datetime.now(timezone.utc)
         await self.repo.commit()
+        
+        # Log successful login to audit trail
+        await self._log_auth_success(user, ip_address)
+        
         return user
+
+    async def _log_auth_failure(self, email: str, ip_address: str, user_agent: str, reason: str) -> None:
+        """Records a failed authentication attempt in the audit log table."""
+        try:
+            from app.modules.audit.services import AuditLogService
+            await AuditLogService.log_action(
+                db=self.repo.db,
+                actor_id=None,
+                action="login_failed",
+                target_type="auth",
+                target_id=email,
+                details={"reason": reason, "user_agent": user_agent},
+                ip_address=ip_address
+            )
+            await self.repo.db.flush()
+        except Exception:
+            # Auth logging must never break the login flow
+            logger.error(f"Failed to log auth failure for {email}", exc_info=True)
+
+    async def _log_auth_success(self, user, ip_address: str) -> None:
+        """Records a successful login in the audit log table."""
+        try:
+            from app.modules.audit.services import AuditLogService
+            await AuditLogService.log_action(
+                db=self.repo.db,
+                actor_id=user.id,
+                action="login_success",
+                target_type="auth",
+                target_id=str(user.id),
+                details={"email": user.email, "role": user.role},
+                ip_address=ip_address
+            )
+            await self.repo.db.flush()
+        except Exception:
+            logger.error(f"Failed to log auth success for {user.email}", exc_info=True)
 
     async def register_admin_user(self, request: AdminCreateRequest, org_id: int) -> Employee:
         """

@@ -10,6 +10,7 @@ from typing import Optional
 from app.core.database import get_db
 from app.core.dependencies import get_current_user, PermissionChecker
 from app.core.tenant import get_current_tenant
+from app.core.pagination import PaginationParams
 from app.modules.employees.models import Employee
 from app.modules.organizations.models import Organization
 from app.modules.leaves.schemas import LeaveApplication, LeaveApprovalAction
@@ -47,16 +48,24 @@ async def apply_leave(
 @router.get("")
 async def get_leave_history(
     status: Optional[str] = Query("all"),
+    pagination: PaginationParams = Depends(),
     service: LeaveService = Depends(get_leave_service),
     current_user: Employee = Depends(get_current_user)
 ):
     """
     View Leave History.
-    Returns all past and present leave requests submitted by the logged-in employee.
-    Optionally filter by status (e.g. 'pending', 'approved', 'rejected').
+    Returns past and present leave requests submitted by the logged-in employee.
+    Supports pagination (page, per_page) and optional status filter.
     """
     leaves = await service.get_leave_history(current_user.id, status)
-    return {"leaves": leaves}
+    total = len(leaves)
+    paginated = leaves[pagination.offset:pagination.offset + pagination.per_page]
+    return {
+        "leaves": paginated,
+        "total": total,
+        "page": pagination.page,
+        "per_page": pagination.per_page,
+    }
 
 @router.get("/balance")
 async def get_balances(
