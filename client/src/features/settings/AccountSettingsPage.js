@@ -61,7 +61,7 @@ export default function AccountSettingsPage() {
           department: data.department || ''
         })
       } catch (err) {
-        console.error(err)
+        console.error('Failed to load profile:', err)
         setMessage({ text: 'Failed to load profile data', type: 'error' })
       } finally {
         setLoading(false)

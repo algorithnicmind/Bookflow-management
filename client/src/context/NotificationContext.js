@@ -49,7 +49,9 @@ export function NotificationProvider({ children }) {
         prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
       )
       setUnreadCount(prev => Math.max(0, prev - 1))
-    } catch (err) {}
+    } catch (err) {
+      console.error('Failed to mark notification as read:', err)
+    }
   }, [])
 
   const markAllAsRead = useCallback(async () => {
@@ -57,7 +59,9 @@ export function NotificationProvider({ children }) {
       await notificationsApi.markAllRead()
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
       setUnreadCount(0)
-    } catch (err) {}
+    } catch (err) {
+      console.error('Failed to mark all notifications as read:', err)
+    }
   }, [])
 
   useEffect(() => {

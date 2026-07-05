@@ -39,7 +39,7 @@ export default function ApplyLeavePage() {
 
   useEffect(() => {
     const controller = new AbortController()
-    settingsApi.getHolidays(controller.signal).then(setHolidays).catch(console.error)
+    settingsApi.getHolidays(controller.signal).then(setHolidays).catch(() => setHolidays([]))
     return () => controller.abort()
   }, [])
 

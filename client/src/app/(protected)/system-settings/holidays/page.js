@@ -15,7 +15,8 @@ export default function HolidaysPage() {
       const res = await settingsApi.getHolidays()
       setHolidays(res)
     } catch (err) {
-      console.error(err)
+      console.error('Failed to fetch holidays:', err)
+      alert('Failed to load holidays: ' + err.message)
     } finally {
       setLoading(false)
     }

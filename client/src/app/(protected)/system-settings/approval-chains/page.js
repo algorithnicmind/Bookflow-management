@@ -18,7 +18,8 @@ export default function ApprovalChainsPage() {
       const res = await settingsApi.getApprovalChains()
       setChains(res)
     } catch (err) {
-      console.error(err)
+      console.error('Failed to fetch approval chains:', err)
+      alert('Failed to load approval chains: ' + err.message)
     } finally {
       setLoading(false)
     }

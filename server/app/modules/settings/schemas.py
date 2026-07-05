@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
 class SettingsUpdate(BaseModel):
@@ -20,9 +20,7 @@ class PublicHolidayCreate(BaseModel):
 class PublicHolidayResponse(PublicHolidayCreate):
     id: int
 
-    class Config:
-        orm_mode = True
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ApprovalStepCreate(BaseModel):
     step_order: int
@@ -31,8 +29,7 @@ class ApprovalStepCreate(BaseModel):
 class ApprovalStepResponse(ApprovalStepCreate):
     id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ApprovalChainCreate(BaseModel):
     department: Optional[str] = None
@@ -43,8 +40,7 @@ class ApprovalChainResponse(BaseModel):
     department: Optional[str] = None
     steps: List[ApprovalStepResponse]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class LeavePolicyBase(BaseModel):
     name: str
@@ -78,10 +74,9 @@ class LeaveTypeResponse(BaseModel):
     default_days: int
     is_paid: bool
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
 class LeavePolicyResponse(LeavePolicyBase):
     id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

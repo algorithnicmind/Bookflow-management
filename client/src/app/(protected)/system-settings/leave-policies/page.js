@@ -16,7 +16,8 @@ export default function LeavePoliciesPage() {
       const res = await settingsApi.getLeavePolicies()
       setPolicies(res)
     } catch (err) {
-      console.error(err)
+      console.error('Failed to fetch leave policies:', err)
+      alert('Failed to load leave policies: ' + err.message)
     } finally {
       setLoading(false)
     }
