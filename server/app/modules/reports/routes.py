@@ -13,6 +13,7 @@ from app.core.dependencies import PermissionChecker
 from app.core.tenant import get_current_tenant
 from app.modules.organizations.models import Organization
 from app.modules.employees.models import Employee
+from app.modules.leaves.models import LeaveRequest
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 
@@ -34,7 +35,6 @@ async def get_organization_report(
     )
     total_admins = a_res.scalar()
 
-    from app.modules.leaves.models import LeaveRequest
     l_res = await db.execute(
         select(func.count(LeaveRequest.id))
         .where(LeaveRequest.organization_id == tenant.id)
@@ -89,8 +89,6 @@ async def export_leaves_report(
     tenant: Organization = Depends(get_current_tenant),
     current_user: Employee = Depends(PermissionChecker("manage_employees"))
 ):
-    from app.modules.leaves.models import LeaveRequest
-    
     # Query all leaves and join with Employee to get names and departments
     stmt = select(LeaveRequest, Employee).join(Employee, LeaveRequest.employee_id == Employee.id).where(
         LeaveRequest.organization_id == tenant.id
