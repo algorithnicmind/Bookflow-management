@@ -6,10 +6,12 @@ from app.modules.employees.models import Employee
 from app.modules.leaves.models import LeaveRequest, LeaveBalance
 from app.modules.dashboard.schemas import DashboardResponse, DashboardStats
 from app.core.utils import get_calendar_days
+from app.core.cache import CacheService
 
 class DashboardService:
     def __init__(self, db: AsyncSession):
         self.db = db
+        self.cache = CacheService()
 
     async def _get_user_permissions(self, current_user: Employee) -> set:
         from app.modules.organizations.models import RolePermission
@@ -25,7 +27,10 @@ class DashboardService:
         return set(role_perm.permissions or [])
 
     async def get_stats(self, current_user: Employee) -> DashboardResponse:
-        stats = DashboardStats()
+        cache_key = f"dashboard:stats:{current_user.id}"
+        
+        async def compute_stats():
+            stats = DashboardStats()
         recent_leaves = []
         balances_res = []
         
@@ -154,4 +159,9 @@ class DashboardService:
                 "department_breakdown": dept_breakdown
             }
             
-        return response
+            return response.model_dump()
+
+        result = await self.cache.get_or_compute(cache_key, 300, compute_stats)
+        if isinstance(result, DashboardResponse):
+            return result
+        return DashboardResponse(**result)
