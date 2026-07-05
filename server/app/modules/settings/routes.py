@@ -13,11 +13,16 @@ from app.core.dependencies import PermissionChecker, RequireOwner, get_current_u
 from app.core.tenant import get_current_tenant
 from app.modules.organizations.models import Organization
 from app.modules.employees.models import Employee
-from app.modules.settings.schemas import SettingsUpdate
+from app.modules.settings.schemas import SettingsUpdate, PublicHolidayCreate, PublicHolidayResponse, ApprovalChainCreate, ApprovalChainResponse, LeavePolicyCreate, LeavePolicyResponse, LeaveTypeCreate, LeaveTypeResponse
 from app.modules.settings.services import SettingsService
-from app.modules.settings.models import PlatformConfig
+from app.modules.settings.models import PlatformConfig, LeaveType
+from app.modules.leaves.cron import run_monthly_accruals, run_yearly_carry_forward
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/settings", tags=["settings"])
+
+class OrgNameUpdate(BaseModel):
+    name: str
 
 @router.put("")
 async def update_settings(
@@ -28,10 +33,6 @@ async def update_settings(
 ):
     service = SettingsService(db, tenant.id)
     return await service.update_settings(request, current_user.id)
-
-from pydantic import BaseModel
-class OrgNameUpdate(BaseModel):
-    name: str
 
 @router.put("/organization-name")
 async def update_organization_name(
@@ -60,9 +61,6 @@ async def get_settings(
         "max_maternity_leave": settings.max_maternity_leave,
         "max_miscarriage_leave": settings.max_miscarriage_leave,
     }
-
-from typing import List
-from app.modules.settings.schemas import PublicHolidayCreate, PublicHolidayResponse, ApprovalChainCreate, ApprovalChainResponse, LeavePolicyCreate, LeavePolicyResponse
 
 @router.get("/leave-policies", response_model=List[LeavePolicyResponse])
 async def get_leave_policies(
@@ -93,9 +91,6 @@ async def delete_leave_policy(
     service = SettingsService(db, tenant.id)
     await service.delete_leave_policy(policy_id)
     return {"message": "Leave policy deleted"}
-
-from app.modules.settings.schemas import LeaveTypeCreate, LeaveTypeResponse
-from app.modules.settings.models import LeaveType
 
 @router.get("/leave-types", response_model=List[LeaveTypeResponse])
 async def get_leave_types(
@@ -199,8 +194,6 @@ async def delete_approval_chain(
     service = SettingsService(db, tenant.id)
     await service.delete_approval_chain(chain_id)
     return {"message": "Approval chain deleted"}
-
-from app.modules.leaves.cron import run_monthly_accruals, run_yearly_carry_forward
 
 @router.post("/debug/trigger-monthly-accrual")
 async def trigger_monthly_accrual(current_user: Employee = Depends(PermissionChecker("manage_employees"))):

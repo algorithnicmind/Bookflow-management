@@ -11,7 +11,6 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/features/auth/AuthContext'
 import { dashboardApi } from '@/services/api'
-import Modal from '@/components/ui/Modal'
 import { SkeletonLayout } from '@/components/ui/Skeleton'
 
 

@@ -37,7 +37,7 @@ const nextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: blob:",
+              "img-src 'self' data: blob: https://cdn.jsdelivr.net",
               `connect-src ${CSP_CONNECT_SRC}`,
               "frame-ancestors 'none'",
               "form-action 'self'",

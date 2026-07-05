@@ -10,11 +10,10 @@
 import { useState, useEffect } from 'react'
 import { leavesApi } from '@/services/api'
 import Card from '@/components/ui/Card'
-import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
 import { SkeletonTable } from '@/components/ui/Skeleton'
-import { formatDate, formatDateTime } from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
 import LeaveTypeIcon from '@/components/shared/LeaveTypeIcon'
 
 export default function PendingRequestsPage() {

@@ -121,9 +121,9 @@ class PermissionChecker:
         # based on the role name so that new organizations work out of the box.
         if not role_perm:
             default_permissions = {
-                "super_admin": ["manage_everything", "manage_employees", "approve_leaves", "view_reports"],
-                "admin": ["manage_employees", "approve_leaves", "view_reports"],
-                "manager": ["approve_leaves", "view_reports"],
+                "super_admin": ["manage_everything", "manage_employees", "approve_leaves", "manage_leaves", "view_reports"],
+                "admin": ["manage_employees", "approve_leaves", "manage_leaves", "view_reports"],
+                "manager": ["approve_leaves", "manage_leaves", "view_reports"],
             }
             user_perms = set(default_permissions.get(current_user.role, []))
             if self.required_permission not in user_perms:

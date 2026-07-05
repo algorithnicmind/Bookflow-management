@@ -29,7 +29,7 @@ class AuditLogService:
                 result = await db.execute(select(Employee).where(Employee.id == actor_id))
                 if hasattr(result, "scalar_one_or_none"):
                     employee = result.scalar_one_or_none()
-                    if employee and type(employee).__name__ not in ('MagicMock', 'AsyncMock', 'Mock'):
+                    if employee:
                         actor_name = getattr(employee, "name", None)
                         actor_email = getattr(employee, "email", None)
             except Exception:

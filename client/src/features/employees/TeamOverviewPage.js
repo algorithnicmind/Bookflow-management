@@ -10,7 +10,6 @@ import { useState, useEffect } from 'react'
 import { dashboardApi, leavesApi } from '@/services/api'
 import Card from '@/components/ui/Card'
 import StatCard from '@/components/ui/StatCard'
-import Badge from '@/components/ui/Badge'
 import { formatDate } from '@/lib/utils'
 import LeaveTypeIcon from '@/components/shared/LeaveTypeIcon'
 

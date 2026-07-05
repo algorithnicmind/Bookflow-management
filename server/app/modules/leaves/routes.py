@@ -16,6 +16,7 @@ from app.modules.organizations.models import Organization
 from app.modules.leaves.schemas import LeaveApplication, LeaveApprovalAction
 from app.modules.leaves.repositories import LeaveRepository
 from app.modules.leaves.services import LeaveService
+from datetime import datetime
 
 router = APIRouter(prefix="/api/leaves", tags=["leaves"])
 

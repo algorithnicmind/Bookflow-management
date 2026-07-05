@@ -16,7 +16,6 @@ import Button from '@/components/ui/Button'
 import AppleEmoji from '@/components/AppleEmoji'
 import { LEAD_STATUS_OPTIONS as STATUS_OPTIONS, getStatusMeta } from '@/lib/constants'
 import { formatDate } from '@/lib/utils'
-import Badge from '@/components/ui/Badge'
 import { SkeletonTable } from '@/components/ui/Skeleton'
 
 export default function LeadsPage() {

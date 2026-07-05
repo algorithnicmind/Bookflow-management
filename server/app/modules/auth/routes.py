@@ -7,6 +7,7 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.config import settings
+from app.core.security import create_access_token
 from app.core.dependencies import PermissionChecker, RequireOwner, limiter, get_current_user
 from app.modules.employees.models import Employee, PlatformOwner
 from app.modules.auth.schemas import Token, AdminCreateRequest
@@ -15,6 +16,7 @@ from app.modules.auth.repositories import AuthRepository
 from pydantic import BaseModel, EmailStr
 from app.core.tenant import get_current_tenant
 from app.modules.organizations.models import Organization
+from datetime import timedelta
 
 """
 Authentication Router
@@ -103,9 +105,6 @@ async def login_for_access_token(
         form_data.username, form_data.password,
         ip_address=ip_address, user_agent=user_agent
     )
-    
-    from app.core.security import create_access_token
-    from datetime import timedelta
     
     # Generate the signed JWT token
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)

@@ -22,7 +22,7 @@ def upgrade() -> None:
     
     # Leave Requests
     op.create_index('ix_leave_requests_organization_id', 'leave_requests', ['organization_id'], unique=False)
-    op.create_index('ix_leave_requests_user_id', 'leave_requests', ['user_id'], unique=False)
+    op.create_index('ix_leave_requests_user_id', 'leave_requests', ['employee_id'], unique=False)
     
     # Notifications
     op.create_index('ix_notifications_user_id', 'notifications', ['user_id'], unique=False)

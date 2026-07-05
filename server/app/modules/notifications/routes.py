@@ -4,10 +4,10 @@ Notifications API Routes
 Manages the in-app notification center. Allows users to fetch their unread notifications
 and mark them as read.
 """
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import update
+from sqlalchemy import update, func
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
 from app.modules.employees.models import Employee
@@ -25,7 +25,6 @@ async def get_notifications(
 ):
     try:
         # Count total for pagination metadata
-        from sqlalchemy import func
         count_result = await db.execute(
             select(func.count()).select_from(Notification).where(Notification.user_id == current_user.id)
         )
@@ -74,7 +73,6 @@ async def mark_as_read(
     )
     notification = result.scalar_one_or_none()
     if not notification:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Notification not found")
 
     notification.is_read = True

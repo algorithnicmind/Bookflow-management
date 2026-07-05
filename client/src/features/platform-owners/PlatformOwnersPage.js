@@ -13,7 +13,6 @@ import { systemOwnersApi, platformConfigApi } from '@/services/api'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
-import Badge from '@/components/ui/Badge'
 import AppleEmoji from '@/components/AppleEmoji'
 import { SkeletonTable } from '@/components/ui/Skeleton'
 

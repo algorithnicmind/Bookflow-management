@@ -15,7 +15,9 @@ from app.core.security import pwd_context
 from app.core.pagination import PaginationParams
 from app.modules.organizations.models import Organization
 from app.modules.employees.models import Employee
-from app.modules.employees.schemas import EmployeeResponse, EmployeeCreate, EmployeeUpdate
+from fastapi import HTTPException
+from sqlalchemy.future import select
+from app.modules.employees.schemas import EmployeeResponse, EmployeeCreate, EmployeeUpdate, EmployeeProfileUpdate
 from app.modules.employees.repositories import EmployeeRepository
 from app.modules.employees.services import EmployeeService
 
@@ -50,7 +52,6 @@ async def get_my_profile(
     # Only resolve tenant information for users who actually belong to an organization
     # (PlatformOwners bypass this as they manage the whole system)
     if current_user.organization_id:
-        from app.modules.employees.repositories import EmployeeRepository
         repo = EmployeeRepository(db, current_user.organization_id)
         emp = await repo.get_by_id(current_user.id)
         if emp:
@@ -63,8 +64,6 @@ async def get_my_profile(
             pass  # Organization might be inactive or missing — still return the profile without crashing
         
     return resp
-
-from app.modules.employees.schemas import EmployeeProfileUpdate
 
 @router.put("/me", response_model=EmployeeResponse)
 async def update_my_profile(
@@ -96,17 +95,11 @@ async def update_my_profile(
         return EmployeeResponse.model_validate(current_user)
 
     # Handle standard employees by routing through the tenant-isolated EmployeeService
-    from app.modules.organizations.models import Organization
-    from app.core.tenant import get_current_tenant
     tenant = await get_current_tenant(current_user, db)
     repo = EmployeeRepository(db, tenant.id)
     service = EmployeeService(repo)
     emp = await service.update_profile(current_user.id, request)
     return EmployeeResponse.model_validate(emp)
-
-from fastapi import HTTPException
-from sqlalchemy.future import select
-from app.modules.employees.models import PlatformOwner
 
 @router.get("/system-owners", response_model=dict)
 async def list_system_owners(

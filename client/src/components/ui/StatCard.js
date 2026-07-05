@@ -9,6 +9,7 @@ export default function StatCard({
   trend,
   isLoading,
 }) {
+  if (isLoading) {
     return (
       <div className="glass" style={{ padding: 'var(--space-lg)' }}>
         <div style={{ animation: 'pulse 1.5s ease infinite', display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -17,6 +18,7 @@ export default function StatCard({
         </div>
       </div>
     )
+  }
   return (
     <div className="glass glass-hover" style={{ padding: 'var(--space-lg)', position: 'relative', overflow: 'hidden' }}>
       <div
