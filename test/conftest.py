@@ -36,6 +36,9 @@ from app.core.dependencies import limiter
 # Disable rate limiting during tests to avoid 429 errors from repeated test requests
 limiter.enabled = False
 
+# Set environment to test so CSRF and other protections are relaxed
+settings.ENVIRONMENT = "test"
+
 
 # ─── Test Database (SQLite by default, PostgreSQL via TEST_DATABASE_URL) ─────
 
