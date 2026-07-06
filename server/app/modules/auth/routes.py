@@ -258,7 +258,6 @@ async def impersonate_employee(
     result = await service.impersonate_employee(employee_id)
     _set_token_cookie(response, result["access_token"])
     return {
-        "access_token": result["access_token"],
-        "token_type": "bearer",
-        "user": _build_user_response(result["user"])
+        "user": _build_user_response(result["user"]),
+        "message": "Impersonation successful"
     }
