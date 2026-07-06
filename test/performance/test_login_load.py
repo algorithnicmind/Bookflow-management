@@ -7,8 +7,13 @@ import pytest
 import asyncio
 import time
 import random
+import os
 from httpx import AsyncClient
 
+_SKIP_CONCURRENT = os.environ.get("TEST_DATABASE_URL", "").startswith("sqlite")
+_skip_concurrent_reason = "Skipping concurrent test under SQLite (no concurrent write support)"
+
+@pytest.mark.skipif(_SKIP_CONCURRENT, reason=_skip_concurrent_reason)
 @pytest.mark.asyncio
 async def test_50_concurrent_logins(client: AsyncClient, seeded_db):
     """50 users should be able to login simultaneously under 1s average."""
@@ -37,6 +42,7 @@ async def test_50_concurrent_logins(client: AsyncClient, seeded_db):
     assert avg_time < 1.0, f"Average login time too slow: {avg_time:.3f}s"
     assert max(times) < 3.0, f"Max login time too slow: {max(times):.3f}s"
 
+@pytest.mark.skipif(_SKIP_CONCURRENT, reason=_skip_concurrent_reason)
 @pytest.mark.asyncio
 async def test_100_concurrent_logins(client: AsyncClient, seeded_db):
     """100 users should be able to login simultaneously under 1s average."""
@@ -62,6 +68,7 @@ async def test_100_concurrent_logins(client: AsyncClient, seeded_db):
     assert avg_time < 1.0, f"Average login time too slow: {avg_time:.3f}s"
     assert max(times) < 5.0, f"Max login time too slow: {max(times):.3f}s"
 
+@pytest.mark.skipif(_SKIP_CONCURRENT, reason=_skip_concurrent_reason)
 @pytest.mark.asyncio
 async def test_login_with_wrong_passwords(client: AsyncClient, seeded_db):
     """50 concurrent login attempts with mixed valid/invalid credentials."""
