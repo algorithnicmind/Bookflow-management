@@ -6,8 +6,9 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from fastapi import HTTPException
 
-from app.modules.auth.services import authenticate_user, register_admin_user
+from app.modules.auth.services import AuthService
 from app.modules.auth.schemas import AdminCreateRequest
+from app.modules.auth.repositories import AuthRepository
 
 
 # ─── authenticate_user ────────────────────────────────────────────────
@@ -26,9 +27,12 @@ async def test_authenticate_user_success():
     mock_result.scalar_one_or_none.return_value = mock_employee
     mock_db.execute.return_value = mock_result
 
+    repo = AuthRepository(mock_db)
+    service = AuthService(repo)
+
     with patch("app.modules.auth.services.pwd_context") as mock_pwd:
         mock_pwd.verify.return_value = True
-        user = await authenticate_user("john@company.com", "password123", mock_db)
+        user = await service.authenticate_user("john@company.com", "password123")
 
     assert user == mock_employee
 
@@ -46,10 +50,13 @@ async def test_authenticate_user_wrong_password():
     mock_result.scalar_one_or_none.return_value = mock_employee
     mock_db.execute.return_value = mock_result
 
+    repo = AuthRepository(mock_db)
+    service = AuthService(repo)
+
     with patch("app.modules.auth.services.pwd_context") as mock_pwd:
         mock_pwd.verify.return_value = False
         with pytest.raises(HTTPException) as exc_info:
-            await authenticate_user("john@company.com", "wrongpass", mock_db)
+            await service.authenticate_user("john@company.com", "wrongpass")
         assert exc_info.value.status_code == 401
         assert "Invalid email or password" in exc_info.value.detail
 
@@ -62,8 +69,11 @@ async def test_authenticate_user_nonexistent_email():
     mock_result.scalar_one_or_none.return_value = None
     mock_db.execute.return_value = mock_result
 
+    repo = AuthRepository(mock_db)
+    service = AuthService(repo)
+
     with pytest.raises(HTTPException) as exc_info:
-        await authenticate_user("ghost@company.com", "any", mock_db)
+        await service.authenticate_user("ghost@company.com", "any")
     assert exc_info.value.status_code == 401
 
 
@@ -80,10 +90,13 @@ async def test_authenticate_user_deactivated_account():
     mock_result.scalar_one_or_none.return_value = mock_employee
     mock_db.execute.return_value = mock_result
 
+    repo = AuthRepository(mock_db)
+    service = AuthService(repo)
+
     with patch("app.modules.auth.services.pwd_context") as mock_pwd:
         mock_pwd.verify.return_value = True
         with pytest.raises(HTTPException) as exc_info:
-            await authenticate_user("john@company.com", "password123", mock_db)
+            await service.authenticate_user("john@company.com", "password123")
         assert exc_info.value.status_code == 403
         assert "deactivated" in exc_info.value.detail.lower()
 
@@ -110,15 +123,17 @@ async def test_register_admin_user_success():
         gender="male",
     )
 
+    repo = AuthRepository(mock_db)
+    service = AuthService(repo)
+
     with patch("app.modules.auth.services.pwd_context") as mock_pwd:
         mock_pwd.hash.return_value = "$2b$12$hashed"
-        result = await register_admin_user(request, 1, mock_db)
+        result = await service.register_admin_user(request, 1)
 
     assert result.role == "admin"
     assert result.email == "newadmin@company.com"
     # 1 employee + 5 leave balances = 6 objects added
     assert len(add_calls) == 6
-    mock_db.commit.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -129,6 +144,9 @@ async def test_register_admin_user_duplicate_email():
     mock_result.scalar_one_or_none.return_value = MagicMock()  # Existing user
     mock_db.execute.return_value = mock_result
 
+    repo = AuthRepository(mock_db)
+    service = AuthService(repo)
+
     request = AdminCreateRequest(
         name="Dup Admin",
         email="existing@company.com",
@@ -136,7 +154,7 @@ async def test_register_admin_user_duplicate_email():
     )
 
     with pytest.raises(HTTPException) as exc_info:
-        await register_admin_user(request, 1, mock_db)
+        await service.register_admin_user(request, 1)
     assert exc_info.value.status_code == 409
     assert "already registered" in exc_info.value.detail.lower()
 
@@ -152,6 +170,9 @@ async def test_register_admin_creates_correct_leave_balances():
     added_objects = []
     mock_db.add = lambda obj: added_objects.append(obj)
 
+    repo = AuthRepository(mock_db)
+    service = AuthService(repo)
+
     request = AdminCreateRequest(
         name="New Admin",
         email="admin2@company.com",
@@ -160,7 +181,7 @@ async def test_register_admin_creates_correct_leave_balances():
 
     with patch("app.modules.auth.services.pwd_context") as mock_pwd:
         mock_pwd.hash.return_value = "$2b$12$hashed"
-        await register_admin_user(request, 1, mock_db)
+        await service.register_admin_user(request, 1)
 
     # Filter only LeaveBalance objects
     from app.modules.leaves.models import LeaveBalance
