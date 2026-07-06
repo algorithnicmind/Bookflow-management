@@ -3,10 +3,9 @@ from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional
 
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
+class LoginResponse(BaseModel):
     user: dict
+    message: str = "Authentication successful"
 
 
 def validate_password_strength(password: str) -> str:
