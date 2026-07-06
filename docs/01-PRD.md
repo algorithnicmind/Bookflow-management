@@ -1,4 +1,5 @@
 # Product Requirements Document (PRD)
+
 ## Leave Management System
 
 **Version:** 2.0  
@@ -28,7 +29,7 @@ A **Multi-Tenant B2B web-based Leave Management System** that digitizes the enti
 ### 2.1 In Scope (MVP & v1.x)
 
 | Feature | Description |
-|---------|------------|
+| --------- | ------------ |
 | **Multi-Tenant B2B Architecture** | Separate data workspaces for different client organizations. |
 | **Enterprise Onboarding** | Landing page with pricing, OAuth/Email signup, and contact application forms for manual Sales provisioning. |
 | **User Authentication** | Secure login with email/password or OAuth (Google), utilizing HttpOnly cookies for session management to prevent XSS |
@@ -45,7 +46,7 @@ A **Multi-Tenant B2B web-based Leave Management System** that digitizes the enti
 ### 2.2 Out of Scope (Future Enhancements)
 
 | Feature | Reason |
-|---------|--------|
+| --------- | -------- |
 | Email/SMS Notifications | Requires third-party integration (SendGrid/Twilio) |
 | Leave Calendar Integration (Google/Outlook) | Complexity beyond current phase |
 | Half-Day / Hourly Leave | Simplifying to full-day leave for current release |
@@ -61,6 +62,7 @@ A **Multi-Tenant B2B web-based Leave Management System** that digitizes the enti
 The system uses a completely dynamic role architecture per tenant. Organizations can create their own custom roles (e.g., "HR Manager", "Team Lead", "Senior Developer") and assign specific system permissions to them.
 
 Fixed permissions dictate access control across the application:
+
 - `manage_settings`: Configure organization settings, holidays, and leave types.
 - `manage_employees`: Add, edit, or remove employees and manage their role assignments.
 - `approve_leaves`: View and approve/reject leave requests from assigned team members.
@@ -68,11 +70,14 @@ Fixed permissions dictate access control across the application:
 - Basic permissions (implied for all authenticated users): View own dashboard, apply for leave, view own history.
 
 #### 👑 Super Admin (Initial Tenant Owner)
+
 When a tenant is created, the initial account is granted a Super Admin role that typically has all available permissions to configure the workspace.
 
 #### ⚙️ Platform Owner (System Operators)
+
 The internal LeaveFlow team that manages the platform globally.
 **Permissions:**
+
 - Built-in `manage_everything` permission
 - Review incoming onboarding applications from the Landing Page
 - Verify identities and provision new workspaces/organizations
@@ -84,7 +89,7 @@ The internal LeaveFlow team that manages the platform globally.
 Instead of a fixed role matrix, access is evaluated at the route level using a `PermissionChecker`.
 
 | Action | Required Permission |
-|--------|---------------------|
+| -------- | --------------------- |
 | Login | (None - valid JWT) |
 | View Own Dashboard | (None - valid JWT) |
 | Apply for Leave | (None - valid JWT) |
@@ -103,14 +108,16 @@ Instead of a fixed role matrix, access is evaluated at the route level using a `
 
 ## 4. Dynamic Leave Types
 
-Leave types are fully dynamic and configurable on a per-tenant basis by the Super Admin from the Organization Settings dashboard. 
+Leave types are fully dynamic and configurable on a per-tenant basis by the Super Admin from the Organization Settings dashboard.
 
 Each Leave Type supports:
+
 - Custom Name (e.g., Vacation, Sick Leave, Parental)
 - Default Days allocated per year
 - Paid / Unpaid designation
 
 *(Note: Carry forward policies and half-day increments are planned for future phases. For now, all leave balances reset manually or annually as configured).*
+
 ## 5. Key Business Rules
 
 1. Leave **end date** must be ≥ **start date**

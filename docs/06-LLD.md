@@ -1,4 +1,5 @@
 # Low Level Design (LLD)
+
 ## Leave Management System
 
 **Version:** 1.0  

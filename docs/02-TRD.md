@@ -1,4 +1,5 @@
 # Technology Requirements Document (TRD)
+
 ## Leave Management System
 
 **Version:** 1.0  
@@ -59,7 +60,7 @@ graph TB
 ### 2.1 Frontend Technologies
 
 | Technology | Version | Purpose | Why Chosen |
-|-----------|:-------:|---------|------------|
+| ----------- | :-------: | --------- | ------------ |
 | **Next.js** | 14/15+ | React Framework | Modern React standard, hybrid Server/Client rendering, native routing, optimized builds, out-of-the-box SEO |
 | **App Router** | — | Routing & Layouts | Declarative folder-based routing, server components for static pages, layout inheritance |
 | **Fetch API** | Native | HTTP Client | Native browser support, robust caching, no extra dependencies, seamless integration with Next.js caching |
@@ -70,12 +71,12 @@ graph TB
 ### 2.2 Backend Technologies
 
 | Technology | Version | Purpose | Why Chosen |
-|-----------|:-------:|---------|------------|
+| ----------- | :-------: | --------- | ------------ |
 | **FastAPI** | 0.110+ | REST API Framework | Outstanding performance (on par with Node/Express & Go), automated Swagger UI generation, native async/await |
 | **Python** | 3.10+ | Runtime Environment | High readability, mature ecosystem, powerful data manipulation, excellent for building scalable services |
 | **Pydantic v2** | 2.x | Data Validation | Strongly-typed request/response validation, automatic error message parsing, fast performance |
 | **PyJWT** | 2.x | Token Management | Lightweight, secure implementation of JSON Web Tokens for stateless authentication |
-| **passlib[bcrypt]**| 1.7+ | Password Hashing | Secure one-way hashing with salt parameters, industry standard |
+| **passlib[bcrypt]** | 1.7+ | Password Hashing | Secure one-way hashing with salt parameters, industry standard |
 | **asyncpg / psycopg3** | — | PostgreSQL Driver | High-speed asynchronous client driver for database connection and query execution |
 | **Redis** | 5.0+ | In-Memory Cache | Fast distributed caching layer for API responses and rate limiting |
 | **Google Gemini API** | — | AI Integration | Powers the AI Chatbot assistant, providing context-aware policy answers |
@@ -88,6 +89,7 @@ graph TB
 | **PostgreSQL** | 15+ | Relational Database | ACID compliance, production-grade reliability, foreign keys, constraints validation, transaction support |
 
 **PostgreSQL Advantages for this project:**
+
 - ✅ **ACID Transactions** — Crucial to ensure that leave balance updates are atomic.
 - ✅ **Multi-Tenant Segregation** — Row-Level Security (RLS) or strict ORM-level `organization_id` filtering guarantees that B2B clients cannot access each other's data.
 - ✅ **Referential Integrity** — Foreign keys guarantee consistent data associations between `organizations`, `employees`, `leave_requests`, `holidays`, and `approval_chains`.
@@ -97,7 +99,7 @@ graph TB
 ### 2.4 Authentication & Security
 
 | Technology | Version | Purpose | Why Chosen |
-|-----------|:-------:|---------|------------|
+| ----------- | :-------: | --------- | ------------ |
 | **JWT (JSON Web Tokens)** | — | Authentication | Stateless authentication. The client receives the token via a secure `HttpOnly` `Set-Cookie` header. This completely mitigates XSS risks by hiding the token from JavaScript. |
 | **bcrypt** | — | Cryptographic Hashing | Dynamic salting makes pre-computed dictionary and rainbow table attacks computationally unfeasible. |
 | **Nginx Reverse Proxy** | — | Gateway Shielding | Acts as a gateway proxy, hiding the backend application ports, managing secure SSL termination, and handling large volumetric connections. |
@@ -127,12 +129,12 @@ graph LR
 ### 3.2 Gateway Security Configurations
 
 | Mechanism | Configuration Location | Action / Rule | Rationale |
-|-----------|------------------------|---------------|-----------|
+| ----------- | ------------------------ | --------------- | ----------- |
 | **Rate Limiting** | Nginx `nginx.conf` | `limit_req_zone` limit of 30 req/m on `/api/auth/login` | Prevents credential brute-forcing at the gateway layer. |
-| **SSL/TLS Termination**| Nginx Site Configuration | TLS v1.2 & TLS v1.3 with Let's Encrypt | Enforces modern cryptographic cipher suites and secure connections. |
+| **SSL/TLS Termination** | Nginx Site Configuration | TLS v1.2 & TLS v1.3 with Let's Encrypt | Enforces modern cryptographic cipher suites and secure connections. |
 | **OS Firewall** | Host OS (UFW) | Allow only port 80/443, block direct port 8000/5432 | Shields internal backend services from direct public access. |
 | **CORS Guard** | FastAPI `CORSMiddleware` | Allowed origins configured to verified app domains | Restricts cross-origin requests at the runtime layer. |
-| **Request Size Limits**| Nginx `client_max_body_size` | Restrict payloads to 2MB | Blocks denial-of-service attempts exploiting large request bodies. |
+| **Request Size Limits** | Nginx `client_max_body_size` | Restrict payloads to 2MB | Blocks denial-of-service attempts exploiting large request bodies. |
 
 ---
 
@@ -301,18 +303,18 @@ NEXT_PUBLIC_API_URL=http://localhost:8000/api
 ### 6.1 Developer Workstation Requirements
 
 | Parameter | Minimum | Recommended |
-|-----------|---------|-------------|
+| ----------- | --------- | ------------- |
 | **Python** | v3.10.x | v3.11.x |
-| **Node.js**| v18.0.0 | v20.x.x |
-| **Database**| PostgreSQL v15 | PostgreSQL v16 |
-| **Memory (RAM)**| 8 GB | 16 GB |
-| **Available Disk**| 1 GB | 5 GB |
+| **Node.js** | v18.0.0 | v20.x.x |
+| **Database** | PostgreSQL v15 | PostgreSQL v16 |
+| **Memory (RAM)** | 8 GB | 16 GB |
+| **Available Disk** | 1 GB | 5 GB |
 | **Tools** | VS Code, git, pgAdmin / DBeaver, Postman | VS Code, git, Docker (optional for PG) |
 
 ### 6.2 Production Server Requirements (Target)
 
 | Service | Architecture | Scale (Standard) |
-|---------|--------------|-------------------|
+| --------- | -------------- | ------------------- |
 | **Frontend Web App** | Next.js Server / Serverless Host Node | 1 vCPU, 1GB RAM (Dynamic Node instance) or Serverless Edge |
 | **REST API Server** | FastAPI Backend on Uvicorn | 2 vCPU, 2GB RAM (Scalable Linux VPS / Gunicorn worker instances) |
 | **Database Instance** | Dedicated Managed PostgreSQL | vCPU, 2GB RAM, SSD-backed storage with Connection Pooling enabled |

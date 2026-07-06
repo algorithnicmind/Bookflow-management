@@ -1,4 +1,5 @@
 # Database Design
+
 ## Leave Management System
 
 **Version:** 1.0  
@@ -70,10 +71,11 @@ erDiagram
 ## 2. Database Schema (PostgreSQL)
 
 ### 2.1 Organizations (Tenants) Table
+
 Stores the B2B clients who have been provisioned a workspace.
 
 | Column Name | Data Type | Constraints | Description |
-|-------------|-----------|-------------|-------------|
+| ------------- | ----------- | ------------- | ------------- |
 | `id` | UUID | Primary Key | Unique tenant identifier |
 | `name` | VARCHAR(100) | Not Null | Company Name |
 | `industry` | VARCHAR(50) | | Industry type |
@@ -83,10 +85,11 @@ Stores the B2B clients who have been provisioned a workspace.
 ---
 
 ### 2.2 Employees Table
+
 Stores user credentials, profile information, and role assignments.
 
 | Column Name | Data Type | Constraints | Description |
-|-------------|-----------|-------------|-------------|
+| ------------- | ----------- | ------------- | ------------- |
 | `id` | UUID | Primary Key | Unique employee identifier |
 | `organization_id` | UUID | FK -> organizations(id) | The tenant this user belongs to |
 | `first_name` | VARCHAR(50) | Not Null | User's first name |
@@ -104,43 +107,46 @@ Stores user credentials, profile information, and role assignments.
 ---
 
 ### 2.3 Leave Requests Table
+
 Stores every leave application submitted by employees.
 
 | Column | Type | Constraints | Description |
-|--------|------|------------|-------------|
+| -------- | ------ | ------------ | ------------- |
 | `id` | UUID | Primary Key | Unique request identifier |
 | `employee_id` | UUID | FK -> employees(id) | The applicant |
 | `organization_id` | UUID | FK -> organizations(id) | The tenant |
 | `leave_type` | VARCHAR(20) | Not Null | casual, sick, earned |
 | `start_date` | DATE | Not Null | First day of leave |
 | `end_date` | DATE | Not Null | Last day of leave |
-| `duration_days` | NUMERIC(5,1)| Not Null | Calculated business days (excluding holidays) |
+| `duration_days` | NUMERIC(5,1) | Not Null | Calculated business days (excluding holidays) |
 | `reason` | TEXT | Not Null | Reason provided by employee |
-| `status` | VARCHAR(20) | Default 'pending'| pending, approved, rejected, cancelled |
+| `status` | VARCHAR(20) | Default 'pending' | pending, approved, rejected, cancelled |
 | `applied_at` | TIMESTAMP | Default NOW() | Submission time |
 
 ---
 
 ### 2.4 Leave Balances Table
+
 Tracks leave quotas per employee per leave type per year.
 
 | Column | Type | Constraints | Description |
-|--------|------|------------|-------------|
+| -------- | ------ | ------------ | ------------- |
 | `id` | UUID | Primary Key | Unique balance identifier |
 | `employee_id` | UUID | FK -> employees(id) | The employee |
 | `organization_id` | UUID | FK -> organizations(id) | The tenant |
 | `leave_type` | VARCHAR(20) | Not Null | casual, sick, earned |
-| `total_allowance` | NUMERIC(5,1)| Not Null | Total days given for the year |
-| `used_days` | NUMERIC(5,1)| Default 0.0 | Days already consumed |
+| `total_allowance` | NUMERIC(5,1) | Not Null | Total days given for the year |
+| `used_days` | NUMERIC(5,1) | Default 0.0 | Days already consumed |
 | `year` | INTEGER | Not Null | The applicable calendar year |
 
 ---
 
 ### 2.5 Approvals Table
+
 Records manager actions on leave requests (audit trail).
 
 | Column | Type | Constraints | Description |
-|--------|------|------------|-------------|
+| -------- | ------ | ------------ | ------------- |
 | `id` | SERIAL | PRIMARY KEY | Unique approval action ID |
 | `leave_request_id` | INTEGER | NOT NULL, REFERENCES leave_requests(id) ON DELETE CASCADE | Target leave request |
 | `approver_id` | UUID | FK -> employees(id) | The manager/admin making the decision |
@@ -151,61 +157,66 @@ Records manager actions on leave requests (audit trail).
 ---
 
 ### 2.6 System Settings Table
+
 Global configuration rules per tenant.
 
 | Column Name | Data Type | Constraints | Description |
-|-------------|-----------|-------------|-------------|
+| ------------- | ----------- | ------------- | ------------- |
 | `id` | UUID | Primary Key | ID |
 | `organization_id` | UUID | FK -> organizations(id) | Tenant |
 | `setting_key` | VARCHAR(50) | Not Null | e.g. 'carry_forward_limit' |
-| `setting_value` | VARCHAR(255)| Not Null | String value of the setting |
+| `setting_value` | VARCHAR(255) | Not Null | String value of the setting |
 
 ---
 
 ### 2.7 Holidays Table
+
 Fixed days off defined by the organization.
 
 | Column Name | Data Type | Constraints | Description |
-|-------------|-----------|-------------|-------------|
+| ------------- | ----------- | ------------- | ------------- |
 | `id` | UUID | Primary Key | ID |
 | `organization_id` | UUID | FK -> organizations(id) | Tenant |
-| `name` | VARCHAR(100)| Not Null | e.g. 'New Year', 'Christmas' |
+| `name` | VARCHAR(100) | Not Null | e.g. 'New Year', 'Christmas' |
 | `date` | DATE | Not Null | The specific holiday date |
 
 ---
 
 ### 2.8 Onboarding Applications Table
+
 Stores prospective client leads before they are manually provisioned.
 
 | Column Name | Data Type | Constraints | Description |
-|-------------|-----------|-------------|-------------|
+| ------------- | ----------- | ------------- | ------------- |
 | `id` | UUID | Primary Key | Lead identifier |
-| `contact_email` | VARCHAR(100)| Not Null | Applicant email |
-| `company_name` | VARCHAR(100)| Not Null | Requested company name |
+| `contact_email` | VARCHAR(100) | Not Null | Applicant email |
+| `company_name` | VARCHAR(100) | Not Null | Requested company name |
 | `status` | VARCHAR(20) | Default 'pending' | pending, provisioned, rejected |
 | `created_at` | TIMESTAMP | Default NOW() | Submission time |
 
 ---
 
 ### 2.9 Leave Types Table
+
 Stores custom leave types configured by the Super Admin per tenant.
 
 | Column Name | Data Type | Constraints | Description |
-|-------------|-----------|-------------|-------------|
+| ------------- | ----------- | ------------- | ------------- |
 | `id` | UUID | Primary Key | Unique leave type identifier |
 | `organization_id` | UUID | FK -> organizations(id) | Tenant |
 | `name` | VARCHAR(100) | Not Null | E.g., 'Maternity', 'Sabbatical' |
-| `description` | VARCHAR(255)| | Brief explanation |
+| `description` | VARCHAR(255) | | Brief explanation |
 | `default_days` | INTEGER | Default 0 | Annual default allowance |
-| `is_paid` | BOOLEAN | Default TRUE| Paid vs unpaid leave |
+| `is_paid` | BOOLEAN | Default TRUE | Paid vs unpaid leave |
 
 ---
 
 ### 2.10 Custom Roles Table
+
 Allows dynamic generation of permission profiles.
 
 | Column Name | Data Type | Constraints | Description |
-|-------------|-----------|-------------|-------------|
+| ------------- | ----------- | ------------- | ------------- |
 | `id` | UUID | Primary Key | Unique role identifier |
 | `organization_id` | UUID | FK -> organizations(id) | Tenant |
 | `name` | VARCHAR(100) | Not Null | E.g., 'HR Manager', 'Intern' |

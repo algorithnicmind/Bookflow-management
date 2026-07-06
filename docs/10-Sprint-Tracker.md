@@ -1,4 +1,5 @@
 # Sprint Tracker & Daily Standups
+
 ## Leave Management System
 
 **Version:** 1.0  
@@ -10,7 +11,7 @@
 ## 1. Sprint Overview
 
 | Attribute | Detail |
-|-----------|--------|
+| ----------- | -------- |
 | **Sprint Goal** | Build and deliver a fully functional Leave Management System with role-based access, leave workflow, and analytics dashboard |
 | **Team Size** | Product Manager, Developer, Tester |
 | **Sprint Start** | Day 1 |
@@ -22,7 +23,7 @@
 ## 2. Sprint Backlog
 
 | Priority | Task | Owner | Story Points | Status |
-|:--------:|------|-------|:------------:|:------:|
+| :--------: | ------ | ------- | :------------: | :------: |
 | 🔴 P0 | Requirement Gathering & PRD | PM | 5 | ✅ Done |
 | 🔴 P0 | User Stories & Acceptance Criteria | PM | 3 | ✅ Done |
 | 🔴 P0 | User Flow Diagrams | PM | 3 | ✅ Done |
@@ -49,7 +50,9 @@
 ## 3. Daily Standup Logs
 
 ### Format
+
 Each standup answers three questions:
+
 1. **What was completed yesterday?**
 2. **What will be done today?**
 3. **Any blockers?**
@@ -59,12 +62,13 @@ Each standup answers three questions:
 ### 📅 Day 1 — Requirement Gathering
 
 | Team Member | Yesterday | Today | Blockers |
-|-------------|-----------|-------|----------|
+| ------------- | ----------- | ------- | ---------- |
 | **PM** | — (Sprint Start) | Gather requirements, write Problem Statement, define Scope, identify User Roles | None |
 | **Dev** | — (Sprint Start) | Review requirements with PM, begin HLD planning | Waiting for finalized requirements |
 | **Tester** | — (Sprint Start) | Read and understand requirements, begin test scenario brainstorming | None |
 
 **Day 1 Outcomes:**
+
 - [ ] Problem Statement drafted
 - [ ] Scope Document (In/Out) defined
 - [ ] User Roles & Permissions identified
@@ -75,12 +79,13 @@ Each standup answers three questions:
 ### 📅 Day 2 — User Stories & Design
 
 | Team Member | Yesterday | Today | Blockers |
-|-------------|-----------|-------|----------|
+| ------------- | ----------- | ------- | ---------- |
 | **PM** | Completed PRD with Problem Statement, Scope, User Roles | Write User Stories with acceptance criteria, prioritize backlog | None |
 | **Dev** | Reviewed requirements | Create HLD (architecture diagram, module breakdown), begin LLD (DB schema, ER diagram) | None |
 | **Tester** | Studied requirements | Create Test Scenarios and start writing Test Cases | Need User Stories for complete test case mapping |
 
 **Day 2 Outcomes:**
+
 - [ ] User Stories (US-001 to US-020) written
 - [ ] User Flow Diagrams created
 - [ ] HLD document completed
@@ -91,12 +96,13 @@ Each standup answers three questions:
 ### 📅 Day 3 — Technical Design & API Planning
 
 | Team Member | Yesterday | Today | Blockers |
-|-------------|-----------|-------|----------|
+| ------------- | ----------- | ------- | ---------- |
 | **PM** | Completed User Stories and Flows | Review HLD/LLD with Dev, create wireframes or review Dev's wireframes | None |
 | **Dev** | Completed HLD | Finalize LLD (SQL schema), design all APIs, create wireframes | None |
 | **Tester** | Drafted test scenarios | Complete detailed Test Cases, write Negative Test Cases | None |
 
 **Day 3 Outcomes:**
+
 - [x] LLD document completed (DB schema + SQL DDL)
 - [x] API Documentation finalized (all endpoints)
 - [x] UI Wireframes created
@@ -107,12 +113,13 @@ Each standup answers three questions:
 ### 📅 Day 4 — Development Sprint (Part 1)
 
 | Team Member | Yesterday | Today | Blockers |
-|-------------|-----------|-------|----------|
+| ------------- | ----------- | ------- | ---------- |
 | **PM** | Reviewed all design documents | Track progress, resolve any requirement ambiguities, begin demo prep | None |
 | **Dev** | Completed all design docs | Build: Authentication (Login/Logout), Apply Leave, Leave History | Database setup needed |
 | **Tester** | Completed test plan | Review dev progress, prepare test environment, begin smoke testing | Waiting for first build |
 
 **Day 4 Outcomes:**
+
 - [x] Login/OAuth functional
 - [x] B2B Onboarding Form (Lead capture) working
 - [x] Apply Leave form working
@@ -124,12 +131,13 @@ Each standup answers three questions:
 ### 📅 Day 5 — Development Sprint (Part 2)
 
 | Team Member | Yesterday | Today | Blockers |
-|-------------|-----------|-------|----------|
+| ------------- | ----------- | ------- | ---------- |
 | **PM** | Tracked progress, resolved blockers | Continue tracking, finalize demo script, rehearse presentation | None |
 | **Dev** | Built Auth + Leave features | Build: Manager Approval, Admin Panel, Dashboard statistics | None |
 | **Tester** | Prepared test environment | Execute functional tests, negative tests, report bugs | Need stable build for full testing |
 
 **Day 5 Outcomes:**
+
 - [x] Manager approval/rejection working
 - [x] Admin employee CRUD functional
 - [x] Dashboard showing real statistics
@@ -142,12 +150,13 @@ Each standup answers three questions:
 ### 📅 Day 6 — Demo Day
 
 | Team Member | Yesterday | Today | Blockers |
-|-------------|-----------|-------|----------|
+| ------------- | ----------- | ------- | ---------- |
 | **PM** | Finalized demo script | Present Product Demo: Problem, Features, User Journey, Future Improvements | None |
 | **Dev** | Completed all features | Fix critical bugs, prepare deployment guide, support demo | Bug fixes if any |
 | **Tester** | Executed full test suite | Finalize Test Report, present testing findings during demo | None |
 
 **Day 6 Outcomes:**
+
 - [ ] All critical bugs resolved
 - [ ] Product Demo presented
 - [ ] Final Test Report submitted
@@ -157,7 +166,7 @@ Each standup answers three questions:
 
 ## 4. Burndown Tracking
 
-```
+```text
 Story Points Remaining
 45 |████████████████████████████████████████████████
 40 |██████████████████████████████████████████
@@ -180,7 +189,7 @@ Story Points Remaining
 ## 5. Blockers & Risk Log
 
 | # | Blocker / Risk | Raised By | Date | Impact | Resolution | Status |
-|:-:|----------------|-----------|------|--------|------------|:------:|
+| :-: | ---------------- | ----------- | ------ | -------- | ------------ | :------: |
 | 1 | Database setup environment issues | Dev | — | High — blocks all development | Use local PostgreSQL or Docker | ⬜ Open |
 | 2 | Unclear requirement for leave balance carry-forward | PM | — | Medium — affects earned leave logic | Clarified: max 5 days carry-forward | ⬜ Open |
 | 3 | — | — | — | — | — | ⬜ Open |
@@ -190,10 +199,13 @@ Story Points Remaining
 ## 6. Sprint Retrospective (Post Day 6)
 
 ### What went well?
-- [ ] _To be filled after sprint completion_
+
+- [ ] *To be filled after sprint completion*
 
 ### What could be improved?
-- [ ] _To be filled after sprint completion_
+
+- [ ] *To be filled after sprint completion*
 
 ### Action items for next sprint
-- [ ] _To be filled after sprint completion_
+
+- [ ] *To be filled after sprint completion*

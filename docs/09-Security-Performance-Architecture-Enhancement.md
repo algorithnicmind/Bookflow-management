@@ -1,4 +1,5 @@
 # System Enhancement, Security & Performance Optimization Guide
+
 ## Leave Management System
 
 **Version:** 1.0
@@ -33,7 +34,7 @@
 #### ⚠️ Problems & Root Cause
 
 | # | Problem | Root Cause | File Reference |
-|---|---------|------------|----------------|
+| --- | --------- | ------------ | ---------------- |
 | 1 | **JWT secret hardcoded in version control** | `server/.env` is tracked by git; contains `JWT_SECRET=713d02f...` in plaintext. If repo is compromised, all tokens can be forged. | `server/.env:5` |
 | 2 | **No token refresh mechanism** | Users are forced to re-login after 24h token expiry. No refresh token endpoint exists, causing poor UX and unnecessary auth overhead. | `server/app/modules/auth/routes.py` — no `/refresh` route |
 | 3 | **No CSRF token validation** | Only `SameSite=Lax` cookie attribute protects against CSRF. This is insufficient for state-changing requests (leave creation, approvals). | `server/app/core/security.py` — no CSRF middleware |
@@ -84,6 +85,7 @@
    - Implement double-submit cookie pattern: random token in cookie + same token in `X-CSRF-Token` header
 
 4. **Enforce password policy:**
+
    ```python
    # server/app/modules/auth/schemas.py
    class PasswordStr(pydantic.BaseModel):
@@ -117,7 +119,7 @@
 #### 📋 Techniques & Approaches
 
 | Technique | Tools/Libraries | Implementation Pattern |
-|-----------|----------------|----------------------|
+| ----------- | ---------------- | ---------------------- |
 | JWT Secret Management | HashiCorp Vault, AWS Secrets Manager, Doppler | Never in VCS; inject via env at deploy |
 | Token Refresh | python-jose + Redis | Access: 15m, Refresh: 7d with rotation |
 | CSRF Protection | `csrf-fix` or `starlette-middleware` | Double-submit cookie or SameSite=Strict + token |
@@ -133,7 +135,7 @@
 #### ⚠️ Problems & Root Cause
 
 | # | Problem | Root Cause | File Reference |
-|---|---------|------------|----------------|
+| --- | --------- | ------------ | ---------------- |
 | 1 | **Profile images stored as BLOBs in DB** | `employee_images` table stores raw image bytes. Bloats database, slows backups, no CDN delivery. | `server/app/modules/employees/models.py:EmployeeImage` |
 | 2 | **No encryption at rest** | Sensitive data (emails, phone numbers, leave reasons) stored as plaintext in PostgreSQL. No column-level encryption. | All model files |
 | 3 | **Secrets in `.env` committed** | `GOOGLE_CLIENT_SECRET`, `JWT_SECRET`, `DATABASE_URL` with credentials all in VCS. | `server/.env` |
@@ -181,7 +183,7 @@
 #### 📋 Techniques & Approaches
 
 | Technique | Tools/Libraries | Implementation |
-|-----------|----------------|----------------|
+| ----------- | ---------------- | ---------------- |
 | Object Storage | `boto3` S3, `boto3` Cloudflare R2 | Pre-signed URLs, CDN edge delivery |
 | Column Encryption | `sqlalchemy-encrypted` or `pgcrypto` | AES-256-GCM with key rotation |
 | Secrets Management | Doppler, AWS Secrets Manager, 1Password | Env injection at deploy, never on disk |
@@ -194,7 +196,7 @@
 #### ⚠️ Problems & Root Cause
 
 | # | Problem | Root Cause | File Reference |
-|---|---------|------------|----------------|
+| --- | --------- | ------------ | ---------------- |
 | 1 | **CORS allows all headers/methods** | `allow_headers=["*"]`, `allow_methods=["*"]` — overly permissive | `server/main.py:CORS middleware` |
 | 2 | **No request size limiting** | File uploads and JSON payloads have no size caps — DoS vector | `server/app/modules/uploads/routes.py` |
 | 3 | **Debug logs committed to VCS** | `server_debug.log` at repo root contains runtime debug output | `server_debug.log` |
@@ -225,6 +227,7 @@
 #### 🛠️ Recommended Actions
 
 1. **Harden CORS:**
+
    ```python
    # server/main.py
    app.add_middleware(
@@ -237,6 +240,7 @@
    ```
 
 2. **Add request size limiting:**
+
    ```python
    # server/main.py
    app.add_middleware(RequestSizeLimitMiddleware, max_size=1024 * 1024 * 5)  # 5MB
@@ -245,6 +249,7 @@
    ```
 
 3. **Conditionally disable OpenAPI docs:**
+
    ```python
    # server/main.py
    app = FastAPI(
@@ -254,6 +259,7 @@
    ```
 
 4. **Add security headers middleware for API:**
+
    ```python
    @app.middleware("http")
    async def add_security_headers(request, call_next):
@@ -274,7 +280,7 @@
 #### 📋 Techniques & Approaches
 
 | Technique | Tools | Implementation |
-|-----------|-------|----------------|
+| ----------- | ------- | ---------------- |
 | Security Headers | FastAPI middleware | Automate with `secure.py` library |
 | API Hardening | Cloudflare WAF, AWS WAF | Rate limiting, IP reputation, DDoS protection |
 | Request Validation | Pydantic + custom middleware | Reject oversized payloads before processing |
@@ -289,7 +295,7 @@
 #### ⚠️ Problems & Root Cause
 
 | # | Problem | Root Cause | File Reference |
-|---|---------|------------|----------------|
+| --- | --------- | ------------ | ---------------- |
 | 1 | **No graceful shutdown** | APScheduler + DB pool don't clean up on SIGTERM — risk of in-flight data loss | `server/main.py` — no lifespan handler |
 | 2 | **No health check endpoint** | Load balancers / k8s probes have no endpoint to check — can't detect dead workers | `server/app/modules` — no health route |
 | 3 | **No request tracing** | No `X-Request-ID` through the system — debugging distributed issues is painful | `server/main.py` — no middleware |
@@ -320,6 +326,7 @@
 #### 🛠️ Recommended Actions
 
 1. **Add health check endpoint:**
+
    ```python
    # server/app/modules/health/routes.py
    @router.get("/api/health")
@@ -335,6 +342,7 @@
    ```
 
 2. **Add Request-ID middleware:**
+
    ```python
    # server/main.py
    @app.middleware("http")
@@ -348,6 +356,7 @@
    ```
 
 3. **Implement graceful shutdown:**
+
    ```python
    # server/main.py using lifespan
    @asynccontextmanager
@@ -372,7 +381,7 @@
 #### 📋 Techniques & Approaches
 
 | Technique | Pattern | Tools |
-|-----------|---------|-------|
+| ----------- | --------- | ------- |
 | Health Checks | Readiness + Liveness probes | FastAPI + DB ping + scheduler check |
 | Distributed Tracing | Request-ID + OpenTelemetry | `opentelemetry-python` for production |
 | Event-Driven Architecture | Event Bus / Message Queue | Redis pub/sub → RabbitMQ → Kafka |
@@ -389,7 +398,7 @@
 #### ⚠️ Problems & Root Cause
 
 | # | Problem | Root Cause | File Reference |
-|---|---------|------------|----------------|
+| --- | --------- | ------------ | ---------------- |
 | 1 | **N+1 queries in cron job** | Monthly accrual cron fetches all employees, then iterates querying balances individually | `server/app/modules/leaves/cron.py` |
 | 2 | **Dashboard stats computed on every load** | No caching — every dashboard refresh hits DB with multiple aggregation queries | `server/app/modules/dashboard/services.py` |
 | 3 | **No database connection pooling tuning** | Default pool size may be too low for concurrent users | `server/app/core/database.py` |
@@ -417,6 +426,7 @@
 #### 🛠️ Recommended Actions
 
 1. **Fix N+1 in cron job:**
+
    ```python
    # server/app/modules/leaves/cron.py — BEFORE
    employees = await employee_repo.get_all()
@@ -433,12 +443,14 @@
    ```
 
 2. **Add response compression:**
+
    ```python
    from fastapi.middleware.gzip import GZipMiddleware
    app.add_middleware(GZipMiddleware, minimum_size=500)  # compress responses >500 bytes
    ```
 
 3. **Add pagination to all list endpoints:**
+
    ```python
    # Common pagination schema
    class PaginationParams:
@@ -457,6 +469,7 @@
    ```
 
 4. **Add database indexes:**
+
    ```sql
    -- Critical indexes to add via Alembic migration
    CREATE INDEX idx_leave_requests_org_status ON leave_requests(organization_id, status);
@@ -467,6 +480,7 @@
    ```
 
 5. **Add Redis caching for dashboard:**
+
    ```python
    # server/app/core/cache.py
    import redis.asyncio as redis
@@ -487,7 +501,7 @@
 #### 📋 Techniques & Approaches
 
 | Technique | Pattern | Benefit |
-|-----------|---------|---------|
+| ----------- | --------- | --------- |
 | Eager Loading | `selectinload` / `joinedload` | Eliminates N+1 queries |
 | Pagination | Offset-based + cursor-based | Prevents OOM on large datasets |
 | Caching | Cache-aside (lazy loading) | 10-100x faster reads for dashboard |
@@ -503,7 +517,7 @@
 #### ⚠️ Problems & Root Cause
 
 | # | Problem | Root Cause | File Reference |
-|---|---------|------------|----------------|
+| --- | --------- | ------------ | ---------------- |
 | 1 | **Large JS bundles** | All components bundled together — Recharts, jsPDF, PapaParse shipped to every page | `client/src/app/(protected)/layout.js` |
 | 2 | **Client-side data fetching for dashboard** | Dashboard data fetched with `useEffect` + fetch — no server-side rendering | `client/src/features/dashboard/` |
 | 3 | **No image optimization** | Static images not using `next/image` — no lazy loading, no WebP, no srcset | `client/src/components/Landing/` |
@@ -531,6 +545,7 @@
 #### 🛠️ Recommended Actions
 
 1. **Dynamic import heavy libraries:**
+
    ```javascript
    // Before
    import { BarChart, Bar, XAxis, YAxis } from 'recharts';
@@ -543,6 +558,7 @@
    ```
 
 2. **Move data fetching to server components:**
+
    ```javascript
    // app/(protected)/dashboard/page.js — Server Component
    export default async function DashboardPage() {
@@ -554,6 +570,7 @@
    ```
 
 3. **Optimize images:**
+
    ```javascript
    import Image from 'next/image';
    // ... instead of <img>
@@ -562,6 +579,7 @@
    ```
 
 4. **Add bundle analysis:**
+
    ```javascript
    // next.config.js
    const withBundleAnalyzer = require('@next/bundle-analyzer')({
@@ -571,9 +589,11 @@
    ```
 
 5. **Virtualize large lists:**
+
    ```bash
    npm install @tanstack/react-virtual
    ```
+
    ```javascript
    // Virtualize employee list instead of rendering all rows
    const virtualizer = useVirtualizer({
@@ -586,7 +606,7 @@
 #### 📋 Techniques & Approaches
 
 | Technique | Tool | Benefit |
-|-----------|------|---------|
+| ----------- | ------ | --------- |
 | Dynamic Imports | `next/dynamic` | Reduces initial JS by 40-60% |
 | Server Components | Next.js App Router | Zero JS for data fetching |
 | Image Optimization | `next/image` | WebP, lazy load, responsive sizes |
@@ -603,7 +623,7 @@
 #### ⚠️ Problems & Root Cause
 
 | # | Problem | Root Cause | File Reference |
-|---|---------|------------|----------------|
+| --- | --------- | ------------ | ---------------- |
 | 1 | **No Docker/containerization** | Can't scale horizontally — no container image, no orchestration | Missing entirely |
 | 2 | **No CDN for static assets** | All assets served from single Next.js server — no edge caching | `client/next.config.js` |
 | 3 | **Database as single point of failure** | Single PostgreSQL instance — no replica, no failover | `server/app/core/database.py` |
@@ -631,6 +651,7 @@
 #### 🛠️ Recommended Actions
 
 1. **Create Dockerfile for backend:**
+
    ```dockerfile
    # server/Dockerfile
    FROM python:3.11-slim
@@ -642,6 +663,7 @@
    ```
 
 2. **Create Dockerfile for frontend:**
+
    ```dockerfile
    # client/Dockerfile
    FROM node:20-alpine AS builder
@@ -661,6 +683,7 @@
    ```
 
 3. **Add CDN via Next.js config:**
+
    ```javascript
    // client/next.config.js
    module.exports = {
@@ -673,6 +696,7 @@
    ```
 
 4. **Configure PgBouncer:**
+
    ```ini
    # pgbouncer.ini
    [databases]
@@ -684,6 +708,7 @@
    ```
 
 5. **Add load testing with k6:**
+
    ```javascript
    // test/performance/k6/scenario.js
    import http from 'k6/http';
@@ -706,7 +731,7 @@
 #### 📋 Techniques & Approaches
 
 | Technique | Implementation | Scalability Gain |
-|-----------|---------------|------------------|
+| ----------- | --------------- | ------------------ |
 | Horizontal Scaling | Docker + k8s/ECS | Add instances on demand |
 | CDN | Cloudflare / Vercel / AWS CloudFront | Serve static from edge (50ms → 5ms) |
 | PgBouncer | Transaction pooling | Handle 1000+ concurrent DB connections |
@@ -724,7 +749,7 @@
 #### ⚠️ Problems & Root Cause
 
 | # | Problem | Root Cause | File Reference |
-|---|---------|------------|----------------|
+| --- | --------- | ------------ | ---------------- |
 | 1 | **TypeScript config exists but unused** | `tsconfig.json` present but all code is `.js`/`.jsx` — no type safety | `client/tsconfig.json` + all `.js` files |
 | 2 | **Dead code / debug artifacts committed** | `server_debug.log` at repo root, possibly unused components | `server_debug.log` |
 | 3 | **No pre-commit hooks** | No linting/formatting enforcement before commits — inconsistent code style | Missing `.husky/`, `.pre-commit-config.yaml` |
@@ -761,6 +786,7 @@
    - Leverage existing types in `client/src/lib/` if any
 
 2. **Add pre-commit hooks:**
+
    ```yaml
    # .pre-commit-config.yaml (repo root)
    repos:
@@ -784,6 +810,7 @@
    ```
 
 3. **Standardize error responses:**
+
    ```python
    # server/app/core/errors.py
    class APIError(Exception):
@@ -812,6 +839,7 @@
    - Keep old routes for backward compat during transition
 
 5. **Clean up VCS:**
+
    ```bash
    git rm --cached server_debug.log
    git rm --cached server/.env
@@ -822,7 +850,7 @@
 #### 📋 Techniques & Approaches
 
 | Practice | Tool | Benefit |
-|----------|------|---------|
+| ---------- | ------ | --------- |
 | TypeScript | tsc + strict mode | Catch type errors at compile time |
 | Pre-commit Hooks | pre-commit, husky | Enforce standards automatically |
 | Error Standardization | Custom exception hierarchy | Consistent frontend error handling |
@@ -840,7 +868,7 @@
 #### ⚠️ Problems & Root Cause
 
 | # | Problem | Root Cause | File Reference |
-|---|---------|------------|----------------|
+| --- | --------- | ------------ | ---------------- |
 | 1 | **No optimistic updates** | Leave submission shows loading spinner until server responds — even for obvious successes | `client/src/features/leaves/apply/` |
 | 2 | **No skeleton loading** | Loading spinners used instead of skeleton screens matching layout — perceived as slower | `client/src/components/` — Loading components |
 | 3 | **No debounced search** | Employee search fires API call on every keystroke — unnecessary network spam | `client/src/features/employees/` |
@@ -871,6 +899,7 @@
 #### 🛠️ Recommended Actions
 
 1. **Implement optimistic updates for leave submission:**
+
    ```javascript
    // client/src/features/leaves/apply/ApplyLeave.jsx
    const [optimisticLeaves, addOptimisticLeave] = useOptimistic(
@@ -891,6 +920,7 @@
    ```
 
 2. **Replace spinners with skeleton screens:**
+
    ```javascript
    // client/src/components/ui/Skeleton.jsx
    function SkeletonTable({ rows = 5, cols = 4 }) {
@@ -909,6 +939,7 @@
    ```
 
 3. **Add debounced search hook:**
+
    ```javascript
    // client/src/hooks/useDebounce.js
    function useDebounce(value, delay = 300) {
@@ -929,6 +960,7 @@
    ```
 
 4. **Offload heavy tasks to Web Workers:**
+
    ```javascript
    // client/src/workers/csv.worker.js
    self.onmessage = function(e) {
@@ -944,6 +976,7 @@
    ```
 
 5. **Optimize re-renders:**
+
    ```javascript
    // Wrap expensive components
    const EmployeeCard = React.memo(({ employee }) => (
@@ -965,7 +998,7 @@
 #### 📋 Techniques & Approaches
 
 | Technique | Implementation | UX Benefit |
-|-----------|---------------|------------|
+| ----------- | --------------- | ------------ |
 | Optimistic UI | `useOptimistic` hook + rollback | Instant feedback, feels faster |
 | Skeleton Loading | CSS animation + layout matching | Perceived 2x faster loading |
 | Debounce | Custom hook / lodash.debounce | 90% fewer API calls on search |
@@ -983,7 +1016,7 @@
 #### ⚠️ Problems & Root Cause
 
 | # | Problem | Root Cause | File Reference |
-|---|---------|------------|----------------|
+| --- | --------- | ------------ | ---------------- |
 | 1 | **No critical CSS inlining** | Full Tailwind CSS loads before page renders | `client/src/app/layout.js` |
 | 2 | **No font optimization** | Custom fonts not preloaded — FOUT/FOIT | `client/src/app/layout.js` |
 | 3 | **Landing page not fully SSR'd** | Interactive components may block initial render | `client/src/app/page.js` |
@@ -1011,6 +1044,7 @@
 #### 🛠️ Recommended Actions
 
 1. **Optimize fonts with `next/font`:**
+
    ```javascript
    // client/src/app/layout.js
    import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
@@ -1025,6 +1059,7 @@
    ```
 
 2. **Add resource hints:**
+
    ```javascript
    // client/src/app/layout.js
    export const metadata = {
@@ -1036,12 +1071,14 @@
    ```
 
 3. **Enable ISR for landing page:**
+
    ```javascript
    // client/src/app/page.js
    export const revalidate = 3600; // Revalidate every hour
    ```
 
 4. **Implement performance budgets in CI:**
+
    ```javascript
    // next.config.js
    const nextConfig = {
@@ -1056,6 +1093,7 @@
    ```
 
 5. **Measure and monitor Core Web Vitals:**
+
    ```javascript
    // client/src/app/layout.js — add analytics
    import { useReportWebVitals } from 'next/web-vitals';
@@ -1071,7 +1109,7 @@
 #### 📋 Techniques & Approaches
 
 | Technique | Tool | Target Metric |
-|-----------|------|---------------|
+| ----------- | ------ | --------------- |
 | Font Optimization | `next/font` | CLS, FCP |
 | Critical CSS | `critters` or inline | FCP, LCP |
 | Resource Hints | `<link preconnect/prefetch>` | LCP, TTFB |
@@ -1086,7 +1124,7 @@
 #### ⚠️ Problems & Root Cause
 
 | # | Problem | Root Cause | File Reference |
-|---|---------|------------|----------------|
+| --- | --------- | ------------ | ---------------- |
 | 1 | **No response time SLAs** | No defined performance targets — no alert when API degrades | Missing |
 | 2 | **No query result limiting** | Some endpoints may return unlimited records | `server/app/modules/*/routes.py` |
 | 3 | **No request coalescing** | Multiple dashboard widgets fire separate requests | `client/src/features/dashboard/` |
@@ -1108,6 +1146,7 @@
 #### 🛠️ Recommended Actions
 
 1. **Add API response time middleware:**
+
    ```python
    # server/main.py
    @app.middleware("http")
@@ -1122,6 +1161,7 @@
    ```
 
 2. **Add default limit to all list endpoints:**
+
    ```python
    async def list_employees(
        page: int = Query(1, ge=1),
@@ -1138,7 +1178,7 @@
 #### 📋 Techniques & Approaches
 
 | Technique | Implementation | Benefit |
-|-----------|---------------|---------|
+| ----------- | --------------- | --------- |
 | Response Monitoring | Middleware + structured logs | Detect and alert on slow endpoints |
 | Query Limits | Default LIMIT on all list queries | Prevent runaway queries |
 | Request Coalescing | Batch endpoint (GraphQL-style) | Reduce HTTP overhead |
@@ -1153,7 +1193,7 @@
 #### ⚠️ Problems & Root Cause
 
 | # | Problem | Root Cause | File Reference |
-|---|---------|------------|----------------|
+| --- | --------- | ------------ | ---------------- |
 | 1 | **No per-page metadata** | `generateMetadata` not used — all pages get default title/description | `client/src/app/page.js` and all route files |
 | 2 | **No structured data (JSON-LD)** | Search engines lack context about the business, features, pricing | `client/src/app/page.js` |
 | 3 | **No sitemap.xml** | No dynamic sitemap generation — search engines can't discover all pages | Missing `app/sitemap.js` |
@@ -1183,6 +1223,7 @@
 #### 🛠️ Recommended Actions
 
 1. **Add metadata to landing page:**
+
    ```javascript
    // client/src/app/page.js
    export const metadata = {
@@ -1209,6 +1250,7 @@
    ```
 
 2. **Add JSON-LD structured data:**
+
    ```javascript
    // client/src/components/Landing/JsonLd.jsx
    export default function JsonLd() {
@@ -1240,6 +1282,7 @@
    ```
 
 3. **Generate sitemap dynamically:**
+
    ```javascript
    // client/src/app/sitemap.js
    export default async function sitemap() {
@@ -1254,6 +1297,7 @@
    ```
 
 4. **Create robots.txt:**
+
    ```javascript
    // client/src/app/robots.js
    export default function robots() {
@@ -1271,10 +1315,10 @@
    - Check `client/src/app/page.js` does NOT have `'use client'` at the top
    - Move interactive parts (chatbot, animated stats) to client islands via dynamic imports with `ssr: false`
 
-#### 📋 Techniques & Approaches
+#### 📋 SEO Techniques & Approaches
 
 | Technique | Implementation | SEO Impact |
-|-----------|---------------|------------|
+| ----------- | --------------- | ------------ |
 | Metadata API | `generateMetadata` | Rich snippets, click-through rate |
 | JSON-LD | Schema.org structured data | Rich results, knowledge panel |
 | Sitemap | Dynamic sitemap generation | Full page discovery |
@@ -1289,7 +1333,7 @@
 ## 9. Priority Action Matrix
 
 | Priority | Dimension | Action | Effort | Impact | Dependencies | Target |
-|----------|-----------|--------|--------|--------|--------------|--------|
+| ---------- | ----------- | -------- | -------- | -------- | -------------- | -------- |
 | 🔴 **P0** | Security | Rotate leaked JWT secret, add `.env` to `.gitignore` | 30 min | Critical | None | This week |
 | 🔴 **P0** | Security | Add password policy validation | 2 hours | Critical | None | This week |
 | 🔴 **P0** | Security | Add auth failure logging | 3 hours | High | Audit log table exists | This week |
@@ -1364,7 +1408,8 @@ Use this checklist when deploying to production:
 ### Appendix B: Performance Benchmarking Methodology
 
 1. **Baseline Measurement:**
-   ```
+
+   ```text
    Tool: Lighthouse (Core Web Vitals)
    Target: LCP < 2.5s, FID < 100ms, CLS < 0.1, TTFB < 800ms
    
@@ -1408,7 +1453,7 @@ Use this checklist when deploying to production:
 ### Appendix D: Recommended Tools & Libraries
 
 | Category | Tool | Purpose |
-|----------|------|---------|
+| ---------- | ------ | --------- |
 | **Security** | `bandit` | Python SAST scanner |
 | **Security** | `safety` / `pip-audit` | Python dependency vuln scan |
 | **Security** | `truffleHog` | Git history secret scanning |
@@ -1434,6 +1479,7 @@ Use this checklist when deploying to production:
 ---
 
 > **Next Steps:**
+>
 > 1. Tackle P0 items immediately (security secrets, password policy, auth logging)
 > 2. Work through P1 items in next sprint (indexes, caching, pagination, SEO)
 > 3. Start P2 items in month 2 (Docker, CSRF, UX improvements, graceful shutdown)

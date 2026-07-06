@@ -1,4 +1,5 @@
 # API Documentation
+
 ## Leave Management System
 
 **Base URL:** `http://localhost:8000/api`  
@@ -29,8 +30,9 @@ All error responses follow this structure:
 ```
 
 **Standard HTTP Status Codes:**
+
 | Code | Meaning |
-|------|---------|
+| ------ | --------- |
 | 200 | Success |
 | 201 | Created |
 | 400 | Bad Request (validation error) |
@@ -43,23 +45,30 @@ All error responses follow this structure:
 ---
 
 ## 1. Authentication & Onboarding
+
 Endpoints for secure login, OAuth, and lead provisioning.
 
 ### 1.1 POST `/api/auth/login`
+
 Authenticates a registered employee and returns a JWT.
 **Roles:** Public
 **Request:**
+
 ```json
 {
   "email": "user@company.com",
   "password": "securepassword"
 }
 ```
+
 **Response Headers:**
+
 ```http
 Set-Cookie: access_token=eyJhbG...; HttpOnly; Secure; SameSite=Lax; Path=/
 ```
+
 **Response Body (200 OK):**
+
 ```json
 {
   "message": "Login successful",
@@ -72,9 +81,11 @@ Set-Cookie: access_token=eyJhbG...; HttpOnly; Secure; SameSite=Lax; Path=/
 ```
 
 ### 1.2 POST `/api/auth/oauth`
+
 Authenticates via Google/Facebook.
 **Roles:** Public
 **Request:**
+
 ```json
 {
   "provider": "google",
@@ -83,9 +94,11 @@ Authenticates via Google/Facebook.
 ```
 
 ### 1.3 POST `/api/onboarding/apply`
+
 Submits a company application after initial OAuth/Email registration.
 **Roles:** Authenticated (Unprovisioned Lead)
 **Request:**
+
 ```json
 {
   "company_name": "Acme Corp",
@@ -93,7 +106,9 @@ Submits a company application after initial OAuth/Email registration.
   "requirements": "Need approval chains"
 }
 ```
+
 **Response (201 Created):**
+
 ```json
 {
   "message": "Application submitted successfully. Our team will review and provision your workspace."
@@ -111,6 +126,7 @@ Apply for a new leave.
 **Access:** 👤 Employee, 👔 Manager, 🛡️ Admin
 
 **Request Body:**
+
 ```json
 {
   "leave_type": "casual",
@@ -121,6 +137,7 @@ Apply for a new leave.
 ```
 
 **Success Response (201):**
+
 ```json
 {
   "message": "Leave application submitted successfully",
@@ -139,8 +156,9 @@ Apply for a new leave.
 ```
 
 **Error Responses:**
+
 | Status | Condition | Response |
-|--------|-----------|----------|
+| -------- | ----------- | ---------- |
 | 400 | Missing fields | `{"error": "All fields are required: leave_type, start_date, end_date, reason"}` |
 | 400 | Invalid date range | `{"error": "End date must be on or after start date"}` |
 | 400 | Past date | `{"error": "Start date cannot be in the past"}` |
@@ -156,15 +174,17 @@ Get leave history for the current user.
 **Access:** 👤 Employee, 👔 Manager, 🛡️ Admin
 
 **Query Parameters:**
+
 | Param | Type | Default | Description |
-|-------|------|---------|-------------|
+| ------- | ------ | --------- | ------------- |
 | `status` | string | all | Filter: `pending`, `approved`, `rejected`, `cancelled` |
 | `start_date` | string | — | Filter by leave start date (YYYY-MM-DD) |
 | `end_date` | string | — | Filter by leave end date (YYYY-MM-DD) |
-| `skip` | integer| 0 | Pagination offset |
-| `limit` | integer| 100 | Maximum records to return (max 1000) |
+| `skip` | integer | 0 | Pagination offset |
+| `limit` | integer | 100 | Maximum records to return (max 1000) |
 
 **Success Response (200):**
+
 ```json
 {
   "leaves": [
@@ -198,6 +218,7 @@ Get leave balance for the current user.
 **Access:** 👤 Employee, 👔 Manager, 🛡️ Admin
 
 **Success Response (200):**
+
 ```json
 {
   "balances": [
@@ -218,6 +239,7 @@ Cancel a pending leave request.
 **Access:** 👤 Owner of the leave
 
 **Success Response (200):**
+
 ```json
 {
   "message": "Leave request cancelled successfully",
@@ -229,8 +251,9 @@ Cancel a pending leave request.
 ```
 
 **Error Responses:**
+
 | Status | Condition | Response |
-|--------|-----------|----------|
+| -------- | ----------- | ---------- |
 | 400 | Not pending | `{"error": "Only pending leaves can be cancelled"}` |
 | 403 | Not owner | `{"error": "You can only cancel your own leave requests"}` |
 | 404 | Not found | `{"error": "Leave request not found"}` |
@@ -244,12 +267,14 @@ Get pending leave requests from direct reports.
 **Access:** 👔 Manager, 🛡️ Admin
 
 **Query Parameters:**
+
 | Param | Type | Default | Description |
 |-------|------|---------|-------------|
 | `skip` | integer| 0 | Pagination offset |
 | `limit` | integer| 100 | Maximum records to return (max 1000) |
 
 **Success Response (200):**
+
 ```json
 {
   "pending": [
@@ -278,6 +303,7 @@ Approve a pending leave request.
 **Access:** 👔 Manager, 🛡️ Admin
 
 **Request Body:**
+
 ```json
 {
   "comments": "Approved. Enjoy your time off!"
@@ -285,6 +311,7 @@ Approve a pending leave request.
 ```
 
 **Success Response (200 OK):**
+
 ```json
 {
   "id": 5,
@@ -294,8 +321,9 @@ Approve a pending leave request.
 ```
 
 **Error Responses:**
+
 | Status | Condition | Response |
-|--------|-----------|----------|
+| -------- | ----------- | ---------- |
 | 400 | Not pending | `{"error": "Only pending leaves can be approved"}` |
 | 403 | Not the manager | `{"error": "You can only approve requests from your direct reports"}` |
 | 404 | Not found | `{"error": "Leave request not found"}` |
@@ -309,6 +337,7 @@ Reject a pending leave request.
 **Access:** 👔 Manager, 🛡️ Admin
 
 **Request Body:**
+
 ```json
 {
   "comments": "Team is understaffed during this period. Please reschedule."
@@ -316,6 +345,7 @@ Reject a pending leave request.
 ```
 
 **Success Response (200):**
+
 ```json
 {
   "message": "Leave request rejected",
@@ -327,8 +357,9 @@ Reject a pending leave request.
 ```
 
 **Error Responses:**
+
 | Status | Condition | Response |
-|--------|-----------|----------|
+| -------- | ----------- | ---------- |
 | 400 | No reason provided | `{"error": "Rejection reason is required"}` |
 | 400 | Not pending | `{"error": "Only pending leaves can be rejected"}` |
 | 403 | Not the manager | `{"error": "You can only reject requests from your direct reports"}` |
@@ -344,6 +375,7 @@ Get dashboard statistics based on user role.
 **Access:** 👤 Employee, 👔 Manager, 🛡️ Admin
 
 **Success Response (200) — Employee:**
+
 ```json
 {
   "role": "employee",
@@ -359,6 +391,7 @@ Get dashboard statistics based on user role.
 ```
 
 **Success Response (200) — Manager (additional fields):**
+
 ```json
 {
   "role": "manager",
@@ -371,6 +404,7 @@ Get dashboard statistics based on user role.
 ```
 
 **Success Response (200) — Admin (additional fields):**
+
 ```json
 {
   "role": "admin",
@@ -401,13 +435,15 @@ List all employees.
 **Access:** 🛡️ Admin
 
 **Query Parameters:**
+
 | Param | Type | Default | Description |
-|-------|------|---------|-------------|
+| ------- | ------ | --------- | ------------- |
 | `search` | string | — | Search by name or email |
-| `skip` | integer| 0 | Pagination offset |
-| `limit` | integer| 100 | Maximum records to return (max 1000) |
+| `skip` | integer | 0 | Pagination offset |
+| `limit` | integer | 100 | Maximum records to return (max 1000) |
 
 **Success Response (200):**
+
 ```json
 {
   "employees": [
@@ -432,6 +468,7 @@ Update an employee's details.
 **Access:** 🛡️ Admin
 
 **Request Body:**
+
 ```json
 {
   "name": "John Updated",
@@ -442,6 +479,7 @@ Update an employee's details.
 ```
 
 **Success Response (200):**
+
 ```json
 {
   "message": "Employee updated successfully",
@@ -456,6 +494,7 @@ Deactivate an employee (soft delete).
 **Access:** 🛡️ Admin
 
 **Success Response (200):**
+
 ```json
 {
   "message": "Employee deactivated successfully"
@@ -463,6 +502,7 @@ Deactivate an employee (soft delete).
 ```
 
 **Error Responses:**
+
 | Status | Condition | Response |
 |--------|-----------|----------|
 | 400 | Self-deletion | `{"error": "Cannot deactivate your own account"}` |
@@ -473,13 +513,16 @@ Deactivate an employee (soft delete).
 ## 5. System Settings & Holidays
 
 ### 5.1 GET `/api/settings`
+
 Retrieves global company policies.
 **Roles:** Employee, Manager, Admin, Super Admin
 
 ### 5.2 POST `/api/settings`
+
 Updates a specific system setting.
 **Roles:** Admin, Super Admin
 **Request:**
+
 ```json
 {
   "setting_key": "carry_forward_limit",
@@ -488,13 +531,16 @@ Updates a specific system setting.
 ```
 
 ### 5.3 GET `/api/holidays`
+
 Lists all company holidays for the current year.
 **Roles:** Employee, Manager, Admin, Super Admin
 
 ### 5.4 POST `/api/holidays`
+
 Adds a new company holiday.
 **Roles:** Admin, Super Admin
 **Request:**
+
 ```json
 {
   "name": "Independence Day",
@@ -533,9 +579,11 @@ View organization-wide reports and metrics.
 These endpoints are strictly for Platform Owners managing multi-tenancy.
 
 ### 7.1 GET `/api/organizations`
+
 Lists all registered organizations.
 **Roles:** Platform Owner
 **Success Response (200):**
+
 ```json
 {
   "organizations": [
@@ -552,9 +600,11 @@ Lists all registered organizations.
 ```
 
 ### 7.2 POST `/api/organizations`
+
 Creates a new organization profile, provisioning their space.
 **Roles:** Platform Owner
 **Request:**
+
 ```json
 {
   "name": "Acme Corp",
@@ -564,9 +614,11 @@ Creates a new organization profile, provisioning their space.
 ```
 
 ### 7.3 POST `/api/organizations/:id/impersonate`
+
 Initiates a deep impersonation session for a target organization. Generates an impersonation JWT.
 **Roles:** Platform Owner
 **Success Response (200):**
+
 ```json
 {
   "impersonation_token": "eyJhbG...",
@@ -575,6 +627,7 @@ Initiates a deep impersonation session for a target organization. Generates an i
 ```
 
 ### 7.4 DELETE `/api/organizations/:id`
+
 Deactivates an organization.
 **Roles:** Platform Owner
 
@@ -583,20 +636,23 @@ Deactivates an organization.
 ## 8. AI Chatbot
 
 ### 8.1 POST `/api/bot/chat`
+
 Send a message to the AI assistant to ask about company leave policies.
 **Roles:** Employee, Manager, Admin, Super Admin
 **Request:**
+
 ```json
 {
   "message": "How many casual leaves do I get per year?",
   "session_id": "optional-uuid-for-continuity"
 }
 ```
+
 **Success Response (200):**
+
 ```json
 {
   "reply": "According to the company policy, you are entitled to 12 casual leaves per year.",
   "session_id": "uuid-for-continuity"
 }
 ```
-

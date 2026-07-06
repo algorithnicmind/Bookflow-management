@@ -1,4 +1,5 @@
 # Enterprise Design System & UI/UX Specification
+
 ## Leave Management System
 
 **Version:** 2.0  
@@ -924,11 +925,13 @@ Instead of a standalone page, the onboarding application is integrated as a moda
 │  └─────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+
 ```
 
 ### 3.8b Account Settings Page (/account-settings)
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │  ACCOUNT SETTINGS PAGE — /account-settings                          │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -943,7 +946,7 @@ Instead of a standalone page, the onboarding application is integrated as a moda
 │  │  ┌── 2-Column Input Grid ─────────────────────────────────┐ │   │
 │  │  │  FULL NAME                 EMAIL ADDRESS               │ │   │
 │  │  │  ┌──────────────────────┐  ┌─────────────────────────┐ │ │   │
-│  │  │  │ John Doe             │  │ john@company.com        │ │ │   │
+│  │  │  │ John Doe             │  │ <john@company.com>        │ │ │   │
 │  │  │  └──────────────────────┘  └─────────────────────────┘ │ │   │
 │  │  │                                                        │ │   │
 │  │  │  LOCATION                  PHONE NUMBER                │ │   │
@@ -969,11 +972,13 @@ Instead of a standalone page, the onboarding application is integrated as a moda
 │  │  (red gradient bg)             (blue gradient bg)           │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 ### 3.8c Audit Logs Page (/audit-logs)
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │  AUDIT LOGS PAGE — /audit-logs                                      │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -999,7 +1004,7 @@ Instead of a standalone page, the onboarding application is integrated as a moda
 │  │  │ TIMESTAMP     ACTOR          ACTION          TARGET    │ │   │
 │  │  │────────────────────────────────────────────────────────│ │   │
 │  │  │ Jun 22, 10:30 John Admin     leave_approve   leave_req │ │   │
-│  │  │               john@co.com                    ID: 42    │ │   │
+│  │  │               <john@co.com>                    ID: 42    │ │   │
 │  │  │               (127.0.0.1)                              │ │   │
 │  │  │────────────────────────────────────────────────────────│ │   │
 │  │  │ Jun 22, 09:15 System         accrual_run     employee  │ │   │
@@ -1009,11 +1014,13 @@ Instead of a standalone page, the onboarding application is integrated as a moda
 │  │  [View Details] (ghost button) per row opens JSON payload   │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 ### 3.9 System Settings Page (/system-settings)
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │  SYSTEM SETTINGS PAGE — /system-settings                            │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -1049,11 +1056,13 @@ Instead of a standalone page, the onboarding application is integrated as a moda
 │  │  └─────────────────────────────────────────────────────┘   │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 ### 3.10 Manage Admins Page (/manage-admins)
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │  MANAGE ADMINS PAGE — /manage-admins                                │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -1075,7 +1084,7 @@ Instead of a standalone page, the onboarding application is integrated as a moda
 │  │                                                             │   │
 │  │  EMAIL                                                      │   │
 │  │  ┌─────────────────────────────────────────────────────┐   │   │
-│  │  │  admin@company.com                                   │   │   │
+│  │  │  <admin@company.com>                                   │   │   │
 │  │  └─────────────────────────────────────────────────────┘   │   │
 │  │                                                             │   │
 │  │  PASSWORD                                                   │   │
@@ -1088,11 +1097,13 @@ Instead of a standalone page, the onboarding application is integrated as a moda
 │  │  └─────────────────────────────────────────────────────┘   │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 ### 3.11 Organization Reports Page (/organization-reports)
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │  ORG REPORTS PAGE — /organization-reports                           │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -1126,6 +1137,7 @@ Instead of a standalone page, the onboarding application is integrated as a moda
 │  │  └──────────────────────────────────────────────────────┘  │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 ### 3.12 Platform Owner Portal (Exclusive CRM)
@@ -1141,6 +1153,7 @@ Default Platform Owner login:
 Displays a CRM-like board tracking all B2B organization onboarding registrations.
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │  LEADS MANAGEMENT PAGE — /leads                                     │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -1166,8 +1179,8 @@ Displays a CRM-like board tracking all B2B organization onboarding registrations
 │  │  ┌──────────────────────────────────────────────────────┐   │   │
 │  │  │ COMPANY    INDUSTRY   ADMIN EMAIL     STATUS    DATE │   │   │
 │  │  │──────────────────────────────────────────────────────│   │   │
-│  │  │ Acme Corp  Tech       admin@acme.com  [Pending  ▼] Jun 22│   │   │
-│  │  │ Globex     Bio        ceo@globex.co   [Connected▼] Jun 21│   │   │
+│  │  │ Acme Corp  Tech       <admin@acme.com>  [Pending  ▼] Jun 22│   │   │
+│  │  │ Globex     Bio        <ceo@globex.co>   [Connected▼] Jun 21│   │   │
 │  │  └──────────────────────────────────────────────────────┘   │   │
 │  │                                                             │   │
 │  │  Status Dropdown Option Selector:                           │   │
@@ -1175,6 +1188,7 @@ Displays a CRM-like board tracking all B2B organization onboarding registrations
 │  │    Not Interested | Approved | Rejected                    │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 #### 3.12b Lead Profile Detail Page (/leads/[id])
@@ -1182,6 +1196,7 @@ Displays a CRM-like board tracking all B2B organization onboarding registrations
 Detailed CRM workspace for reviewing an individual lead, recording interaction notes, and performing one-click organization provisioning.
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │  LEAD DETAIL PAGE — /leads/[id]                                     │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -1207,7 +1222,7 @@ Detailed CRM workspace for reviewing an individual lead, recording interaction n
 │  │  ┌── Left: Client Info ───────┐ ┌── Right: CRM Notes ──────┐ │   │
 │  │  │ 👤 Contact Information     │ │ 📒 Internal Notes        │ │   │
 │  │  │   Name: Jane Doe           │ │   [✓ Saved]              │ │   │
-│  │  │   Email: jane@acme.com     │ │ ┌──────────────────────┐ │ │   │
+│  │  │   Email: <jane@acme.com>     │ │ ┌──────────────────────┐ │ │   │
 │  │  │   Phone: +1 555-0199       │ │ │ Textarea containing  │ │ │   │
 │  │  │                            │ │ │ history of phone     │ │ │   │
 │  │  │ 🏢 Company Details         │ │ │ calls, pricing talks,│ │ │   │
@@ -1221,6 +1236,7 @@ Detailed CRM workspace for reviewing an individual lead, recording interaction n
 │  │  ⏳ Pending ─── 📞 Contacted ─── 🤝 Connected ─── 🌟 Interested  │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 #### 3.12c Contact Messages Page (/owner-contacts)
@@ -1228,6 +1244,7 @@ Detailed CRM workspace for reviewing an individual lead, recording interaction n
 Inbox for message submissions received through the public marketing Landing Page contact form.
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │  CONTACT MESSAGES PAGE — /owner-contacts                            │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -1239,13 +1256,14 @@ Inbox for message submissions received through the public marketing Landing Page
 │                                                                     │
 │  ┌── Message Card ─────────────────────────────────────────────┐   │
 │  │  John Inquiry                                 Jun 22, 2026   │   │
-│  │  john@inquiry.com                                            │   │
+│  │  <john@inquiry.com>                                            │   │
 │  │  ┌────────────────────────────────────────────────────────┐  │   │
 │  │  │ Hello, we are interested in moving our 250-employee     │  │   │
 │  │  │ organization to LeaveFlow. Do you support SAML SSO?    │  │   │
 │  │  └────────────────────────────────────────────────────────┘  │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 #### 3.12d Platform Owners Directory Page (/platform-owners)
@@ -1253,6 +1271,7 @@ Inbox for message submissions received through the public marketing Landing Page
 Registry of Platform Owners. Includes a modal to invite/create new Platform Owners.
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │  PLATFORM OWNERS DIRECTORY — /platform-owners                       │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -1267,8 +1286,8 @@ Registry of Platform Owners. Includes a modal to invite/create new Platform Owne
 │  │  ┌────────────────────────────────────────────────────────┐  │   │
 │  │  │ NAME                 EMAIL                 STATUS      │  │   │
 │  │  │────────────────────────────────────────────────────────│  │   │
-│  │  │ System Owner (You)   owner@leaveflow.com   ● active    │  │   │
-│  │  │ Alex Mercer          alex@leaveflow.com    ● active    │  │   │
+│  │  │ System Owner (You)   <owner@leaveflow.com>   ● active    │  │   │
+│  │  │ Alex Mercer          <alex@leaveflow.com>    ● active    │  │   │
 │  │  └────────────────────────────────────────────────────────┘  │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 │                                                                     │
@@ -1281,13 +1300,14 @@ Registry of Platform Owners. Includes a modal to invite/create new Platform Owne
 │  │  └────────────────────────────────────────────────────────┐  │   │
 │  │  EMAIL ADDRESS                                               │   │
 │  │  ┌────────────────────────────────────────────────────────┐  │   │
-│  │  │ jane@leaveflow.com                                     │  │   │
+│  │  │ <jane@leaveflow.com>                                     │  │   │
 │  │  └────────────────────────────────────────────────────────┐  │   │
 │  │  ⚠️ Note: New owner is created with password: Owner@123!     │   │
 │  │                                                              │   │
 │  │                       [Cancel]  [Add Owner]                  │   │
 │  └──────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 #### 3.12e Platform Owner Organizations Dashboard (/tenants)
@@ -1295,6 +1315,7 @@ Registry of Platform Owners. Includes a modal to invite/create new Platform Owne
 Displays all active and inactive organizations (tenants). Allows Platform Owners to view high-level metrics and access Deep Impersonation.
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │  PLATFORM OWNER ORGANIZATIONS DASHBOARD — /tenants                  │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -1319,6 +1340,7 @@ Displays all active and inactive organizations (tenants). Allows Platform Owners
 │  │  accessed exclusively via the [Setup Profile] button.        │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 #### 3.12f Organization Details / Deep Impersonation (/organizations/[id])
@@ -1326,6 +1348,7 @@ Displays all active and inactive organizations (tenants). Allows Platform Owners
 Accessed by clicking "Setup Profile". Allows Platform Owners to configure settings on behalf of a specific tenant (Deep Impersonation).
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │  ORGANIZATION IMPERSONATION — /organizations/[id]                   │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -1352,6 +1375,7 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 │  │  └───────────────────────────────────────────────────────┘   │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 ---
@@ -1359,6 +1383,7 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 ## 4. Sidebar Navigation (Role-Based)
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    SIDEBAR NAVIGATION                               │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -1375,7 +1400,7 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 │  │                      │  │  📋 Leave History  │                   │
 │  │  ─────────────────── │  │  ────────────────── │                   │
 │  │  👤 User Name        │  │  👤 User Name       │                   │
-│  │     user@co.com      │  │     mgr@co.com      │                   │
+│  │     <user@co.com>      │  │     <mgr@co.com>      │                   │
 │  │  [Sign Out]          │  │  [Sign Out]         │                   │
 │  └──────────────────────┘  └─────────────────────┘                   │
 │                                                                     │
@@ -1394,7 +1419,7 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 │  │                      │  │  📋 Leave History      │               │
 │  │  ─────────────────── │  │  ────────────────────── │               │
 │  │  👤 Admin Name       │  │  👤 Super Admin Name    │               │
-│  │     admin@co.com     │  │     sa@co.com           │               │
+│  │     <admin@co.com>     │  │     <sa@co.com>           │               │
 │  │  [Sign Out]          │  │  [Sign Out]             │               │
 │  └──────────────────────┘  └────────────────────────┘               │
 │                                                                     │
@@ -1409,7 +1434,7 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 │  │                                                  │               │
 │  │  ──────────────────────────────────────────────  │               │
 │  │  👤 Owner Name                                   │               │
-│  │     owner@leaveflow.com                          │               │
+│  │     <owner@leaveflow.com>                          │               │
 │  │  [Sign Out]                                      │               │
 │  └──────────────────────────────────────────────────┘               │
 │                                                                     │
@@ -1418,6 +1443,7 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 │  User Avatar: 32x32 circle, gradient bg, first letter initial      │
 │  Mobile: overlay + slide-in transform, backdrop dimmed              │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 ---
@@ -1425,6 +1451,7 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 ## 5. Application Layout Structure
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    APPLICATION LAYOUT                                │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -1458,6 +1485,7 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 │    700-1200px: Sidebar collapsed (icons only)                       │
 │    < 700px: Sidebar hidden (hamburger menu, slide-in overlay)       │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 ---
@@ -1467,6 +1495,7 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 ### 6.1 Authentication Flow (Frontend)
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │              AUTHENTICATION UI FLOW                                  │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -1538,11 +1567,13 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 │  Token Storage: React AuthContext (in-memory, no localStorage)     │
 │  Auth Header: Authorization: Bearer <token>                        │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 ### 6.2 Leave Application Flow (Frontend)
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │              LEAVE APPLICATION UI FLOW                               │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -1599,11 +1630,13 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 │          └──── Error ────▶ Show error banner                        │
 │                             (e.g. "Insufficient balance")           │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 ### 6.3 Manager Approval Flow (Frontend)
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │              MANAGER APPROVAL UI FLOW                                │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -1661,11 +1694,13 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 │              │ table    │                                          │
 │              └──────────┘                                          │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 ### 6.4 Employee Management Flow (Frontend)
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │              EMPLOYEE MANAGEMENT UI FLOW                             │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -1714,11 +1749,13 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 │                              DELETE /api/employees/:id              │
 │                              → Success: Close modal, refresh table  │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 ### 6.5 Modal State Flow
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │              MODAL STATE FLOW                                        │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -1743,6 +1780,7 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 │  Body scroll: locked when modal open                               │
 │  Animation: scaleIn (0.25s) + fadeIn overlay (0.2s)                │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 ---
@@ -1752,6 +1790,7 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 ### 7.1 Loading States
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    LOADING STATES                                    │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -1783,11 +1822,13 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 │  │  └──────────────────────────────────────────────┘          │    │
 │  └────────────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 ### 7.2 Empty States
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    EMPTY STATES                                      │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -1810,11 +1851,13 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 │  Contextual Icons:                                                  │
 │    📭 No data    ⚠️ Error    ✅ All caught up    👥 No employees   │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 ### 7.3 Error States
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    ERROR STATES                                      │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -1851,6 +1894,7 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 │  │                  btn-primary                                │    │
 │  └────────────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 ---
@@ -1858,6 +1902,7 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 ## 8. Responsive Design
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    RESPONSIVE BREAKPOINTS                            │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -1901,6 +1946,7 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 │    .grid-3: 900px → 2col, 700px → 1col                             │
 │    .grid-2: 700px → 1col                                           │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 ---
@@ -1908,6 +1954,7 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 ## 9. Interactive States & Animations
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │                 ANIMATIONS & TRANSITIONS                             │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -1977,6 +2024,7 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 │  │  box-shadow: 0 0 0 3px var(--accent-glow)                  │    │
 │  └────────────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 ---
@@ -1984,6 +2032,7 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 ## 10. Glassmorphism Design Language
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │                 GLASSMORPHISM DESIGN PRINCIPLES                     │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -2030,6 +2079,7 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 │    5. Tooltips/toasts (highest z-index)                             │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 
 ---
@@ -2037,6 +2087,7 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 ## 11. Form Design Patterns
 
 ```
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    FORM DESIGN PATTERNS                              │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -2085,6 +2136,7 @@ Accessed by clicking "Setup Profile". Allows Platform Owners to configure settin
 │    - Loading: button spinner + disabled state                      │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
+
 ```
 ## 12. End-to-End Role-Based Interaction Flows
 
