@@ -31,7 +31,7 @@ A **Multi-Tenant B2B web-based Leave Management System** that digitizes the enti
 |---------|------------|
 | **Multi-Tenant B2B Architecture** | Separate data workspaces for different client organizations. |
 | **Enterprise Onboarding** | Landing page with pricing, OAuth/Email signup, and contact application forms for manual Sales provisioning. |
-| **User Authentication** | Secure login with email/password or OAuth (Google/Facebook), JWT-based sessions |
+| **User Authentication** | Secure login with email/password or OAuth (Google), utilizing HttpOnly cookies for session management to prevent XSS |
 | **Role-Based Access** | Dynamic roles per organization with fixed underlying permissions |
 | **Leave Application** | Employees can apply for leave with type, date range, and reason |
 | **Leave Approval Chains** | Managers can approve/reject, with support for multi-tier dynamic approval workflows |
@@ -40,6 +40,7 @@ A **Multi-Tenant B2B web-based Leave Management System** that digitizes the enti
 | **Dashboard & Analytics** | Visual statistics: leave counts, trends, department-wise breakdown |
 | **Leave Balance Tracking** | Track remaining leave per type (Casual, Sick, Earned) per year |
 | **Premium UI/UX** | Dark-mode, glassmorphism design with floating dock navigation and responsive layouts |
+| **AI Chatbot Assistant** | Integrated Gemini-powered AI chatbot for instant context-aware assistance and policy queries |
 
 ### 2.2 Out of Scope (Future Enhancements)
 

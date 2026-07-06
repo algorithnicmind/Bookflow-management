@@ -25,6 +25,8 @@ graph TB
         Pydantic["Pydantic v2 (Validation)"]
         PyJWT["PyJWT (Token Authentication)"]
         Passlib["passlib[bcrypt] (Password Hashing)"]
+        Redis["Redis (Caching & Rate Limiting)"]
+        Gemini["Google Gemini API (AI Chatbot)"]
     end
     
     subgraph Database["🗄️ Database"]
@@ -75,6 +77,8 @@ graph TB
 | **PyJWT** | 2.x | Token Management | Lightweight, secure implementation of JSON Web Tokens for stateless authentication |
 | **passlib[bcrypt]**| 1.7+ | Password Hashing | Secure one-way hashing with salt parameters, industry standard |
 | **asyncpg / psycopg3** | — | PostgreSQL Driver | High-speed asynchronous client driver for database connection and query execution |
+| **Redis** | 5.0+ | In-Memory Cache | Fast distributed caching layer for API responses and rate limiting |
+| **Google Gemini API** | — | AI Integration | Powers the AI Chatbot assistant, providing context-aware policy answers |
 | **Uvicorn** | 0.28+ | ASGI Web Server | Lightning-fast ASGI server for running FastAPI applications in production |
 
 ### 2.3 Database
@@ -94,7 +98,7 @@ graph TB
 
 | Technology | Version | Purpose | Why Chosen |
 |-----------|:-------:|---------|------------|
-| **JWT (JSON Web Tokens)** | — | Authentication | Stateless authentication. The client stores the token in memory or secure HTTPOnly cookies and includes it in the `Authorization: Bearer <token>` header, reducing database lookups for session validation. |
+| **JWT (JSON Web Tokens)** | — | Authentication | Stateless authentication. The client receives the token via a secure `HttpOnly` `Set-Cookie` header. This completely mitigates XSS risks by hiding the token from JavaScript. |
 | **bcrypt** | — | Cryptographic Hashing | Dynamic salting makes pre-computed dictionary and rainbow table attacks computationally unfeasible. |
 | **Nginx Reverse Proxy** | — | Gateway Shielding | Acts as a gateway proxy, hiding the backend application ports, managing secure SSL termination, and handling large volumetric connections. |
 
@@ -156,11 +160,11 @@ sequenceDiagram
     BE->>BE: Verify hashed password
     BE->>JWT: Generate JWT Token (payload: user_id, email, role)
     BE-->>GW: Response (200 OK + JWT Token in JSON)
-    GW-->>FE: JWT Token + User Metadata
-    FE-->>U: Transition state to Dashboard, store JWT in AuthContext
+    GW-->>FE: HTTPOnly Cookie + User Metadata
+    FE-->>U: Transition state to Dashboard, store User in AuthContext
     
     U->>FE: Click "Apply Leave" (Casual)
-    FE->>GW: POST /api/leaves (Headers: Auth Bearer JWT)
+    FE->>GW: POST /api/leaves (Credentials: include)
     GW->>BE: Forward Request
     BE->>JWT: Extract & Validate JWT
     JWT-->>BE: Decoded Payload (id: 1, role: employee)
