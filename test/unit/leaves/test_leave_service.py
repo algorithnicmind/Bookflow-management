@@ -52,17 +52,18 @@ async def test_apply_leave_success():
     repo.get_balance.return_value = balance
     repo.create_request.return_value = MagicMock(id=1)
 
-    # Mock _get_employee to return employee without manager
     mock_emp = MagicMock(id=1, name="John", manager_id=None)
-    mock_result = MagicMock()
-    mock_result.scalar_one_or_none.return_value = mock_emp
+    mock_emp_result = MagicMock()
+    mock_emp_result.scalar_one_or_none.return_value = mock_emp
 
-    # Mock db.execute for holiday fetch
     mock_holiday_result = MagicMock()
     mock_holiday_result.all.return_value = []
-    
-    # Mock db.execute to return employee first, then holidays
-    repo.db.execute.side_effect = [mock_result, mock_holiday_result]
+
+    mock_leave_type = MagicMock(is_paid=True)
+    mock_leave_type_result = MagicMock()
+    mock_leave_type_result.scalar_one_or_none.return_value = mock_leave_type
+
+    repo.db.execute.side_effect = [mock_holiday_result, mock_leave_type_result, mock_emp_result]
 
     req = LeaveApplication(
         leave_type="casual",
@@ -141,7 +142,12 @@ async def test_apply_leave_insufficient_balance():
 
     mock_holiday_result = MagicMock()
     mock_holiday_result.all.return_value = []
-    repo.db.execute.return_value = mock_holiday_result
+
+    mock_leave_type = MagicMock(is_paid=True)
+    mock_leave_type_result = MagicMock()
+    mock_leave_type_result.scalar_one_or_none.return_value = mock_leave_type
+
+    repo.db.execute.side_effect = [mock_holiday_result, mock_leave_type_result]
 
     req = LeaveApplication(
         leave_type="casual",
@@ -165,7 +171,12 @@ async def test_apply_leave_no_balance_record():
 
     mock_holiday_result = MagicMock()
     mock_holiday_result.all.return_value = []
-    repo.db.execute.return_value = mock_holiday_result
+
+    mock_leave_type = MagicMock(is_paid=True)
+    mock_leave_type_result = MagicMock()
+    mock_leave_type_result.scalar_one_or_none.return_value = mock_leave_type
+
+    repo.db.execute.side_effect = [mock_holiday_result, mock_leave_type_result]
 
     req = LeaveApplication(
         leave_type="casual",
@@ -188,13 +199,16 @@ async def test_apply_unpaid_leave_skips_balance_check():
     repo.create_request.return_value = MagicMock(id=1)
 
     mock_emp = MagicMock(id=1, name="John", manager_id=None)
-    mock_result = MagicMock()
-    mock_result.scalar_one_or_none.return_value = mock_emp
-    
+    mock_emp_result = MagicMock()
+    mock_emp_result.scalar_one_or_none.return_value = mock_emp
+
     mock_holiday_result = MagicMock()
     mock_holiday_result.all.return_value = []
-    
-    repo.db.execute.side_effect = [mock_holiday_result, mock_result]
+
+    mock_leave_type_result = MagicMock()
+    mock_leave_type_result.scalar_one_or_none.return_value = None
+
+    repo.db.execute.side_effect = [mock_holiday_result, mock_leave_type_result, mock_emp_result]
 
     req = LeaveApplication(
         leave_type="unpaid",
@@ -218,13 +232,17 @@ async def test_apply_leave_deducts_balance():
     repo.create_request.return_value = MagicMock(id=1)
 
     mock_emp = MagicMock(id=1, name="John", manager_id=None)
-    mock_result = MagicMock()
-    mock_result.scalar_one_or_none.return_value = mock_emp
-    
+    mock_emp_result = MagicMock()
+    mock_emp_result.scalar_one_or_none.return_value = mock_emp
+
     mock_holiday_result = MagicMock()
     mock_holiday_result.all.return_value = []
-    
-    repo.db.execute.side_effect = [mock_holiday_result, mock_result]
+
+    mock_leave_type = MagicMock(is_paid=True)
+    mock_leave_type_result = MagicMock()
+    mock_leave_type_result.scalar_one_or_none.return_value = mock_leave_type
+
+    repo.db.execute.side_effect = [mock_holiday_result, mock_leave_type_result, mock_emp_result]
 
     req = LeaveApplication(
         leave_type="casual",
@@ -253,9 +271,14 @@ async def test_cancel_leave_success():
     repo.get_balance.return_value = balance
 
     mock_emp = MagicMock(id=1, name="John", manager_id=None)
-    mock_result = MagicMock()
-    mock_result.scalar_one_or_none.return_value = mock_emp
-    repo.db.execute.return_value = mock_result
+    mock_emp_result = MagicMock()
+    mock_emp_result.scalar_one_or_none.return_value = mock_emp
+
+    mock_leave_type = MagicMock(is_paid=True)
+    mock_leave_type_result = MagicMock()
+    mock_leave_type_result.scalar_one_or_none.return_value = mock_leave_type
+
+    repo.db.execute.side_effect = [mock_leave_type_result, mock_emp_result]
 
     await service.cancel_leave(1, employee_id=1)
     assert leave.status == "cancelled"
@@ -412,6 +435,19 @@ async def test_reject_leave_success():
     balance = MagicMock(used_days=5)
     repo.get_balance.return_value = balance
     repo.db.add = MagicMock()
+
+    mock_none_result = MagicMock()
+    mock_none_result.scalar_one_or_none.return_value = None
+
+    mock_approver = MagicMock(id=1, role="manager")
+    mock_approver_result = MagicMock()
+    mock_approver_result.scalar_one_or_none.return_value = mock_approver
+
+    mock_leave_type = MagicMock(is_paid=True)
+    mock_leave_type_result = MagicMock()
+    mock_leave_type_result.scalar_one_or_none.return_value = mock_leave_type
+
+    repo.db.execute.side_effect = [mock_none_result, mock_none_result, mock_approver_result, mock_leave_type_result]
 
     action = LeaveApprovalAction(comments="Team is short-staffed")
     result = await service.reject_leave(1, manager_id=1, is_admin=False, action=action)

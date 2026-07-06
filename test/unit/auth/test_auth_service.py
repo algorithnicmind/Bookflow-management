@@ -119,7 +119,7 @@ async def test_register_admin_user_success():
     request = AdminCreateRequest(
         name="New Admin",
         email="newadmin@company.com",
-        password="password123",
+        password="Pass@1234",
         gender="male",
     )
 
@@ -150,7 +150,7 @@ async def test_register_admin_user_duplicate_email():
     request = AdminCreateRequest(
         name="Dup Admin",
         email="existing@company.com",
-        password="password123",
+        password="Pass@1234",
     )
 
     with pytest.raises(HTTPException) as exc_info:
@@ -176,7 +176,7 @@ async def test_register_admin_creates_correct_leave_balances():
     request = AdminCreateRequest(
         name="New Admin",
         email="admin2@company.com",
-        password="password123",
+        password="Pass@1234",
     )
 
     with patch("app.modules.auth.services.pwd_context") as mock_pwd:
