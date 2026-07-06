@@ -57,8 +57,8 @@
 - [ ] User enters valid email and password → redirected to role-based dashboard
 - [ ] Invalid credentials → error message "Invalid email or password"
 - [ ] Empty fields → validation error "Please fill in all fields"
-- [ ] Session persists via JWT token (stored in localStorage)
-- [ ] Token expires after 24 hours → user must re-login
+- [ ] Session persists securely via HttpOnly cookie (no client-side token storage)
+- [ ] Session expires after 24 hours → user must re-login
 
 ### US-002: User Logout 🔴
 **As a** logged-in user,  
@@ -302,23 +302,7 @@
 - [ ] Super Admin can define name, days allocated, and paid/unpaid status.
 - [ ] Dynamic leave types immediately appear in employee application forms.
 
-### US-021: Create Custom Roles 🔴
-**As a** Super Admin,  
-**I want to** create custom roles beyond the standard 4,  
-**So that** I can configure granular permissions based on our company structure.
 
-**Acceptance Criteria:**
-- [ ] Accessible via Organization Settings Matrix
-- [ ] Super Admin can define role name and toggle specific permissions
-
-### US-022: Configure Dynamic Leave Types 🔴
-**As a** Super Admin,  
-**I want to** create and modify Leave Types dynamically,  
-**So that** we are not locked into hardcoded leave categories.
-
-**Acceptance Criteria:**
-- [ ] Super Admin can define name, days allocated, and paid/unpaid status.
-- [ ] Dynamic leave types immediately appear in employee application forms.
 
 ---
 
@@ -338,6 +322,15 @@
 **As an** Admin,  
 **I want to** define an annual calendar of company-wide holidays,  
 **So that** these days are automatically excluded from an employee's requested leave duration.
+
+### US-024: AI Chatbot Assistant 🟡
+**As an** Employee or Manager,  
+**I want to** interact with an AI Chatbot,  
+**So that** I can get instant answers to my company's leave policies and process questions.
+
+**Acceptance Criteria:**
+- [ ] AI Chatbot widget available on all dashboard pages
+- [ ] Answers are contextual based on the company's policies (powered by Gemini API)
 
 ---
 
