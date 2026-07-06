@@ -28,7 +28,7 @@ from app.core.config import settings
 from app.modules.employees.models import Employee
 from app.modules.organizations.models import Organization
 from app.modules.leaves.models import LeaveRequest, LeaveBalance, LeaveApproval
-from app.modules.settings.models import SystemSetting
+from app.modules.settings.models import SystemSetting, LeaveType
 from app.modules.notifications.models import Notification
 from main import app
 from app.core.dependencies import limiter
@@ -153,6 +153,19 @@ def create_user(db_session: AsyncSession):
             )
             db_session.add(org)
             await db_session.flush()
+
+            # Create default leave types for the organization
+            for lt_name, lt_days, lt_paid in [
+                ("casual", 12, True), ("sick", 12, True), ("earned", 18, True),
+                ("maternity", 182, True), ("miscarriage", 42, True), ("unpaid", 0, False),
+            ]:
+                lt = LeaveType(
+                    organization_id=org.id,
+                    name=lt_name,
+                    default_days=lt_days,
+                    is_paid=lt_paid,
+                )
+                db_session.add(lt)
 
         employee = Employee(
             organization_id=org.id,

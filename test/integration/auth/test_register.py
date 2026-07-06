@@ -15,7 +15,7 @@ async def test_register_admin_success(client: AsyncClient, super_admin, super_ad
         json={
             "name": "New Admin",
             "email": "newadmin@company.com",
-            "password": "password123",
+            "password": "Pass@1234",
             "gender": "male",
         },
         headers=auth_headers(super_admin_token),
@@ -32,7 +32,7 @@ async def test_register_duplicate_email(client: AsyncClient, super_admin, super_
         json={
             "name": "Dup Admin",
             "email": "admin@company.com",  # Already exists
-            "password": "password123",
+            "password": "Pass@1234",
         },
         headers=auth_headers(super_admin_token),
     )
@@ -48,7 +48,7 @@ async def test_register_as_admin_forbidden(client: AsyncClient, admin_user, admi
         json={
             "name": "Unauthorized",
             "email": "unauth@company.com",
-            "password": "password123",
+            "password": "Pass@1234",
         },
         headers=auth_headers(admin_token),
     )
@@ -63,7 +63,7 @@ async def test_register_as_employee_forbidden(client: AsyncClient, employee_user
         json={
             "name": "Unauthorized",
             "email": "unauth@company.com",
-            "password": "password123",
+            "password": "Pass@1234",
         },
         headers=auth_headers(employee_token),
     )
@@ -78,7 +78,7 @@ async def test_register_no_token(client: AsyncClient, db_session):
         json={
             "name": "No Auth",
             "email": "noauth@company.com",
-            "password": "password123",
+            "password": "Pass@1234",
         },
     )
     assert response.status_code == 401

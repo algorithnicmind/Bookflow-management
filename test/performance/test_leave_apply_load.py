@@ -5,9 +5,15 @@ Simulates concurrent leave applications to test overlap checking and balance loc
 
 import pytest
 import asyncio
+import os
 from datetime import date, timedelta
 from httpx import AsyncClient
 
+# SQLite doesn't support concurrent writes, skip concurrency tests when using it
+_SKIP_CONCURRENT = os.environ.get("TEST_DATABASE_URL", "").startswith("sqlite")
+_skip_concurrent_reason = "Skipping concurrent test under SQLite (no concurrent write support)"
+
+@pytest.mark.skipif(_SKIP_CONCURRENT, reason=_skip_concurrent_reason)
 @pytest.mark.asyncio
 async def test_balance_consistency_under_load(client: AsyncClient, seeded_db):
     """
@@ -45,14 +51,14 @@ async def test_balance_consistency_under_load(client: AsyncClient, seeded_db):
     expected = initial_casual - (successes * 2)
     assert final_casual == expected, f"Balance mismatch! Expected {expected}, got {final_casual}"
 
+@pytest.mark.skipif(_SKIP_CONCURRENT, reason=_skip_concurrent_reason)
 @pytest.mark.asyncio
 async def test_20_concurrent_leave_applications(client: AsyncClient, seeded_db):
     """
     20 users applying for leave at the same time to ensure no deadlocks or errors.
     """
-    # Assuming we have 20 seeded employees or we just use 'jane@company.com' multiple times if overlap isn't strict.
-    # To avoid overlap constraints for different users, we'll login as jane and apply to different dates.
-    login_res = await client.post("/api/auth/login", data={"username": "jane@company.com", "password": "password123"}, headers={"Content-Type": "application/x-www-form-urlencoded"})
+    # Use the seeded employee to apply leaves on different dates
+    login_res = await client.post("/api/auth/login", data={"username": "john@company.com", "password": "password123"}, headers={"Content-Type": "application/x-www-form-urlencoded"})
     token = login_res.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 
@@ -73,6 +79,7 @@ async def test_20_concurrent_leave_applications(client: AsyncClient, seeded_db):
     for r in results:
         assert r.status_code in (201, 400), f"Unexpected error during concurrent apply: {r.status_code}"
 
+@pytest.mark.skipif(_SKIP_CONCURRENT, reason=_skip_concurrent_reason)
 @pytest.mark.asyncio
 async def test_same_user_concurrent_apply(client: AsyncClient, seeded_db):
     """

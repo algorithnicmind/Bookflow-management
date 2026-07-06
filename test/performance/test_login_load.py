@@ -45,7 +45,7 @@ async def test_100_concurrent_logins(client: AsyncClient, seeded_db):
         start = time.time()
         response = await client.post(
             "/api/auth/login",
-            data={"username": "jane@company.com", "password": "password123"},
+            data={"username": "john@company.com", "password": "password123"},
             headers={"Content-Type": "application/x-www-form-urlencoded"}
         )
         elapsed = time.time() - start
