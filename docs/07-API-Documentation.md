@@ -9,10 +9,11 @@
 
 ## Authentication
 
-All endpoints except `POST /api/auth/login` require a JWT token in the `Authorization` header:
+All endpoints except `POST /api/auth/login` require an HttpOnly cookie containing the JWT token.
+Ensure requests include credentials (e.g., `credentials: 'include'` in Fetch API).
 
-```
-Authorization: Bearer <jwt_token>
+```http
+Cookie: access_token=<jwt_token>
 ```
 
 ---
@@ -54,11 +55,14 @@ Authenticates a registered employee and returns a JWT.
   "password": "securepassword"
 }
 ```
-**Response (200 OK):**
+**Response Headers:**
+```http
+Set-Cookie: access_token=eyJhbG...; HttpOnly; Secure; SameSite=Lax; Path=/
+```
+**Response Body (200 OK):**
 ```json
 {
-  "access_token": "eyJhbG...",
-  "token_type": "bearer",
+  "message": "Login successful",
   "user": {
     "id": "uuid",
     "role": "employee",
@@ -573,4 +577,26 @@ Initiates a deep impersonation session for a target organization. Generates an i
 ### 7.4 DELETE `/api/organizations/:id`
 Deactivates an organization.
 **Roles:** Platform Owner
+
+---
+
+## 8. AI Chatbot
+
+### 8.1 POST `/api/bot/chat`
+Send a message to the AI assistant to ask about company leave policies.
+**Roles:** Employee, Manager, Admin, Super Admin
+**Request:**
+```json
+{
+  "message": "How many casual leaves do I get per year?",
+  "session_id": "optional-uuid-for-continuity"
+}
+```
+**Success Response (200):**
+```json
+{
+  "reply": "According to the company policy, you are entitled to 12 casual leaves per year.",
+  "session_id": "uuid-for-continuity"
+}
+```
 

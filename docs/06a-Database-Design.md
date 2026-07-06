@@ -12,6 +12,7 @@
 erDiagram
     EMPLOYEES {
         SERIAL id PK
+        INTEGER organization_id FK
         VARCHAR name
         VARCHAR email UK
         VARCHAR password_hash
@@ -24,6 +25,7 @@ erDiagram
     
     LEAVE_REQUESTS {
         SERIAL id PK
+        INTEGER organization_id FK
         INTEGER employee_id FK
         VARCHAR leave_type
         DATE start_date
@@ -36,6 +38,7 @@ erDiagram
     
     LEAVE_APPROVALS {
         SERIAL id PK
+        INTEGER organization_id FK
         INTEGER leave_request_id FK
         INTEGER manager_id FK
         VARCHAR action
@@ -45,6 +48,7 @@ erDiagram
     
     LEAVE_BALANCES {
         SERIAL id PK
+        INTEGER organization_id FK
         INTEGER employee_id FK
         VARCHAR leave_type
         INTEGER total_days
@@ -219,10 +223,11 @@ Allows dynamic generation of permission profiles.
 -- Employees table
 CREATE TABLE IF NOT EXISTS employees (
     id SERIAL PRIMARY KEY,
+    organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role VARCHAR(20) NOT NULL CHECK (role IN ('super_admin', 'admin', 'manager', 'employee')),
+    role VARCHAR(20) NOT NULL,
     manager_id INTEGER REFERENCES employees(id) ON DELETE SET NULL,
     department VARCHAR(100) NOT NULL DEFAULT 'General',
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -232,6 +237,7 @@ CREATE TABLE IF NOT EXISTS employees (
 -- Leave requests table
 CREATE TABLE IF NOT EXISTS leave_requests (
     id SERIAL PRIMARY KEY,
+    organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
     leave_type VARCHAR(20) NOT NULL CHECK (leave_type IN ('casual', 'sick', 'earned', 'unpaid')),
     start_date DATE NOT NULL,
@@ -245,6 +251,7 @@ CREATE TABLE IF NOT EXISTS leave_requests (
 -- Leave approvals table (audit trail)
 CREATE TABLE IF NOT EXISTS leave_approvals (
     id SERIAL PRIMARY KEY,
+    organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     leave_request_id INTEGER NOT NULL REFERENCES leave_requests(id) ON DELETE CASCADE,
     manager_id INTEGER NOT NULL REFERENCES employees(id),
     action VARCHAR(20) NOT NULL CHECK (action IN ('approved', 'rejected')),
@@ -255,6 +262,7 @@ CREATE TABLE IF NOT EXISTS leave_approvals (
 -- Leave balances table
 CREATE TABLE IF NOT EXISTS leave_balances (
     id SERIAL PRIMARY KEY,
+    organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
     leave_type VARCHAR(20) NOT NULL CHECK (leave_type IN ('casual', 'sick', 'earned')),
     total_days INTEGER NOT NULL,

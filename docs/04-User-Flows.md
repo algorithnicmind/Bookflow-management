@@ -40,7 +40,7 @@ flowchart TD
 ## 2. Employee — Login Flow
 
 ```mermaid
---flowchart TD
+flowchart TD
     A[🌐 Open Application] --> B[📄 Login Page]
     B --> C[✍️ Enter Email & Password]
     C --> D{Valid Credentials?}
@@ -167,7 +167,7 @@ sequenceDiagram
     FE->>API: POST /api/auth/login
     API->>DB: Verify credentials
     DB-->>API: User data
-    API-->>FE: JWT Token + Role
+    API-->>FE: HttpOnly Cookie + User Data
     FE-->>E: Redirect to Dashboard
 
     Note over E,M: Leave Application Flow

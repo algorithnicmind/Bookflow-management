@@ -37,6 +37,7 @@
 | 🔴 P0 | Manager Approval Workflow | Dev | 5 | ✅ Done |
 | 🟡 P1 | Admin Employee & Settings Mgmt | Dev | 5 | ✅ Done |
 | 🟡 P1 | Dashboard & Analytics | Dev | 5 | ✅ Done |
+| 🟡 P1 | AI Chatbot Integration | Dev | 3 | ✅ Done |
 | 🔴 P0 | Test Plan & Test Cases | Tester | 3 | ✅ Done |
 | 🔴 P0 | Functional Testing Execution | Tester | 5 | ⬜ To Do |
 | 🟡 P1 | Negative & Edge Case Testing | Tester | 3 | ⬜ To Do |
@@ -132,6 +133,7 @@ Each standup answers three questions:
 - [x] Manager approval/rejection working
 - [x] Admin employee CRUD functional
 - [x] Dashboard showing real statistics
+- [x] AI Chatbot integration working
 - [ ] First round of testing completed
 - [ ] Bug reports filed (if any)
 

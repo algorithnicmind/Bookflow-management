@@ -303,6 +303,7 @@
 - Dependency Injection via FastAPI `Depends()` for auth, DB, tenant
 - Multi-tenant isolation via `get_current_tenant` dependency
 - Background cron jobs via APScheduler for monthly accruals
+- AI Chatbot module with Gemini API integration
 - Comprehensive documentation (10 docs covering PRD, TRD, HLD, LLD, DB design, API docs)
 
 #### ❌ What's Missing

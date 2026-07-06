@@ -18,9 +18,9 @@ Using FastAPI dependencies, authentication and authorization are handled in a cl
 
 ```python
 # Pseudo-code implementation design for authentication dependencies
-async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)):
+async def get_current_user(request: Request, db: AsyncSession = Depends(get_db)):
     """
-    1. Intercept Token from request headers (Bearer token)
+    1. Intercept Token from request cookies (request.cookies.get('access_token'))
     2. Try to decode the token with JWT_SECRET and algorithm HS256
     3. If verification fails (expired or tempered token) -> Raise HTTP 401 Unauthorized
     4. Extract payload: {"sub": user_email, "id": user_id, "role": user_role}
@@ -216,26 +216,20 @@ Unlike standard libraries, a custom async wrapper utilizing the native Fetch API
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 export async function request(endpoint, options = {}) {
-  const token = localStorage.getItem("token");
-  
   const headers = {
     "Content-Type": "application/json",
     ...options.headers,
   };
 
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
   const config = {
     ...options,
     headers,
+    credentials: "include", // Essential for sending/receiving HttpOnly cookies
   };
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
   if (response.status === 401) {
-    localStorage.removeItem("token");
     window.location.href = "/login";
     throw new Error("Session expired. Please log in again.");
   }
