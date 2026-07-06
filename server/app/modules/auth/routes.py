@@ -10,7 +10,7 @@ from app.core.config import settings
 from app.core.security import create_access_token
 from app.core.dependencies import PermissionChecker, RequireOwner, limiter, get_current_user
 from app.modules.employees.models import Employee, PlatformOwner
-from app.modules.auth.schemas import Token, AdminCreateRequest
+from app.modules.auth.schemas import LoginResponse, AdminCreateRequest
 from app.modules.auth.services import AuthService
 from app.modules.auth.repositories import AuthRepository
 from pydantic import BaseModel, EmailStr
@@ -78,12 +78,11 @@ async def oauth_login(request: OAuthRequest, response: Response, service: AuthSe
     result = await service.oauth_login(request.email)
     _set_token_cookie(response, result["access_token"])
     return {
-        "access_token": result["access_token"],
-        "token_type": "bearer",
-        "user": _build_user_response(result["user"])
+        "user": _build_user_response(result["user"]),
+        "message": "Authentication successful"
     }
 
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=LoginResponse)
 @limiter.limit("5/minute") # Rate limit login attempts to prevent brute-force attacks
 async def login_for_access_token(
     request: Request,
@@ -115,9 +114,8 @@ async def login_for_access_token(
     
     _set_token_cookie(response, access_token)
     return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user": _build_user_response(user)
+        "user": _build_user_response(user),
+        "message": "Authentication successful"
     }
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
@@ -229,7 +227,7 @@ async def register_admin(
         }
     }
 
-@router.post("/impersonate/{org_id}", response_model=Token)
+@router.post("/impersonate/{org_id}", response_model=LoginResponse)
 async def impersonate_tenant(
     org_id: int,
     response: Response,
@@ -243,12 +241,11 @@ async def impersonate_tenant(
     result = await service.impersonate_tenant(org_id)
     _set_token_cookie(response, result["access_token"])
     return {
-        "access_token": result["access_token"],
-        "token_type": "bearer",
-        "user": _build_user_response(result["user"])
+        "user": _build_user_response(result["user"]),
+        "message": "Impersonation successful"
     }
 
-@router.post("/impersonate/employee/{employee_id}", response_model=Token)
+@router.post("/impersonate/employee/{employee_id}", response_model=LoginResponse)
 async def impersonate_employee(
     employee_id: int,
     response: Response,
