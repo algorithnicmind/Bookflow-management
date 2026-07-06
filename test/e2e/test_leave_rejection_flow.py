@@ -11,11 +11,11 @@ from httpx import AsyncClient
 async def test_leave_rejection_flow(client: AsyncClient, seeded_db):
     # Setup tokens
     emp_res = await client.post("/api/auth/login", data={"username": "john@company.com", "password": "password123"}, headers={"Content-Type": "application/x-www-form-urlencoded"})
-    emp_token = emp_res.json()["access_token"]
+    emp_token = emp_res.cookies.get("access_token")
     emp_headers = {"Authorization": f"Bearer {emp_token}"}
 
     mgr_res = await client.post("/api/auth/login", data={"username": "alice@company.com", "password": "password123"}, headers={"Content-Type": "application/x-www-form-urlencoded"})
-    mgr_token = mgr_res.json()["access_token"]
+    mgr_token = mgr_res.cookies.get("access_token")
     mgr_headers = {"Authorization": f"Bearer {mgr_token}"}
 
     # Step 1: Employee checks initial balance

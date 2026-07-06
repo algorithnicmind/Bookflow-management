@@ -17,7 +17,7 @@ async def test_login_success_employee(client: AsyncClient, employee_user, seeded
     )
     assert response.status_code == 200
     data = response.json()
-    assert "access_token" in data
+    assert "access_token" in response.cookies
     assert data["token_type"] == "bearer"
     assert data["user"]["role"] == "employee"
     assert data["user"]["email"] == "john@company.com"
@@ -116,7 +116,7 @@ async def test_login_token_is_valid_jwt(client: AsyncClient, seeded_db):
         data={"username": "john@company.com", "password": "password123"},
         headers={"Content-Type": "application/x-www-form-urlencoded"},
     )
-    token = response.json()["access_token"]
+    token = response.cookies.get("access_token")
     payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
     assert payload["sub"] == "john@company.com"
     assert payload["role"] == "employee"

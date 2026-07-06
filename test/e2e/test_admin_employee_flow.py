@@ -10,7 +10,7 @@ from httpx import AsyncClient
 @pytest.mark.asyncio
 async def test_admin_employee_flow(client: AsyncClient, seeded_db):
     admin_res = await client.post("/api/auth/login", data={"username": "admin@company.com", "password": "password123"}, headers={"Content-Type": "application/x-www-form-urlencoded"})
-    admin_headers = {"Authorization": f"Bearer {admin_res.json()['access_token']}"}
+    admin_headers = {"Authorization": f"Bearer {admin_res.cookies.get("access_token")}"}
 
     # Step 1: Admin creates employee
     create_res = await client.post("/api/employees", headers=admin_headers, json={
@@ -25,7 +25,7 @@ async def test_admin_employee_flow(client: AsyncClient, seeded_db):
     # Step 2: New employee logs in
     emp_res = await client.post("/api/auth/login", data={"username": "newhire@company.com", "password": "password123"}, headers={"Content-Type": "application/x-www-form-urlencoded"})
     assert emp_res.status_code == 200
-    emp_headers = {"Authorization": f"Bearer {emp_res.json()['access_token']}"}
+    emp_headers = {"Authorization": f"Bearer {emp_res.cookies.get("access_token")}"}
 
     # Step 3: Check balances exist
     bal_res = await client.get("/api/leaves/balance", headers=emp_headers)

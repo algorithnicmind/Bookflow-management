@@ -14,7 +14,7 @@ async def test_full_leave_approval_flow(client: AsyncClient, seeded_db):
         "username": "john@company.com", "password": "password123"
     }, headers={"Content-Type": "application/x-www-form-urlencoded"})
     assert login_res.status_code == 200
-    emp_token = login_res.json()["access_token"]
+    emp_token = login_res.cookies.get("access_token")
     emp_headers = {"Authorization": f"Bearer {emp_token}"}
 
     # Step 2: Check initial balance
@@ -48,7 +48,7 @@ async def test_full_leave_approval_flow(client: AsyncClient, seeded_db):
     mgr_login = await client.post("/api/auth/login", data={
         "username": "alice@company.com", "password": "password123"
     }, headers={"Content-Type": "application/x-www-form-urlencoded"})
-    mgr_token = mgr_login.json()["access_token"]
+    mgr_token = mgr_login.cookies.get("access_token")
     mgr_headers = {"Authorization": f"Bearer {mgr_token}"}
 
     # Step 7: Manager sees pending request in queue

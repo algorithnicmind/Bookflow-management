@@ -20,7 +20,7 @@ async def test_balance_consistency_under_load(client: AsyncClient, seeded_db):
     Apply 10 leaves concurrently to verify DB transaction isolation and balance calculation.
     """
     login_res = await client.post("/api/auth/login", data={"username": "john@company.com", "password": "password123"}, headers={"Content-Type": "application/x-www-form-urlencoded"})
-    token = login_res.json()["access_token"]
+    token = login_res.cookies.get("access_token")
     headers = {"Authorization": f"Bearer {token}"}
     
     # Check initial balance
@@ -59,7 +59,7 @@ async def test_20_concurrent_leave_applications(client: AsyncClient, seeded_db):
     """
     # Use the seeded employee to apply leaves on different dates
     login_res = await client.post("/api/auth/login", data={"username": "john@company.com", "password": "password123"}, headers={"Content-Type": "application/x-www-form-urlencoded"})
-    token = login_res.json()["access_token"]
+    token = login_res.cookies.get("access_token")
     headers = {"Authorization": f"Bearer {token}"}
 
     tomorrow = date.today() + timedelta(days=100) # Far in future
@@ -87,7 +87,7 @@ async def test_same_user_concurrent_apply(client: AsyncClient, seeded_db):
     Only 1 should succeed, rest should hit overlap errors to prevent race conditions.
     """
     login_res = await client.post("/api/auth/login", data={"username": "john@company.com", "password": "password123"}, headers={"Content-Type": "application/x-www-form-urlencoded"})
-    token = login_res.json()["access_token"]
+    token = login_res.cookies.get("access_token")
     headers = {"Authorization": f"Bearer {token}"}
     
     target_date = date.today() + timedelta(days=50) # Target a free date

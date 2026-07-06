@@ -10,10 +10,10 @@ from httpx import AsyncClient
 @pytest.mark.asyncio
 async def test_notification_flow(client: AsyncClient, seeded_db):
     emp_res = await client.post("/api/auth/login", data={"username": "john@company.com", "password": "password123"}, headers={"Content-Type": "application/x-www-form-urlencoded"})
-    emp_headers = {"Authorization": f"Bearer {emp_res.json()['access_token']}"}
+    emp_headers = {"Authorization": f"Bearer {emp_res.cookies.get("access_token")}"}
 
     mgr_res = await client.post("/api/auth/login", data={"username": "alice@company.com", "password": "password123"}, headers={"Content-Type": "application/x-www-form-urlencoded"})
-    mgr_headers = {"Authorization": f"Bearer {mgr_res.json()['access_token']}"}
+    mgr_headers = {"Authorization": f"Bearer {mgr_res.cookies.get("access_token")}"}
 
     # Step 1: Employee applies
     tomorrow = date.today() + timedelta(days=1)

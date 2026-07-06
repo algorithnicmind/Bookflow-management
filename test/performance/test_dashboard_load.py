@@ -12,7 +12,7 @@ from httpx import AsyncClient
 async def test_30_concurrent_dashboard_requests(client: AsyncClient, seeded_db):
     """Admin dashboard stats under load."""
     login_res = await client.post("/api/auth/login", data={"username": "john@company.com", "password": "password123"}, headers={"Content-Type": "application/x-www-form-urlencoded"})
-    headers = {"Authorization": f"Bearer {login_res.json()['access_token']}"}
+    headers = {"Authorization": f"Bearer {login_res.cookies.get("access_token")}"}
     
     async def get_dashboard():
         start = time.time()
@@ -33,7 +33,7 @@ async def test_admin_dashboard_heavy_load(client: AsyncClient, seeded_db):
     20 concurrent admin dashboard requests. Admin dashboard aggregates stats across all users.
     """
     login_res = await client.post("/api/auth/login", data={"username": "admin@company.com", "password": "password123"}, headers={"Content-Type": "application/x-www-form-urlencoded"})
-    headers = {"Authorization": f"Bearer {login_res.json()['access_token']}"}
+    headers = {"Authorization": f"Bearer {login_res.cookies.get("access_token")}"}
     
     async def get_admin_dashboard():
         start = time.time()
@@ -55,7 +55,7 @@ async def test_dashboard_with_large_dataset(client: AsyncClient, seeded_db):
     We just run 5 concurrent requests expecting it to be slightly slower but stable.
     """
     login_res = await client.post("/api/auth/login", data={"username": "admin@company.com", "password": "password123"}, headers={"Content-Type": "application/x-www-form-urlencoded"})
-    headers = {"Authorization": f"Bearer {login_res.json()['access_token']}"}
+    headers = {"Authorization": f"Bearer {login_res.cookies.get("access_token")}"}
     
     async def get_dashboard():
         start = time.time()
