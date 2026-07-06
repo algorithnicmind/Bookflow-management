@@ -3,6 +3,7 @@ import asyncio
 import logging
 import threading
 from fastapi import HTTPException, status
+from sqlalchemy.exc import SQLAlchemyError
 from app.core.security import pwd_context, create_access_token
 from app.core.config import settings
 from app.modules.employees.models import Employee, PlatformOwner
@@ -101,10 +102,17 @@ class AuthService:
         """
         # 1. Check if the email is currently locked out
         _login_tracker.check_lockout(username)
-        
-        user = await self.repo.get_employee_by_email(username)
-        if not user:
-            user = await self.repo.get_platform_owner_by_email(username)
+
+        try:
+            user = await self.repo.get_employee_by_email(username)
+            if not user:
+                user = await self.repo.get_platform_owner_by_email(username)
+        except SQLAlchemyError as e:
+            logger.error(f"Database error during user lookup for {username}: {e}", exc_info=True)
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Authentication service unavailable. Please try again later."
+            )
             
         if not user:
             # Log the failed attempt for security auditing
@@ -113,7 +121,15 @@ class AuthService:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
             
         # Verify bcrypt hash securely in a background thread to prevent blocking the async event loop
-        is_valid = await asyncio.to_thread(pwd_context.verify, password_plain, user.password_hash)
+        try:
+            is_valid = await asyncio.to_thread(pwd_context.verify, password_plain, user.password_hash)
+        except Exception as e:
+            logger.error(f"Password verification error for {username}: {e}", exc_info=True)
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Authentication service unavailable. Please try again later."
+            )
+
         if not is_valid:
             await self._log_auth_failure(username, ip_address, user_agent, "invalid_password")
             _login_tracker.record_failure(username)
@@ -127,7 +143,14 @@ class AuthService:
         # Successful login — reset lockout counter and update last_login
         _login_tracker.reset(username)
         user.last_login = datetime.now(timezone.utc)
-        await self.repo.commit()
+        try:
+            await self.repo.commit()
+        except SQLAlchemyError as e:
+            logger.error(f"Database error during login commit for {username}: {e}", exc_info=True)
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Authentication service unavailable. Please try again later."
+            )
         
         # Log successful login to audit trail
         await self._log_auth_success(user, ip_address)

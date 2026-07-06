@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, status, HTTPException, Response, Request
 from fastapi.security import OAuth2PasswordRequestForm
 import os
 import httpx
+import logging
 import urllib.parse
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,6 +26,7 @@ Handles user login, session validation, OAuth flows, and platform impersonation.
 """
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+logger = logging.getLogger("leaveflow.auth.routes")
 
 def get_auth_service(db: AsyncSession = Depends(get_db)) -> AuthService:
     """Dependency injection to provide the AuthService instance to routes."""
@@ -95,28 +97,37 @@ async def login_for_access_token(
     Verifies credentials and issues a JWT if successful.
     Passes client IP and user-agent for security audit logging.
     """
-    # Extract client info for audit trail
-    ip_address = request.client.host if request.client else None
-    user_agent = request.headers.get("user-agent")
-    
-    # Authenticate credentials against the database
-    user = await service.authenticate_user(
-        form_data.username, form_data.password,
-        ip_address=ip_address, user_agent=user_agent
-    )
-    
-    # Generate the signed JWT token
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.email, "id": user.id, "role": user.role},
-        expires_delta=access_token_expires
-    )
-    
-    _set_token_cookie(response, access_token)
-    return {
-        "user": _build_user_response(user),
-        "message": "Authentication successful"
-    }
+    try:
+        # Extract client info for audit trail
+        ip_address = request.client.host if request.client else None
+        user_agent = request.headers.get("user-agent")
+        
+        # Authenticate credentials against the database
+        user = await service.authenticate_user(
+            form_data.username, form_data.password,
+            ip_address=ip_address, user_agent=user_agent
+        )
+        
+        # Generate the signed JWT token
+        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": user.email, "id": user.id, "role": user.role},
+            expires_delta=access_token_expires
+        )
+        
+        _set_token_cookie(response, access_token)
+        return {
+            "user": _build_user_response(user),
+            "message": "Authentication successful"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error in login endpoint: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred during login. Please try again."
+        )
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 FRONTEND_URL = os.getenv("NEXT_PUBLIC_FRONTEND_URL", "http://localhost:3000")
