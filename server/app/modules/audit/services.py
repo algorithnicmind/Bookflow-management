@@ -32,8 +32,10 @@ class AuditLogService:
                     if employee:
                         actor_name = getattr(employee, "name", None)
                         actor_email = getattr(employee, "email", None)
+                    else:
+                        actor_id = None
             except Exception:
-                pass
+                actor_id = None
         
         log_entry = AuditLog(
             actor_id=actor_id,
