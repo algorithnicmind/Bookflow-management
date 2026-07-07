@@ -181,13 +181,14 @@ async def list_employees(
 async def create_employee(
     request: EmployeeCreate,
     service: EmployeeService = Depends(get_employee_service),
-    current_user: Employee = Depends(PermissionChecker("manage_employees"))
+    current_user: Employee = Depends(PermissionChecker("manage_employees")),
+    current_org: Organization = Depends(get_current_tenant)
 ):
     """
     Create a new employee profile in the current organization.
     The service layer will ensure appropriate leave balances are automatically provisioned.
     """
-    employee = await service.create_employee(request, current_user.id)
+    employee = await service.create_employee(request, current_user.id, current_org.id)
     return {"message": "Employee created successfully", "employee": EmployeeResponse.model_validate(employee)}
 
 @router.put("/{employee_id}")

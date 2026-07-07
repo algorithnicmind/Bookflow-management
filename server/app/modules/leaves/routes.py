@@ -36,7 +36,8 @@ def get_leave_service(
 async def apply_leave(
     request: LeaveApplication,
     service: LeaveService = Depends(get_leave_service),
-    current_user: Employee = Depends(get_current_user)
+    current_user: Employee = Depends(get_current_user),
+    current_org: Organization = Depends(get_current_tenant)
 ):
     """
     Apply for a Leave.
@@ -44,7 +45,7 @@ async def apply_leave(
     The service layer will validate dates against public holidays, ensure sufficient 
     balance exists, deduct the balance iteratively, and log the action.
     """
-    return await service.apply_leave(current_user.id, request)
+    return await service.apply_leave(current_user.id, request, current_org.id)
 
 @router.get("")
 async def get_leave_history(
@@ -115,7 +116,8 @@ async def approve_leave(
     leave_id: int,
     action: LeaveApprovalAction,
     service: LeaveService = Depends(get_leave_service),
-    current_user: Employee = Depends(PermissionChecker("manage_leaves"))
+    current_user: Employee = Depends(PermissionChecker("manage_leaves")),
+    current_org: Organization = Depends(get_current_tenant)
 ):
     """
     Approve a Leave Request.
@@ -123,7 +125,7 @@ async def approve_leave(
     If it's the final required step, marks the leave request as fully approved.
     """
     is_admin = "manage_everything" in getattr(current_user, "permissions", []) or "manage_employees" in getattr(current_user, "permissions", [])
-    return await service.approve_leave(leave_id, current_user.id, is_admin, action)
+    return await service.approve_leave(leave_id, current_user.id, is_admin, action, current_org.id)
 
 @router.put("/{leave_id}/reject")
 async def reject_leave(

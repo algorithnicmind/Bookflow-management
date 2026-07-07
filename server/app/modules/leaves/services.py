@@ -76,7 +76,7 @@ class LeaveService:
             if emp.manager_id != manager_id and not is_admin:
                 raise HTTPException(status_code=403, detail=f"You can only {action} requests from your direct reports")
 
-    async def apply_leave(self, employee_id: int, request: LeaveApplication) -> dict:
+    async def apply_leave(self, employee_id: int, request: LeaveApplication, org_id: Optional[int] = None) -> dict:
         """
         Core logic for submitting a leave application.
         
@@ -139,7 +139,7 @@ class LeaveService:
 
         # Create request record
         new_request = LeaveRequest(
-            organization_id=self.repo.organization_id,
+            organization_id=org_id or self.repo.organization_id,
             employee_id=employee_id,
             leave_type=request.leave_type,
             start_date=request.start_date,
@@ -386,7 +386,7 @@ class LeaveService:
         return res
 
 
-    async def approve_leave(self, leave_id: int, manager_id: int, is_admin: bool, action: LeaveApprovalAction) -> dict:
+    async def approve_leave(self, leave_id: int, manager_id: int, is_admin: bool, action: LeaveApprovalAction, org_id: Optional[int] = None) -> dict:
         """
         Processes a leave approval action.
         
@@ -408,7 +408,7 @@ class LeaveService:
         await self._validate_approval_authority(leave, emp, manager_id, is_admin, "approve")
 
         approval = LeaveApproval(
-            organization_id=self.repo.organization_id,
+            organization_id=org_id or self.repo.organization_id,
             leave_request_id=leave.id,
             manager_id=manager_id,
             action="approved",

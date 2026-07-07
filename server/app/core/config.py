@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: Optional[str] = None
 
     # CORS — explicit origin allowlist instead of wildcards
-    CORS_ORIGINS: List[str] = ["https://leaveflow.com", "http://localhost:3000"]
+    CORS_ORIGINS: List[str] = ["https://leaveflow.com"]
 
     # Brute-force protection — progressive lockout thresholds (no Redis required)
     FAILED_LOGIN_MAX_ATTEMPTS: int = 5          # Attempts before first lockout

@@ -53,7 +53,7 @@ class EmployeeService:
             })
         return emp_responses
 
-    async def create_employee(self, data: EmployeeCreate, actor_id: Optional[int] = None) -> Employee:
+    async def create_employee(self, data: EmployeeCreate, actor_id: Optional[int] = None, org_id: Optional[int] = None) -> Employee:
         """
         Creates a new employee profile.
         
@@ -71,7 +71,7 @@ class EmployeeService:
             
         hashed_password = await asyncio.to_thread(pwd_context.hash, data.password)
         new_employee = Employee(
-            organization_id=self.repo.organization_id, # Safely bound to current tenant
+            organization_id=org_id or self.repo.organization_id, # Safely bound to current tenant
             name=data.name,
             email=data.email,
             password_hash=hashed_password,
