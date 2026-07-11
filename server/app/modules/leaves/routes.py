@@ -4,11 +4,11 @@ Leave Management API Routes
 This module exposes endpoints for employees to apply for leaves, view balances,
 and for managers/admins to approve or reject leave requests.
 """
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from app.core.database import get_db
-from app.core.dependencies import get_current_user, PermissionChecker
+from app.core.dependencies import get_current_user, PermissionChecker, limiter
 from app.core.tenant import get_current_tenant
 from app.core.pagination import PaginationParams
 from app.modules.employees.models import Employee
@@ -33,8 +33,10 @@ def get_leave_service(
     return LeaveService(repo)
 
 @router.post("", status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/minute")
 async def apply_leave(
-    request: LeaveApplication,
+    request: Request,
+    payload: LeaveApplication,
     service: LeaveService = Depends(get_leave_service),
     current_user: Employee = Depends(get_current_user),
     current_org: Organization = Depends(get_current_tenant)
@@ -45,7 +47,7 @@ async def apply_leave(
     The service layer will validate dates against public holidays, ensure sufficient 
     balance exists, deduct the balance iteratively, and log the action.
     """
-    return await service.apply_leave(current_user.id, request, current_org.id)
+    return await service.apply_leave(current_user.id, payload, current_org.id)
 
 @router.get("")
 async def get_leave_history(
