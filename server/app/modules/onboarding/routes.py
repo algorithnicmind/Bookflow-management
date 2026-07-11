@@ -4,12 +4,12 @@ Onboarding API Routes
 Manages new organization signups. Platform Owners use this to review and approve incoming leads,
 which triggers the automatic creation of their tenant database schema and first admin account.
 """
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, status, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from pydantic import BaseModel, EmailStr
 from app.core.database import get_db
-from app.core.dependencies import RequireOwner
+from app.core.dependencies import RequireOwner, limiter
 from app.modules.employees.models import Employee
 from app.modules.onboarding.services import OnboardingService
 
@@ -37,14 +37,15 @@ class ApplicationResponse(BaseModel):
     message: str
 
 @router.post("/apply", response_model=ApplicationResponse, status_code=status.HTTP_201_CREATED)
-async def submit_application(request: ApplicationRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("5/hour")
+async def submit_application(request: Request, payload: ApplicationRequest, db: AsyncSession = Depends(get_db)):
     """
     Submit a New Onboarding Application (Lead).
     Publicly accessible endpoint used by the frontend landing page.
     Saves the lead data into the database with a 'pending' status for review.
     """
     service = OnboardingService()
-    return await service.submit_application(request, db)
+    return await service.submit_application(payload, db)
 
 # ─── Admin Endpoints (super_admin only) ───────────────────────────────────────
 # The following endpoints require the 'RequireOwner' dependency, meaning only
